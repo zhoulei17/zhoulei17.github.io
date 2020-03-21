@@ -803,7 +803,7 @@ div.ac > ul > li:before,
   display: block;
 }
 .nav-right {
-  width: 420px;
+  width: 521px;
   height: 100%;
   background: rgba(250,250,250,0.95);
   border-right: 1px solid #e5e8ec;
@@ -1076,9 +1076,9 @@ div.ac > ul > li:before,
 }
 .nav-right .title-list nav a .post-title,
 .nav-right .title-list #local-search-result a .post-title {
-  width: -webkit-calc(100% - 155px);
-  width: -moz-calc(100% - 155px);
-  width: calc(100% - 155px);
+  width: -webkit-calc(100% - 30px);
+  width: -moz-calc(100% - 30px);
+  width: calc(100% - 30px);
   float: left;
   clear: both;
   margin: 5px 0;
@@ -1274,13 +1274,13 @@ div.ac > ul > li:before,
 }
 .post {
   height: 100%;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.6;
-  background: #fff;
+  background: #f9f9f9;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  color: #2f2f2f;
+  color: #4c4c4c;
   font-weight: normal;
   margin-left: 1px;
 }
@@ -1290,7 +1290,7 @@ div.ac > ul > li:before,
   text-shadow: none;
 }
 .post .pjax {
-  max-width: 900px;
+  max-width: 1260px;
   min-height: calc(100vh - 143px);
   margin: 0 auto;
   overflow-y: auto;
@@ -1404,7 +1404,7 @@ div.ac > ul > li:before,
   content: " ";
   width: 4px;
   height: 4px;
-  background-color: #fff;
+  background-color: #f9f9f9;
   border-radius: 4px;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
   position: absolute;
@@ -1722,7 +1722,7 @@ h1 {
   height: 40px;
   position: absolute;
   z-index: 30;
-  left: 542px;
+  left: 701px;
   top: 50vh;
   overflow: hidden;
   transition: left 0.5s cubic-bezier(0.77, 0, 0.175, 1);
