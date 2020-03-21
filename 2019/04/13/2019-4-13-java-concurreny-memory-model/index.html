@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>【Java并发编程】-【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题 | Hexo</title>
+  <meta name="keywords" content=" java , 并发 ">
+  <meta name="description" content="【Java并发编程】-【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题 | Hexo">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="第三章语言的进化：来自自然语言的社会协作语言的进化：语言游戏与摩斯密码语言与智能：信息熵![image-20191030215603298](..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20191030215603298.png) 对于信息量衡量的函数 P(x)表示信息量H(x)对应的概率，一般是相反的关系">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Search Engine&#x2F;NLP&#x2F;NLP course 2">
+<meta property="og:url" content="http://yoursite.com/2020/03/21/Search%20Engine/NLP/NLP%20course%202/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="第三章语言的进化：来自自然语言的社会协作语言的进化：语言游戏与摩斯密码语言与智能：信息熵![image-20191030215603298](..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20191030215603298.png) 对于信息量衡量的函数 P(x)表示信息量H(x)对应的概率，一般是相反的关系">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-03-21T04:19:57.729Z">
+<meta property="article:modified_time" content="2020-03-21T04:19:57.729Z">
+<meta property="article:author" content="ZhouLei">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="icon" href="/img/avatar.jpg">
+
+<link href="/css/style.css?v=1.0.1" rel="stylesheet">
+
+<link href="/css/hl_theme/atom-light.css?v=1.0.1" rel="stylesheet">
+
+<link href="//cdn.bootcss.com/animate.css/3.5.2/animate.min.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="/js/jquery.autocomplete.min.js?v=1.0.1" ></script>
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js" ></script>
+
+<script src="/js/iconfont.js?v=1.0.1" ></script>
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="false">
+  <input class="theme_blog_path" value="">
+</div>
+
+<body>
+<aside class="nav">
+    <div class="nav-left">
+        <a href="/" class="avatar_target">
+    <img class="avatar" src="/img/avatar.jpg" />
+</a>
+<div class="author">
+    <span>ZhouLei</span>
+</div>
+
+<div class="icon">
+    
+        
+        <a title="rss" href="/atom.xml" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-rss"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="github" href="https://github.com/yelog" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-github"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="weibo" href="http://weibo.com/u/2307534817" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-weibo"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="jianshu" href="https://www.jianshu.com/u/ff56736de7cf" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-jianshu"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="zhihu" href="https://www.zhihu.com/people/jaytp/activities" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-zhihu"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+    
+        
+        <a title="email" href="mailto:tcals1@163.com" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-email"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="qq" href="http://wpa.qq.com/msgrd?v=3&uin=541732905&site=qq&menu=yes" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-qq"></use>
+                </svg>
+            
+        </a>
+        
+    
+</div>
+
+
+
+
+<ul>
+    <li><div class="all active">全部文章<small>(62)</small></div></li>
+    
+        
+            
+            <li><div data-rel="opendaylight">opendaylight<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Jetty">Jetty<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="HTTP">HTTP<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="工具">工具<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="职业生涯">职业生涯<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Java集合">Java集合<small>(4)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="数据结构与算法">数据结构与算法<small>(3)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Java并发编程">Java并发编程<small>(28)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="NLP">NLP<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Solr">Solr<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Lucene">Lucene<small>(8)</small></div>
+                
+            </li>
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+    
+    
+    
+    
+    </div>
+    <div><a class="about  hasFriend  site_url"  href="/about">关于</a><a style="width: 50%"  class="friends">友链</a></div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="62">
+<input type="hidden" id="yelog_site_word_count" value="114.7k">
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
+</div>
+
+    </div>
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        友情链接
+        <i class="back-title-list"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+            <li><a target="_blank" href="http://yelog.org/">叶落阁</a></li>
+            
+        </ul>
+    </div>
+</div>
+        <div class="title-list">
+    <form onkeydown="if(event.keyCode === 13){return false;}">
+        <input id="local-search-input" class="search" type="text" placeholder="Search..." />
+        <i class="cross"></i>
+        <span>
+            <label for="tagswitch">Tags:</label>
+            <input id="tagswitch" type="checkbox" style="display: none" />
+            <i id="tagsWitchIcon"></i>
+        </span>
+    </form>
+    <div class="tags-list">
+    
+    <li class="article-tag-list-item">
+        <a class="color4">odl</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">rpc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Jetty</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">HTTP</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">HTTP2</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">Markdown</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">work summary</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">java</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">LinkedList</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Collection</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">集合</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">HashMap</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">ArrayList</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">LinkedHashMap</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">数据结构</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">链表</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">并发容器</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">ConcurrentHashMap</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">并发框架</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">Executor</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">ForkJoin</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">算法</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">排序</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color2">随机梯度下降</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">有监督</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">线性回归</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">java红黑树</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">ThreadPool</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">并发</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">操作系统</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">进程</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">线程</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color2">Search</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">Solr</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">互斥锁</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">死锁</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">线程的风险</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">管程</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">生命周期</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">线程协作</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">wait</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">阻塞队列</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">信号量</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">互斥</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">lock</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">ReadWriteLock</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">synchronized</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">可见性</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">volatile</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Json Facet</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color2">Lucene</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">索引文件</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">原子操作</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">Lucene工具类</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Lucene压缩算法</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">DocValues</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">idea</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">Collector</a>
+    </li>
+    
+    <div class="clearfix"></div>
+</div>
+
+    
+    <nav id="title-list-nav">
+        
+        <a  class=""
+           href="/2020/03/21/hello-world/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Hello World">Hello World</span>
+            <span class="post-date" title="2020-03-21 02:04:58">2020/03/21</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/test-md/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="test.md">test.md</span>
+            <span class="post-date" title="2020-03-21 12:02:47">2020/03/21</span>
+        </a>
+        
+        <a  class="opendaylight "
+           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           data-tag="odl,rpc"
+           data-author="" >
+            <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
+            <span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span>
+        </a>
+        
+        <a  class="opendaylight "
+           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           data-tag="odl,rpc"
+           data-author="" >
+            <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
+            <span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span>
+        </a>
+        
+        <a  class="Jetty "
+           href="/2015/11/05/2018-11-05-jetty-source-connection/"
+           data-tag="Jetty"
+           data-author="" >
+            <span class="post-title" title="【Jetty源码阅读系列】二、连接管理">【Jetty源码阅读系列】二、连接管理</span>
+            <span class="post-date" title="2015-11-05 00:00:00">2015/11/05</span>
+        </a>
+        
+        <a  class="HTTP "
+           href="/2015/11/11/2018-11-11-http2-features-introduce/"
+           data-tag="HTTP,HTTP2"
+           data-author="" >
+            <span class="post-title" title="HTTP/2特性总结">HTTP/2特性总结</span>
+            <span class="post-date" title="2015-11-11 00:00:00">2015/11/11</span>
+        </a>
+        
+        <a  class="工具 "
+           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           data-tag="Markdown"
+           data-author="" >
+            <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
+            <span class="post-date" title="2015-11-04 00:00:00">2015/11/04</span>
+        </a>
+        
+        <a  class="职业生涯 "
+           href="/2018/10/12/2018-11-4-thinking-huawei-workreview/"
+           data-tag="work summary"
+           data-author="" >
+            <span class="post-title" title="【职业生涯】2016～2018工作总结">【职业生涯】2016～2018工作总结</span>
+            <span class="post-date" title="2018-10-12 00:00:00">2018/10/12</span>
+        </a>
+        
+        <a  class="Java集合 "
+           href="/2019/01/16/2019-1-16-java-collection-LinkedList/"
+           data-tag="java,LinkedList,Collection,集合"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-LinkedList">【Java集合】-LinkedList</span>
+            <span class="post-date" title="2019-01-16 00:00:00">2019/01/16</span>
+        </a>
+        
+        <a  class="Java集合 "
+           href="/2019/01/20/2019-1-20-java-collection-HashMap/"
+           data-tag="java,Collection,集合,HashMap"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-HashMap">【Java集合】-HashMap</span>
+            <span class="post-date" title="2019-01-20 00:00:00">2019/01/20</span>
+        </a>
+        
+        <a  class="Java集合 "
+           href="/2019/01/15/2019-1-15-java-collection-ArrayList/"
+           data-tag="java,Collection,集合,ArrayList"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-ArrayList">【Java集合】-ArrayList</span>
+            <span class="post-date" title="2019-01-15 00:00:00">2019/01/15</span>
+        </a>
+        
+        <a  class="Java集合 "
+           href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/"
+           data-tag="java,Collection,集合,LinkedHashMap"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-LinkedHashMap">【Java集合】-LinkedHashMap</span>
+            <span class="post-date" title="2019-01-31 00:00:00">2019/01/31</span>
+        </a>
+        
+        <a  class="数据结构与算法 "
+           href="/2019/10/22/2019-10-22-Algorithms_DS_DS_Link/"
+           data-tag="数据结构,链表"
+           data-author="" >
+            <span class="post-title" title="【数据结构与算法】-【数据结构篇】链表">【数据结构与算法】-【数据结构篇】链表</span>
+            <span class="post-date" title="2019-10-22 00:00:00">2019/10/22</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/10/27/2019-10-27-java-concurrency-container-ConcurrentHashMap/"
+           data-tag="java,并发容器,ConcurrentHashMap"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【并发容器和框架】一、CocurrentHashMap的实现原理与使用">【Java并发编程】-【并发容器和框架】一、CocurrentHashMap的实现原理与使用</span>
+            <span class="post-date" title="2019-10-27 00:00:00">2019/10/27</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/11/27/2019-11-27-java-concurrency-container-Executor/"
+           data-tag="java,并发框架,Executor"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【并发容器和框架】四、Executor框架">【Java并发编程】-【并发容器和框架】四、Executor框架</span>
+            <span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/11/06/2019-11-06-java-concurrency-container-ForkJoin/"
+           data-tag="java,并发框架,ForkJoin"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【并发容器和框架】二、Fork/Join框架">【Java并发编程】-【并发容器和框架】二、Fork/Join框架</span>
+            <span class="post-date" title="2019-11-06 00:00:00">2019/11/06</span>
+        </a>
+        
+        <a  class="数据结构与算法 "
+           href="/2019/10/30/2019-10-30-Algorithms_AL_Sort/"
+           data-tag="算法,排序"
+           data-author="" >
+            <span class="post-title" title="【数据结构与算法】-【算法】排序">【数据结构与算法】-【算法】排序</span>
+            <span class="post-date" title="2019-10-30 00:00:00">2019/10/30</span>
+        </a>
+        
+        <a  class="NLP "
+           href="/2019/11/27/2019-11-28-NLP-Gradient-Descent/"
+           data-tag="随机梯度下降,有监督,线性回归"
+           data-author="" >
+            <span class="post-title" title="【NLP】一、线性回归与随机梯度下降法">【NLP】一、线性回归与随机梯度下降法</span>
+            <span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span>
+        </a>
+        
+        <a  class="数据结构与算法 "
+           href="/2019/01/31/2019-2-1-java-collection-red-black-tree/"
+           data-tag="Collection,算法,java红黑树"
+           data-author="" >
+            <span class="post-title" title="【数据结构与算法】Java中Map用到的数据结构:红黑树">【数据结构与算法】Java中Map用到的数据结构:红黑树</span>
+            <span class="post-date" title="2019-01-31 00:00:00">2019/01/31</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/12/23/2019-12-23-java-concurrency-container-ThreadPool/"
+           data-tag="java,并发框架,ThreadPool"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【并发容器和框架】三、Java线程池的实现原理和使用">【Java并发编程】-【并发容器和框架】三、Java线程池的实现原理和使用</span>
+            <span class="post-date" title="2019-12-23 00:00:00">2019/12/23</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/03/04/2019-3-04-java-concurrency-catalog/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【目录】">【Java并发编程】-【目录】</span>
+            <span class="post-date" title="2019-03-04 00:00:00">2019/03/04</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/02/27/2019-2-27-java-concurrency-overview/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【开篇】-全景图">【Java并发编程】-【开篇】-全景图</span>
+            <span class="post-date" title="2019-02-27 00:00:00">2019/02/27</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/03/08/2019-3-08-java-concurreny-use-thread/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】二、线程基本使用">【Java并发编程】-【基本概念篇】二、线程基本使用</span>
+            <span class="post-date" title="2019-03-08 00:00:00">2019/03/08</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/03/04/2019-3-06-java-concurrency-system/"
+           data-tag="操作系统,进程,线程"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】一、认识进程与线程">【Java并发编程】-【基本概念篇】一、认识进程与线程</span>
+            <span class="post-date" title="2019-03-04 00:00:00">2019/03/04</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/03/09/2019-3-09-java-concurreny-control-thread/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】三、控制线程">【Java并发编程】-【基本概念篇】三、控制线程</span>
+            <span class="post-date" title="2019-03-09 00:00:00">2019/03/09</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/04/11/2019-4-11-java-concurreny-concept-3Bug/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】四、并发编程的3个问题（可见性、原子性、有序性问题）">【Java并发编程】-【基本概念篇】四、并发编程的3个问题（可见性、原子性、有序性问题）</span>
+            <span class="post-date" title="2019-04-11 00:00:00">2019/04/11</span>
+        </a>
+        
+        <a  class=""
+           href="/2019/03/29/2019-3-29-search-engine-solrcloud/"
+           data-tag="Search,Solr"
+           data-author="" >
+            <span class="post-title" title="Solr-SolrCloud核心概念">Solr-SolrCloud核心概念</span>
+            <span class="post-date" title="2019-03-29 00:00:00">2019/03/29</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/04/13/2019-4-13-java-concurreny-memory-model/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题">【Java并发编程】-【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题</span>
+            <span class="post-date" title="2019-04-13 00:00:00">2019/04/13</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/04/20/2019-4-20-java-concurrency-lock/"
+           data-tag="java,并发,互斥锁"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】六、互斥锁：解决原子性问题">【Java并发编程】-【基本概念篇】六、互斥锁：解决原子性问题</span>
+            <span class="post-date" title="2019-04-20 00:00:00">2019/04/20</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/04/21/2019-4-21-java-concurreny-deadlock/"
+           data-tag="java,并发,死锁"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】七、死锁">【Java并发编程】-【基本概念篇】七、死锁</span>
+            <span class="post-date" title="2019-04-21 00:00:00">2019/04/21</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/"
+           data-tag="java,并发,死锁,线程的风险"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】八、安全性、活跃性、性能问题">【Java并发编程】-【基本概念篇】八、安全性、活跃性、性能问题</span>
+            <span class="post-date" title="2019-04-21 00:00:00">2019/04/21</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/"
+           data-tag="并发,操作系统,管程"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】九、从操作系统角度看并发">【Java并发编程】-【基本概念篇】九、从操作系统角度看并发</span>
+            <span class="post-date" title="2019-05-09 00:00:00">2019/05/09</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/05/10/2019-5-10-java-concurreny-java-monitor/"
+           data-tag="java,并发,管程"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】十、管程——并发编程的万能钥匙">【Java并发编程】-【基本概念篇】十、管程——并发编程的万能钥匙</span>
+            <span class="post-date" title="2019-05-10 00:00:00">2019/05/10</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/"
+           data-tag="java,并发,生命周期"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】十一、Java线程的状态和生命周期">【Java并发编程】-【基本概念篇】十一、Java线程的状态和生命周期</span>
+            <span class="post-date" title="2019-05-15 00:00:00">2019/05/15</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【基本概念篇】十二、如何构建线程安全的对象——对象的共享">【Java并发编程】-【基本概念篇】十二、如何构建线程安全的对象——对象的共享</span>
+            <span class="post-date" title="2019-05-15 00:00:00">2019/05/15</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/06/19/2019-6-19-java-concurrency-communication-wait-notify/"
+           data-tag="java,并发,线程协作,wait"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程协作篇】一、wait、notify、notifyAll&amp;Lock、Condition">【Java并发编程】-【线程协作篇】一、wait、notify、notifyAll&amp;Lock、Condition</span>
+            <span class="post-date" title="2019-06-19 00:00:00">2019/06/19</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/07/04/2019-7-04-java-concurrency-communication-queue/"
+           data-tag="java,并发,线程协作,阻塞队列"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程协作篇】二、生产者与消费者与阻塞队列">【Java并发编程】-【线程协作篇】二、生产者与消费者与阻塞队列</span>
+            <span class="post-date" title="2019-07-04 00:00:00">2019/07/04</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/07/06/2019-7-06-java-concurrency-communication-semphore/"
+           data-tag="java,并发,线程协作,信号量"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程协作篇】三、信号量Semaphore-控制临界区资源的多线程访问">【Java并发编程】-【线程协作篇】三、信号量Semaphore-控制临界区资源的多线程访问</span>
+            <span class="post-date" title="2019-07-06 00:00:00">2019/07/06</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/07/15/2019-7-15-java-concurrency-communication-CountDownLatch&CyclicBarrier/"
+           data-tag="java,并发,线程协作,信号量"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程协作篇】四、CountDownLatch和CyclicBarrier：如何让多线程步调一致">【Java并发编程】-【线程协作篇】四、CountDownLatch和CyclicBarrier：如何让多线程步调一致</span>
+            <span class="post-date" title="2019-07-15 00:00:00">2019/07/15</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/07/29/2019-7-29-java-concurrency-Mutex-lock/"
+           data-tag="java,并发,互斥,lock"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程互斥篇】一、有锁方案-锁Lock(并发包中的管程)">【Java并发编程】-【线程互斥篇】一、有锁方案-锁Lock(并发包中的管程)</span>
+            <span class="post-date" title="2019-07-29 00:00:00">2019/07/29</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/"
+           data-tag="java,并发,互斥,ReadWriteLock"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程互斥篇】二、有锁方案-读写锁ReadWriteLock——快速使用一个完备的缓存">【Java并发编程】-【线程互斥篇】二、有锁方案-读写锁ReadWriteLock——快速使用一个完备的缓存</span>
+            <span class="post-date" title="2019-07-31 00:00:00">2019/07/31</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/"
+           data-tag="java,并发,互斥,synchronized"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程互斥篇】三、有锁方案-synchronized的实现原理与应用">【Java并发编程】-【线程互斥篇】三、有锁方案-synchronized的实现原理与应用</span>
+            <span class="post-date" title="2019-08-11 00:00:00">2019/08/11</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/08/16/2019-8-16-java-concurrency-mutex-volatile/"
+           data-tag="java,并发,互斥,可见性,volatile"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程互斥篇】四、无锁方案-volatile原理与内存语义">【Java并发编程】-【线程互斥篇】四、无锁方案-volatile原理与内存语义</span>
+            <span class="post-date" title="2019-08-16 00:00:00">2019/08/16</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/08/23/2019-8-23-java-concurrency-mutex-final/"
+           data-tag="java,并发,互斥,可见性,volatile"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程互斥篇】五、无锁方案-不可变性final与内存语义">【Java并发编程】-【线程互斥篇】五、无锁方案-不可变性final与内存语义</span>
+            <span class="post-date" title="2019-08-23 00:00:00">2019/08/23</span>
+        </a>
+        
+        <a  class="Solr "
+           href="/2019/11/27/2020-01-01-Json%20Facet/"
+           data-tag="Solr,Json Facet"
+           data-author="" >
+            <span class="post-title" title="【Solr应用】——Json Facet使用总结">【Solr应用】——Json Facet使用总结</span>
+            <span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/01/31/2020-01-31-lucene-indexfile-nvd-nvm/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【索引文件】.nvd、.nvm文件">【Lucene】-【索引文件】.nvd、.nvm文件</span>
+            <span class="post-date" title="2020-01-31 00:00:00">2020/01/31</span>
+        </a>
+        
+        <a  class="Java并发编程 "
+           href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/"
+           data-tag="java,并发,互斥,原子操作"
+           data-author="" >
+            <span class="post-title" title="【Java并发编程】-【线程互斥篇】六、无锁方案-原子操作的实现原理">【Java并发编程】-【线程互斥篇】六、无锁方案-原子操作的实现原理</span>
+            <span class="post-date" title="2019-09-01 00:00:00">2019/09/01</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/01/31/2020-01-31-lucene-indexfile-pos-pay/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【索引文件】.pos、.pay文件">【Lucene】-【索引文件】.pos、.pay文件</span>
+            <span class="post-date" title="2020-01-31 00:00:00">2020/01/31</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/04/2020-02-04-lucene-utils-fixedBitSet/"
+           data-tag="Search,Lucene,Lucene工具类"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【工具类】FixedBitSet">【Lucene】-【工具类】FixedBitSet</span>
+            <span class="post-date" title="2020-02-04 00:00:00">2020/02/04</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/01/2020-02-01-lucene-indexfile-tim-tip/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【索引文件】.tim、.tip文件">【Lucene】-【索引文件】.tim、.tip文件</span>
+            <span class="post-date" title="2020-02-01 00:00:00">2020/02/01</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/02/2020-02-01-lucene-indexfile-doc/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【索引文件】.doc文件">【Lucene】-【索引文件】.doc文件</span>
+            <span class="post-date" title="2020-02-02 00:00:00">2020/02/02</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/07/2020-02-07-lucene-yasuocunchu-PackedInts/"
+           data-tag="Search,Lucene,Lucene压缩算法"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【压缩存储&amp;算法】PackedInts">【Lucene】-【压缩存储&amp;算法】PackedInts</span>
+            <span class="post-date" title="2020-02-07 00:00:00">2020/02/07</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/07/2020-02-07-lucene-dv-SortedDocValues/"
+           data-tag="Search,Lucene,DocValues"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【DocValues】一、SortedDocValues">【Lucene】-【DocValues】一、SortedDocValues</span>
+            <span class="post-date" title="2020-02-07 00:00:00">2020/02/07</span>
+        </a>
+        
+        <a  class="工具 "
+           href="/2020/02/07/2020-02-07-tools-idea-simple/"
+           data-tag="idea"
+           data-author="" >
+            <span class="post-title" title="【工具使用】IEDA使用分享">【工具使用】IEDA使用分享</span>
+            <span class="post-date" title="2020-02-07 00:00:00">2020/02/07</span>
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/03/04/2020-03-04-lucence-search-collector1/"
+           data-tag="Search,Lucene,Collector"
+           data-author="" >
+            <span class="post-title" title="【Lucene】-【Search】一、Collector">【Lucene】-【Search】一、Collector</span>
+            <span class="post-date" title="2020-03-04 00:00:00">2020/03/04</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/Search%20Engine/Lucene/Lucene_Source_part1/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Search Engine/Lucene/Lucene_Source_part1">Search Engine/Lucene/Lucene_Source_part1</span>
+            <span class="post-date" title="2020-03-21 12:19:57">2020/03/21</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/Search%20Engine/NLP/NLP%20course%202/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Search Engine/NLP/NLP course 2">Search Engine/NLP/NLP course 2</span>
+            <span class="post-date" title="2020-03-21 12:19:57">2020/03/21</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/Search%20Engine/Search%20Issue/limit%20query%20issue/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Search Engine/Search Issue/limit query issue">Search Engine/Search Issue/limit query issue</span>
+            <span class="post-date" title="2020-03-21 12:19:57">2020/03/21</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/Search%20Engine/Solr/collapse_debug/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Search Engine/Solr/collapse_debug">Search Engine/Solr/collapse_debug</span>
+            <span class="post-date" title="2020-03-21 12:19:57">2020/03/21</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/Search%20Engine/Solr/Json%20Facet_editing/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Search Engine/Solr/Json Facet_editing">Search Engine/Solr/Json Facet_editing</span>
+            <span class="post-date" title="2020-03-21 12:19:57">2020/03/21</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/Search%20Engine/Solr/collapse_test/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Search Engine/Solr/collapse_test">Search Engine/Solr/collapse_test</span>
+            <span class="post-date" title="2020-03-21 12:19:57">2020/03/21</span>
+        </a>
+        
+        <a  class=""
+           href="/2020/03/21/Search%20Engine/solr%20plugin/bulk/"
+           data-tag=""
+           data-author="" >
+            <span class="post-title" title="Search Engine/solr plugin/bulk">Search Engine/solr plugin/bulk</span>
+            <span class="post-date" title="2020-03-21 12:19:57">2020/03/21</span>
+        </a>
+        
+    </nav>
+</div>
+    </div>
+    <div class="hide-list">
+        <div class="semicircle">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div class="post">
+    <div class="pjax">
+        <article id="post-2019-4-13-java-concurreny-memory-model" class="article article-type-post" itemscope itemprop="blogPost">
+    
+        <h1 class="article-title">【Java并发编程】-【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            
+                <a  data-rel="Java并发编程">Java并发编程</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            
+            <a class="color5">java</a>
+            
+            <a class="color3">并发</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+        创建时间:<time class="date" title='更新时间: 2020-03-21 12:19:57'>2019-04-13 00:00</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        <span>字数:9.6k</span>
+        
+        
+        <span id="busuanzi_container_page_pv">
+            阅读:<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#什么是内存模型，为什么需要它？"><span class="toc-text">什么是内存模型，为什么需要它？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#计算机发展的背景"><span class="toc-text">计算机发展的背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最小保证"><span class="toc-text">最小保证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#缓存一致性问题、处理器优化和指令重排"><span class="toc-text">缓存一致性问题、处理器优化和指令重排</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#缓存一致性"><span class="toc-text">缓存一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#原子性"><span class="toc-text">原子性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#有序性"><span class="toc-text">有序性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内存模型的概念"><span class="toc-text">内存模型的概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#平台的内存模型"><span class="toc-text">平台的内存模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重排序案例"><span class="toc-text">重排序案例</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#什么是Java内存模型，为什么需要它？"><span class="toc-text">什么是Java内存模型，为什么需要它？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#原子性-1"><span class="toc-text">原子性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可见性"><span class="toc-text">可见性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#有序性-1"><span class="toc-text">有序性</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Happens-Before规则"><span class="toc-text">Happens-Before规则</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#规则列表"><span class="toc-text">规则列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-程序顺序规则"><span class="toc-text">1. 程序顺序规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-volatile变量规则"><span class="toc-text">2.volatile变量规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-传递性"><span class="toc-text">3. 传递性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-管程中的锁规则（监视器锁规则）"><span class="toc-text">4 . 管程中的锁规则（监视器锁规则）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-线程start-规则（线程启动规则）"><span class="toc-text">5.线程start()规则（线程启动规则）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-线程join-规则（线程结束规则）"><span class="toc-text">6. 线程join()规则（线程结束规则）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#发布"><span class="toc-text">发布</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#不安全的发布"><span class="toc-text">不安全的发布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安全的发布"><span class="toc-text">安全的发布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安全初始化模式"><span class="toc-text">安全初始化模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化过程中的安全性"><span class="toc-text">初始化过程中的安全性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#被我们忽视的final-amp-安全发布"><span class="toc-text">被我们忽视的final&amp;安全发布</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ul>
+<li>content<br>{:toc}<br>在上一篇总结了<strong>并发编程四</strong>，讲了并发编程的问题：因可见性、原子性、有序性导致的问题常常会违背我们的直觉，从而成为并发编程的Bug之源。这三者在编程领域属于共性问题，所有的编程语言都会遇到，Java在诞生之初就支持多线程，自然也有针对这三者的技术方案，而且在编程语言领域处于领先地位。理解Java解决并发问题的解决方案，对于理解其他语言的解决方案有触类旁通的效果。</li>
+</ul>
+<p>因此篇博文就来结合王宝令老师的专栏《Java并发编程实战》以及《Java并发编程实战》一书来总结下<strong>Java内存模型</strong>的基本概念以及实现。后续我们会深入Java内存模型以及关联知识进一步总结，此篇主要是概念性的<strong>总结Java内存模型</strong>以及<strong>如何解决可见性、有序性问题。</strong></p>
+<p>虽然上一篇在将并发编程的3个BUG来源时已经讲了问题来源的背景，下面从内存模型的角度详细讲下：</p>
+<h1 id="什么是内存模型，为什么需要它？"><a href="#什么是内存模型，为什么需要它？" class="headerlink" title="什么是内存模型，为什么需要它？"></a>什么是内存模型，为什么需要它？</h1><p>假设有这么一条语句：</p>
+<p><code>a = 3</code> </p>
+<p>内存模型需要解决这个问题：什么条件下，读取a的线程将看到这个值为3？</p>
+<p>如果缺少同步，会有很多因素导致线程没办法立马看到另一个线程的操作结果。</p>
+<ul>
+<li><p>在编译器生成的指令顺序，可以与源代码中的顺序不同,此外编译器还会把变量保存在寄存器中而不是内存中。（编译器重排或者叫指令重排）</p>
+</li>
+<li><p>处理器可以采用乱序或者并行等方式来执行指令；（处理器指令重排或者叫处理器优化）</p>
+</li>
+<li><p>缓存可能会改变写入变量提交到主内存的次序；而且，保存在处理器本地缓存中的值，对于其他处理器是不可见的。（缓存一致性问题）</p>
+</li>
+</ul>
+<p><strong>这些因素都会使得一个线程无法看到变量的最新值。</strong></p>
+<p><img src="/img/in-post/1555661841317.png" alt="1555661841317"></p>
+<p>为什么有这些因素，原因是由于计算机的发展以及优化带来的，下面说下，</p>
+<h2 id="计算机发展的背景"><a href="#计算机发展的背景" class="headerlink" title="计算机发展的背景"></a>计算机发展的背景</h2><p>在<strong>单线程环境</strong>下，我们不用关注这些底层技术，因为它们提高了程序执行速度以外，不会产生什么其他影响。Java语言规范要求JVM在线程中维护类似串行的语义：只要程序的最终结果与严格串行环境执行结果相同，那么上述操作都是允许的。</p>
+<ul>
+<li><p>这些年，<strong>计算性能的提升</strong>：主要有这些重新排序措施、时钟频率提升、并行性提升——超标量执行单元、动态指令调度、猜测执行、完备的多级缓存。</p>
+</li>
+<li><p>除了计算能力提升，<strong>编译器也在不断改进</strong>：通过对指令重新排序来实现优化执行，以及使用成熟的全局寄存器分配算法。</p>
+</li>
+</ul>
+<p>在多线程场景下，维护程序的串行性将导致很大的性开销。对并发应用程序来说，大部分时间都是各自执行各自任务，因此在线程之间的协调操作只会降低应用程序的运行速度，而不会带来任何好处。只有当多个线程要共享数据，才必须协调它们之间的操作，并且JVM依赖程序通过同步操作来协调多线程执行。</p>
+<h2 id="最小保证"><a href="#最小保证" class="headerlink" title="最小保证"></a>最小保证</h2><p><strong>JMM规定了JVM必须遵循一组最小保证：规定对变量的写入操作在什么时候将对其他线程可见。（重要）</strong>JMM在设计时就在可预测性和程序的易开发性进行了权衡，从而在各种主流的处理器体系架构上实现高性能的JVM。</p>
+<h2 id="缓存一致性问题、处理器优化和指令重排"><a href="#缓存一致性问题、处理器优化和指令重排" class="headerlink" title="缓存一致性问题、处理器优化和指令重排"></a>缓存一致性问题、处理器优化和指令重排</h2><p>就像上面提到的，CPU和主存之间增加了缓存，在多线程场景下会存在<strong>缓存一致性问题</strong>。</p>
+<h3 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h3><p>在多核CPU，多线程场景中，每个核都至少有一个L1缓存。多个线程访问进程中的某个共享内存，且这个多线程分别在不同的核心上执行，则每个核心都会在各自的cache中保留一份共享内存的缓存。由于多核是可以并行的，可能会出现多个线程同时写各自的缓存的情况，而各自cache之间的数据就有可能不同。</p>
+<p>在CPU和主存之间增加缓存，在多线程场景下就可能存在<strong>缓存一致性问题</strong>，也就是说，在多核CPU中，每个核自己的缓存中，关于同一个数据的缓存内容可能不一致。</p>
+<p>除了这种情况，还有。</p>
+<h3 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h3><p>线程是CPU调度的基本单元。CPU有时间片的概念，会根据不同的调度算法进行线程调度。所以在多线程场景下，就会发生原子性问题。因为线程在执行一个读写操作时，在执行完读改之后，时间片耗完，就会被要求放弃CPU，并等待重新调度。这种情况下，读写就不是一个原子操作。即存在<strong>原子性问题</strong>。</p>
+<h3 id="有序性"><a href="#有序性" class="headerlink" title="有序性"></a>有序性</h3><p>一种硬件问题也比较重要。那就是为了使处理器内部的运算单元能够尽量被充分利用，处理器可能会对输入代码进行乱序执行处理。这就是<strong>处理器优化</strong></p>
+<p>除了现在很多流行处理器会对代码进行优化乱序处理，很多编程语言的编译器也会有类似的优化，比如Java虚拟机的即时编译器（JIT）也会做<strong>指令重排</strong>。可想而知，如果任由处理器优化和编译器对指令重排，就可能导致各种各样的问题。比如load-&gt;add-&gt;save有可能会优化成load-&gt;save-&gt;add。这就是有序性问题。</p>
+<p><strong>缓存一致性问题</strong>其实就是<strong>可见性问题</strong>。而<strong>处理器优化</strong>是可以导致<strong>原子性问题</strong>的（当然导致原子性问题的还可能是线程切换）。<strong>指令重排</strong>即会导致<strong>有序性问题</strong>。</p>
+<h2 id="内存模型的概念"><a href="#内存模型的概念" class="headerlink" title="内存模型的概念"></a>内存模型的概念</h2><p>前面提到的，多CPU多级缓存导致缓存一致性问题、CPU时间片机制导致的原子性问题以及处理器优化和指令重排导致的有序性问题，是硬件的不断升级导致的。那么，有没有什么机制可以很好的解决上面的这些问题呢？</p>
+<p>最简单直接的做法就是废除处理器和处理器的优化技术、废除CPU缓存，让CPU直接和主存交互。但是，这么做虽然可以保证多线程下的并发问题。但是，这就有点因噎废食了。</p>
+<p>所以，为了保证并发编程中可以满足原子性、可见性及有序性。有一个重要的概念，那就是——<strong>内存模型</strong>。</p>
+<p><strong>为了保证共享内存的正确性（可见性、有序性、原子性），内存模型定义了共享内存系统中多线程程序读写操作行为的规范。</strong>通过这些规则来规范对内存的读写操作，从而保证指令执行的正确性。它与处理器有关、与缓存有关、与并发有关、与编译器也有关。他解决了CPU多级缓存、处理器优化、指令重排等导致的内存访问问题，保证了并发场景下的一致性、原子性和有序性。</p>
+<p>内存模型解决并发问题主要采用两种方式：<strong>限制处理器优化</strong>和<strong>使用内存屏障</strong>。本文就不深入底层原理来展开介绍了，后续计划深入总结。</p>
+<p>下面有一点摘自《Java并发编程实战》中关于内存屏障(内存栅栏)的描述：</p>
+<blockquote>
+<h3 id="平台的内存模型"><a href="#平台的内存模型" class="headerlink" title="平台的内存模型"></a>平台的内存模型</h3><p>在共享内存的多处理器体系架构中，每个处理器都有自己的缓存，并不定期与主内存进行协调。在不同的处理器架构中提供了不同级别的缓存一致性，其中一部分只提供最小保证，即允许不同的处理器在任意时刻从同一个存储位置上看到不同的值。操作系统、编译器以及运行时(有时甚至包括应用程序)需要弥合这种在硬件能力与线程安全需求之间的差异。</p>
+<p>要确保处理器都能在任意时刻知道其他处理器的工作，需要非常大的开销。因此处理器会放宽存储一致性保证以换取性能提升。在架构定义的内存模型会告诉应用程序可以从内存系统获得怎么样的保证，此外还定义了一些特殊指令（<strong>称为内存栅栏或者栅栏</strong>），当需要共享数据时，这些指令就能实现额外的存储协调保证。为了使Java开发人员无须关心不同架构上的内存模型之间的差异，Java还提供了自己的内存模型，并且<strong>JVM通过在适当的位置上插入内存删栏来屏蔽JVM在底层平台内存模型之间的差异。</strong></p>
+<p>在现代支持共享内存的多处理器（和编译器中），当跨线程共享数据时，会出现一些奇怪的情况，除非通过使用内存删栏来防止这些情况发生。幸运的是，Java程序不需要指定内存删栏的位置，而只需要正确地使用同步来找出何时将访问共享状态。</p>
+</blockquote>
+<h2 id="重排序案例"><a href="#重排序案例" class="headerlink" title="重排序案例"></a>重排序案例</h2><p>在没有充分同步的程序中，如果调度器采用不恰当的方式来交替执行不同线程的操作，那么将导致不正确的结果。更糟糕的是，JMM还使得不同线程看到的操作执行顺序是不同的，从而导致在缺乏同步的情况下，要推断操作的执行顺序变得更加复杂。各种使操作延迟或者看似乱序执行的不同原因，都可以归为<strong>重排序</strong>。</p>
+<p><img src="/img/in-post/1555641870914.png" alt="1555641870914"></p>
+<p>PossibleReording要列举它所有可能的结果是非常困难的。内存级的重排序会使程序行为变得不可预测。如果没有同步，基本推断不出执行顺序。而要确保在程序中正确使用同步却很容易。<strong>同步</strong>将限制编译器、运行时、硬件对内存操作重排序的方式，从而在实施重排序时不会破坏JMM提供的可见性保证。</p>
+<h1 id="什么是Java内存模型，为什么需要它？"><a href="#什么是Java内存模型，为什么需要它？" class="headerlink" title="什么是Java内存模型，为什么需要它？"></a>什么是Java内存模型，为什么需要它？</h1><p>已经知道，导致可见性的原因是缓存、导致有序性的原因是编译优化，那么解决可加性、有序性问题的直接办法就是<strong>禁用缓存和编译优化</strong>，虽然这样问题可以解决，但是我们程序的性能就堪忧了。</p>
+<p>因此合理的方案应该是<strong>按需禁用缓存以及编译优化</strong>。那么，如何做到“按需禁用”呢？其实就是按照程序员的要求来禁用。所以，为了解决可见性、有序性问题，只需要提供给程序员按需禁用缓存和编译优化的方法即可。</p>
+<p>前面介绍了计算机的内存模型，这是解决多线程场景下并发问题的一个重要规范。那么具体不同编程语言，在实现上可能有所不同。所以下面引入到Java内存模型开始讲起：</p>
+<p>我们知道，Java程序是需要运行在Java虚拟机上面的，<strong>Java内存模型（Java Memory Model ,JMM）就是一种符合内存模型规范的，屏蔽了各种硬件和操作系统的访问差异的，保证了Java程序在各种平台下对内存的访问都能保证效果一致的机制及规范。</strong></p>
+<p>提到Java内存模型，一般指的是JDK 5 开始使用的新的内存模型，主要由<a href="https://link.juejin.im?target=http%3A%2F%2Fwww.cs.umd.edu%2F~pugh%2Fjava%2FmemoryModel%2Fjsr133.pdf">JSR-133: JavaTM Memory Model and Thread Specification</a> 描述。感兴趣的可以参看下这份PDF文档（<a href="https://link.juejin.im?target=http%3A%2F%2Fwww.cs.umd.edu%2F~pugh%2Fjava%2FmemoryModel%2Fjsr133.pdf%25EF%25BC%2589">www.cs.umd.edu/~pugh/java/…</a></p>
+<p>Java内存模型规定了所有的变量都存储在主内存中，每条线程还有自己的工作内存，线程的工作内存中保存了该线程中是用到的变量的主内存副本拷贝，线程对变量的所有操作都必须在工作内存中进行，而不能直接读写主内存。不同的线程之间也无法直接访问对方工作内存中的变量，线程间变量的传递均需要自己的工作内存和主存之间进行数据同步进行。</p>
+<p>而JMM就作用于工作内存和主存之间数据同步的过程。他规定了如何做数据同步以及什么时候做数据同步。</p>
+<p><img src="/img/in-post/image-20190420155251442.png" alt="image-20190420155251442"></p>
+<p>这里提到的主存和工作内存，可简单类比成计算机内存模型的中的主存和缓存的概念。</p>
+<p>注意，这里的主内存和工作内存与JVM内存结构中的Java堆、栈、方法区不是同一个层次的内存划分，无法直接类比。如果从《深入理解Java虚拟机》中认为，如果一定要勉强对应起来的话，从变量、主内存、工作内存的定义来看，主内存主要对应于Java堆中的对象实例数据部分。工作内存则对应于虚拟机栈中的部分区域。</p>
+<p>Java内存模型是个很复杂的规范，可以从不同的视角来解读，站在程序员的视角，<strong>本质上可以理解为，Java内存模型规范了JVM如何提供按需禁用缓存和编译优化的方法</strong>。具体来说，这些方法包括<strong>volatile、synchronized</strong>和<strong>final</strong>三个关键字等，以及主要的六项<strong>Happens-Before规则</strong>。</p>
+<p>下面给出《Java并发编程》中Java内存模型简介：</p>
+<blockquote>
+<p>Java内存模型是通过各种操作来定义的，包括对变量的读/写操作，监视器的加锁和释放操作，以及线程的启动和合并操作。JMM为程序中所有的操作定义了一个偏序关系，这个关系就称为<strong>Happens-Before关系</strong>。如果要保证执行操作B的线程看到操作A的结果(无论A和B是否在同一个线程执行)，那么在A和B之间必须满足Happens-Before关系。如果两个操作之间缺乏Happens-Before关系，那么JVM可以对它们任意地排序。</p>
+</blockquote>
+<p><strong>所以，再来总结下，JMM是一种规范，目的是解决由于多线程通过共享内存进行通信时，存在的本地内存数据不一致、编译器会对代码指令重排序、处理器会对代码乱序执行等带来的问题。</strong> </p>
+<p>#Java内存模型的实现</p>
+<p>在Java中提供了一系列的并发处理相关的关键字，比如<code>volatile</code>、<code>synchronized</code>、<code>final</code>、<code>concurrent</code>包等。其实这些就是Java内存模型封装了底层的实现后提供给程序员使用的关键字。</p>
+<p>例如，可以直接使用<code>synchronized</code>关键字来控制并发，从而不需要知道底层的编译器优化、缓存一致性等问题。所以，<strong>Java内存模型，除了定义了一套规范，还提供了了一系列原语，封装了底层实现后，供开发者使用。</strong></p>
+<p>下面看下Java并发编程中提供了什么工具来解决并发领域的<strong>原子性、有序性、一致性的问题</strong>。</p>
+<h2 id="原子性-1"><a href="#原子性-1" class="headerlink" title="原子性"></a>原子性</h2><p>在Java中，为了保证原子性，提供了两个高级字节码指令monitorenter和monitorexit。在后续我会总结出<strong>synchronized实现原理</strong>的文章，也可以参考人家总结的这篇文章<a href="">synchoronized实现原理</a><a href="http://www.hollischuang.com/archives/1883">http://www.hollischuang.com/archives/1883</a>，这两个字节码，在Java中对应的关键字就是<code>synchronized</code>。</p>
+<p>所以，在Java中可以使用<code>synchronized</code>来保证方法和代码块内操作的原子性的。</p>
+<h2 id="可见性"><a href="#可见性" class="headerlink" title="可见性"></a>可见性</h2><p>Java内存模型是通过在变量修改后将新值同步回主内存的，在变量读取前从主内存刷新变量值的这种依赖主内存作为传递媒介的方式来实现的。</p>
+<p>Java中<code>volatile</code>关键字提供了一个功能，那就是被<strong>其修饰的变量在被修改后可以立即同步到主内存，被其修饰的变量在每次使用之前都从主内存刷新</strong>。因此，可以使用<code>volatile</code>来保证多线程操作时变量的可见性。</p>
+<p><strong>除了<code>volatile</code>，Java中的sychronized和final两个关键字也可以实现可见性。只不过实现方式不同，后续需要再展开</strong>。</p>
+<h2 id="有序性-1"><a href="#有序性-1" class="headerlink" title="有序性"></a>有序性</h2><p>在Java中，可以使用synchronized和volatile来保证多线程之间操作的有序性。实现方式有所区别：</p>
+<ul>
+<li><code>volatile</code>关键字会禁止指令重排。</li>
+<li><code>synchronized</code>关键字保证同一时刻只允许一条线程操作。</li>
+</ul>
+<p>可以看到<code>synchronized</code>关键字似乎是万能的，他同时满足了以上三种特性，这就是为什么很多人滥用<code>synchronized</code>的原因。</p>
+<p>但是<code>sychronized</code>相对比较影响性能，虽然编译器提供了很多锁优化技术，但仍然不建议过度使用。</p>
+<p>下面来看遵循JMM规范实现的Java并发编程中的具体规则，即Happens-Before规则：</p>
+<h1 id="Happens-Before规则"><a href="#Happens-Before规则" class="headerlink" title="Happens-Before规则"></a>Happens-Before规则</h1><p>Happens-Before可以理解成：<strong>前一个操作对后一个操作是可见的</strong>。</p>
+<h2 id="规则列表"><a href="#规则列表" class="headerlink" title="规则列表"></a>规则列表</h2><p>规则具体包括：</p>
+<ul>
+<li><strong>程序顺序规则</strong>：如果程序中操作A在操作B之前，那么在线程中A操作将在B操作之前执行。</li>
+<li><strong>监视器锁规则</strong>：在监视器锁上的解锁操作必须在同一个监视器锁上的加锁操作之前执行。</li>
+<li><strong>volatile变量规则</strong>：对volatile变量的写入操作必须在该变量的读操作之前执行。</li>
+<li><strong>线程启动规则</strong>：在线程上对Thread.start的调用必须在该线程中执行任何操作之前执行。</li>
+<li><strong>线程结束规则</strong>：线程中的任何操作都必须在其他线程检测到该线程已经结束之前执行，或者从Thread.join中成功返回，或者在调用Thread.isAlive时返回。</li>
+<li>中断规则：当一个线程在另一个线程上调用interrupt时，必须在被中断线程检测到interrupt调用之前执行（通过抛出InterruptedException、或者调用isInterrupted和interrupted）。</li>
+<li>终结器规则：如果对象的构造函数必须在启动该对象的终结器（finalize()）之前执行完成。</li>
+<li><strong>传递性</strong>：如果操作A在操作B之前执行，并且操作B在操作C之前执行，那么操作A必须在操作C之前执行。</li>
+</ul>
+<p>例子中的6项是我们经常使用的且都是关于可见性的，下面的1~3项通过一个列子来说明，4、5、6分别举一个例子说明。</p>
+<h2 id="1-程序顺序规则"><a href="#1-程序顺序规则" class="headerlink" title="1. 程序顺序规则"></a>1. 程序顺序规则</h2><p>这条规则是指在一个线程中，按照程序顺序，前面的操作Happens-Before与后续的任意操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 以下代码来源于【参考 1】</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VolatileExample</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> x = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">volatile</span> <span class="keyword">boolean</span> v = <span class="keyword">false</span>;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    x = <span class="number">42</span>;</span><br><span class="line">    v = <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reader</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (v == <span class="keyword">true</span>) &#123;</span><br><span class="line">      <span class="comment">// 这里 x 会是多少呢？</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>按照程序的顺序，第六行代码<code>x=42;</code>Happens-Before于第7行代码<code>v=true</code>，即是单线程中的思维规则：程序的某个变量的修改一定是对后续操作可见。</p>
+<h2 id="2-volatile变量规则"><a href="#2-volatile变量规则" class="headerlink" title="2.volatile变量规则"></a>2.volatile变量规则</h2><p>指对一个volatile变量的写操作，Happen-Before于后续对这个volatile变量的读操作。</p>
+<p>这个规则看着像是禁用了缓存的意思，貌似和JDK 1.5版本以前的语法没有变化？如果单看这个规则的确是这样，但是如果关联系规则3，就有点不一样的感觉了。在看规则3之前可以看下以下实例代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VolatileExample</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> x = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">volatile</span> <span class="keyword">boolean</span> v = <span class="keyword">false</span>;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    x = <span class="number">42</span>;</span><br><span class="line">    v = <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reader</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (v == <span class="keyword">true</span>) &#123;</span><br><span class="line">      <span class="comment">// 这里 x 会是多少呢？</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在1.5 之前会出现x=0的情况，变量可能被CPU缓存导致了可见性问题。但是在JDK 1.5及以后，Java模型对volatile语义进行了增强。怎么增强的呢，下面就来看规则3.传递性</p>
+<h2 id="3-传递性"><a href="#3-传递性" class="headerlink" title="3. 传递性"></a>3. 传递性</h2><p>这条规则是指 如果A happens-before B，且B happens-before C，那么A happens-before C。</p>
+<p>将规则3的传递性运用到例子中，会发生什么？看下面这幅图</p>
+<p><img src="/img/in-post/1555644709228.png" alt="1555644709228"></p>
+<p>从图中，我们可以看到：</p>
+<ol>
+<li>“x=42” Happens-Before 写变量 “v=true”，这是<strong>规则1.程序顺序规则</strong></li>
+<li>读变量“v=true” Happens-Before 读变量 “v=true”，这是<strong>规则2的内容</strong></li>
+</ol>
+<p>再根据这条传递性规则，可以得到结果：”x=42” Happens-Before读变量”v=true”。这意味着：如果线程B读到了“v=true”，那么线程A设置的“x=42”对线程B是可见的。也就是说线程B能看到”x==42”，有一种恍然大悟的感觉？这就是1.5版本对volatile语义的增强，这个增强意义重大，1.5版本的并发工具包(java.util.concurrent)就是靠volatile语义来搞定可见性的。</p>
+<h2 id="4-管程中的锁规则（监视器锁规则）"><a href="#4-管程中的锁规则（监视器锁规则）" class="headerlink" title="4 . 管程中的锁规则（监视器锁规则）"></a>4 . 管程中的锁规则（监视器锁规则）</h2><p>这条规则指：对一个锁的解锁Happens-Before于后续对和这个锁的加锁。</p>
+<p>管程是什么？<strong>管程</strong>是一种通用的同步原语，在Java中指的就是synchronized，synchronized是Java中对管程的实现。</p>
+<p>管程中的锁在Java里是隐式实现的，例如下面的代码，在进入同步快之前会自动加锁，而代码块执行结束会自动释放锁，加锁和释放锁都是编译器帮我们实现的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123; <span class="comment">// 此处自动加锁</span></span><br><span class="line">  <span class="comment">// x 是共享变量, 初始值 =10</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.x &lt; <span class="number">12</span>) &#123;</span><br><span class="line">    <span class="keyword">this</span>.x = <span class="number">12</span>; </span><br><span class="line">  &#125;  </span><br><span class="line">&#125; <span class="comment">// 此处自动解锁</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="5-线程start-规则（线程启动规则）"><a href="#5-线程start-规则（线程启动规则）" class="headerlink" title="5.线程start()规则（线程启动规则）"></a>5.线程start()规则（线程启动规则）</h2><p>这条规则指：主线程A启动子线程B后，子线程B能够看到主进程在启动子进程B之前的操作。</p>
+<p>换句话说就是，如果线程A调用线程B的start()方法（即在线程A中启动线程B），那么该start()操作Happens-Before于线程B中的任意操作。具体可参考下面的示例代码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Thread B = <span class="keyword">new</span> Thread(()-&gt;&#123;</span><br><span class="line">  <span class="comment">// 主线程调用 B.start() 之前</span></span><br><span class="line">  <span class="comment">// 所有对共享变量的修改，此处皆可见</span></span><br><span class="line">  <span class="comment">// 此例中，var==77</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 此处对共享变量 var 修改</span></span><br><span class="line"><span class="keyword">var</span> = <span class="number">77</span>;</span><br><span class="line"><span class="comment">// 主线程启动子线程</span></span><br><span class="line">B.start();</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-线程join-规则（线程结束规则）"><a href="#6-线程join-规则（线程结束规则）" class="headerlink" title="6. 线程join()规则（线程结束规则）"></a>6. 线程join()规则（线程结束规则）</h2><p>这条是关于线程等待的。它是指主线程A等待子线程B完成（主线程A通过调用子线程join方法实现），当子线程B完成后（主线程A中join(）方法返回），主线程能够看到子线程的操作。当然所谓“看到”，指的是对共享变量的操作。</p>
+<p>换句话说，如果在线程A中，调用线程B的join()并成功返回，那么线程B中的任意操作Happens-Before于该join()操作的返回。具体代码参考：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Thread B = <span class="keyword">new</span> Thread(()-&gt;&#123;</span><br><span class="line">  <span class="comment">// 此处对共享变量 var 修改</span></span><br><span class="line">  <span class="keyword">var</span> = <span class="number">66</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 例如此处对共享变量修改，</span></span><br><span class="line"><span class="comment">// 则这个修改结果对线程 B 可见</span></span><br><span class="line"><span class="comment">// 主线程启动子线程</span></span><br><span class="line">B.start();</span><br><span class="line">B.join()</span><br><span class="line"><span class="comment">// 子线程所有对共享变量的修改</span></span><br><span class="line"><span class="comment">// 在主线程调用 B.join() 之后皆可见</span></span><br><span class="line"><span class="comment">// 此例中，var==66</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h1><p>造成不正确发布的真正原因，就是在“发布一个共享对象”与“另一个线程访问该对象”之前缺少一种Happens-Before排序。</p>
+<h2 id="不安全的发布"><a href="#不安全的发布" class="headerlink" title="不安全的发布"></a>不安全的发布</h2><p>当缺少Happens-Before关系时，就可能出现重排序问题，这就解释了为什么在没有充分同步的情况下发布一个对象会导致另一个线程只看到一个只被<strong>部分构造的对象</strong>。在初始化一个新的对象时需要写入多个变量，即新对象中的各个域。同样，在发布一个引用时也需要写入一个变量，即新对象的引用，即新对象中的各个域。<strong>如果无法确保发布共享引用的操作在另一个线程加载该引用之前执行，那么对新对象引用的写入将与对象中各个域的写入操作重排序（从使用该对象的线程角度看）</strong>。在这种情况下，另一个线程可能看到对象引用的最新值，但同时也将看到对象的某些或全部状态中包含无效值，即一个被部分构造对象。</p>
+<p>错误的延迟初始化将导致不正确的发布：</p>
+<p><img src="/img/in-post/1555657300626.png" alt="1555657300626"></p>
+<p>初看起来这个程序没什么问题，实际这个代码是不安全的，因为另一个线程可能看到部分构造的Resource实例的引用。</p>
+<p>假设线程A是第一个调用getInstance的线程，A将看到resource是null，并且初始化一个新的Resource，然后将resource初始化。当线程B随后调用getInstance，它能看到resource的值非空，因此使用这个已经构造好的Resource。最初看不出什么问题，但线程A写入resource操作与线程B读取resource的操作之间不存在Happens-Before关系。在发布对象时存在数据竞争问题，因此B并不一定能看到Resource的正确状态。</p>
+<blockquote>
+<p>除了不可变对象以外，使用被另一个线程初始化的对象通常都不是不安全的，除非对象的发布操作实在使用该对象的线程开始之前执行。</p>
+</blockquote>
+<h2 id="安全的发布"><a href="#安全的发布" class="headerlink" title="安全的发布"></a>安全的发布</h2><p>通过使用一个由锁保护共享变量或者使用共享的volatile类型的变量，也可以确保对该变量的读取操作和写入操作按照Happens-Before关系来排序。当然也可以把变量X放入Blocking队列中，供另外一个线程来读取，BlockingQueue内部同步确保了put方法在take方法之前执行。</p>
+<h2 id="安全初始化模式"><a href="#安全初始化模式" class="headerlink" title="安全初始化模式"></a>安全初始化模式</h2><p>对上面不安全的发布的正确发布代码修改如下：</p>
+<p><img src="/img/in-post/1555658802950.png" alt="1555658802950"></p>
+<p>静态初始化器是由JVM在类的初始化阶段执行，即在类被加载后并且被线程使用之前。由于JVM将在初始化期间获得一个锁，并且每个线程都至少获取一次这个锁以确保这个类已经被加载，<strong>因此在静态初始化期间，内存写入操作将自动对所有线程可见。因此无论是在被构造期间还是被引用时，静态初始化的对象都不需要显式的同步。然而，这个规则仅适用于构造时的状态，如果对象是可变的，那么在读线程和写线程之间依然需要通过同步来确保随后的修改操作是可见的，以避免数据破坏，就如上图代码。</strong></p>
+<p>可以把以上代码修改成延迟初始化的版本如下代码</p>
+<p><img src="/img/in-post/1555659121643.png" alt="1555659121643"></p>
+<p>并且可以和JVM的延迟加载机制结合起来，形成一种延迟初始化技术，从而在常用的代码路径中不需要同步。在下面的代码可称为“延迟初始化站位(Holder)模式”，使用一个专门的类来初始化Resource。JVM将推迟ResourceHolder的初始化操作，知道开始使用这个类才初始化，并且由于通过一个静态初始化来初始化Resource，因此不需要额外的同步。当任何一个线程第一次调用getResource时，都会使ResourceHolder被加载和被初始化，此时静态初始化器将执行Resource的初始化操作。</p>
+<p><img src="/img/in-post/1555659329426.png" alt="1555659329426"></p>
+<h2 id="初始化过程中的安全性"><a href="#初始化过程中的安全性" class="headerlink" title="初始化过程中的安全性"></a>初始化过程中的安全性</h2><p>如果能确保初始化过程中的安全性，那么就可以使得被正确构造的不可变对象在没有同步的情况下也能安全地在多个线程之间共享，而不管它们是如何发布的，甚至通过某种数据竞争来发布。（这以为着如果Resources是不可变的，那么UnsafeLazyUnitialization实际上是安全的）。</p>
+<p>如果不能确保初始化安全性，那么挡在发布或线程中没有使用同步时，一些本应为不可变对象（例如String）的值将会发生改变。</p>
+<blockquote>
+<p>初始化安全性将确保，对于正确构造的对象，所有线程都能看到构造函数为对象各个final域设置的正确值，而不管采用何种方式来发布对想。而且，对于可以通过被正确构造对象中的某个final域达到的任意变量（例如某个final数组中的元素，或者由一个final域引用的HashMap的内容)将同样对其他线程是可见的。</p>
+</blockquote>
+<p>对于含有final域的对象，初始化安全性可以防止对象的初始化引用被重排序到构造过程之前。当构造函数完成时，构造函数对final域的所有写入操作，以及对通过这些域可以到达的任何变量的写入操作都将被“冻结”，并且任何获得该对象引用的线程都至少能确保看到被冻结的值。对于通过final域可以到达的初始变量的写入操作，将不会与构造过程后的操作仪器被重排序。</p>
+<p>初始化安全性意味着，下面的代码可以被安全地发布，即便通过不安全的延迟初始化，或者在同步的情况下将SafeStates的引用放到一个公有的静态域，或者没有使用同步以及依赖于费线程安全的HashSet。</p>
+<p><img src="/img/in-post/1555660600515.png" alt="1555660600515"></p>
+<p>然而，许多对SafeStatus的细微修改都可能破坏它的安全性。如果status不是final类，或者存在构造函数以外的其他地方能修改stats，那么初始化安全性将无法确保在缺少同步的情况下安全地访问SafeStates。如果在SafeStates类海油其他非final域，那么其他线程依然可能看到这些域上的不正确值。这也导致了对象在构造过程中逸出，从而初始化安全性的保证无效。</p>
+<p>下面再来补充一点<strong>final</strong>关键字对对象初始化和对象发布安全性的应用：</p>
+<h3 id="被我们忽视的final-amp-安全发布"><a href="#被我们忽视的final-amp-安全发布" class="headerlink" title="被我们忽视的final&amp;安全发布"></a>被我们忽视的final&amp;安全发布</h3><p>前面讲了volatile为的是禁用缓存以及编译优化，我们再从另外一个方面来看，有没有办法告诉编译器优化得更好一点呢？就是<strong>final关键字</strong>。</p>
+<p><strong>final修饰变量时，初衷是告诉编译器：这个变量生而不变，可以可劲儿优化</strong>。Java编译器在1.5以前的版本的确优化的很努力，以至于都优化错了。</p>
+<p>问题类似于上一篇博客四提到的利用双重检查方法创建单例，构造函数的错误重排导致线程可能看到final变量值会变化。详细参考<a href="https://time.geekbang.org/column/article/84017" target="_blank" rel="noopener">这个文档</a>。</p>
+<p>当然，在1.5以后Java内存模型对final变量的重排进行了约束。现在我们只要保证构造函数没有<strong>“逸出”</strong>，就不会出现问题。</p>
+<p>解释下什么叫“逸出”，举个例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 以下代码来源于【参考 1】</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">int</span> x;</span><br><span class="line"><span class="comment">// 错误的构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">FinalFieldExample</span><span class="params">()</span> </span>&#123; </span><br><span class="line">  x = <span class="number">3</span>;</span><br><span class="line">  y = <span class="number">4</span>;</span><br><span class="line">  <span class="comment">// 此处就是讲 this 逸出，</span></span><br><span class="line">  global.obj = <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上面的例子里面，在构造函数里面将this赋值给了全局变量global.obj，这就是“逸出”，线程通过global.obj读取到x是有可能为0的。因此我们一定要避免逸出。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>Java的内存模型是并发编程领域的一次重要创新。在Java模型里面，最晦涩的部分就是Happens-Before规则了，Happens-Before规则最初是在一篇叫做<strong>Time，Clocks，and Ordering of Events in a Distributed System</strong>的论文中提出来的，在这篇论文中，Happens-Before的语义是一种因果关系。在现实世界里，如果A事件导致B事件的起因，那么A事件一定先于（Happens-Before）B事件发生的，这个就是Happens-Before语义的现实理解。</p>
+<p>在Java语言里，Happen-Before的语义本质上是一种可见性，A Happens-Before B意味着A事件对B事件来说是可见的，无论A事件和B事件是否发生在同一个线程里。例如A事件发生在线程1上，B事件发生在线程2上，Happend-Before规则保证线程2也能看到A事件的发生。</p>
+<p>Java内存模型主要分为两部分，一部分面向编写并发程序的开发人员，另一部分是面向JVM的实现人员，我们重点关注前者，也就是和编写并发程序相关的部分，这部分的核心就是<strong>Happens-Before规则</strong>。</p>
+<ol>
+<li><p>为什么定义Java内存模型？</p>
+<p>现代计算机体系大部是采用的对称多处理器的体系架构。每个处理器均有独立的寄存器组和缓存，多个处理器可同时执行同一进程中的不同线程，这里称为处理器的乱序执行。在Java中，不同的线程可能访问同一个共享或共享变量。如果任由编译器或处理器对这些访问进行优化的话，很有可能出现无法想象的问题，这里称为编译器的重排序。除了处理器的乱序执行、编译器的重排序，还有内存系统的重排序。因此Java语言规范引入了Java内存模型，通过定义多项规则对编译器和处理器进行限制，主要是针对可见性和有序性。</p>
+</li>
+<li><p>三个基本原则：原子性、可见性、有序性。</p>
+<p>Java内存模型涉及的几个关键词：锁、volatile字段、final修饰符与对象的安全发布。</p>
+<p>其中：第一是锁，锁操作是具备happens-before关系的，解锁操作happens-before之后对同一把锁的加锁操作。实际上，在解锁的时候，JVM需要强制刷新缓存，使得当前线程所修改的内存对其他线程可见。</p>
+<p>第二是volatile字段，volatile字段可以看成是一种不保证原子性的同步但保证可见性的特性，其性能往往是优于锁操作的。但是，频繁地访问 volatile字段也会出现因为不断地强制刷新缓存而影响程序的性能的问题。</p>
+<p>第三是final修饰符，final修饰的实例字段则是涉及到新建对象的发布问题。当一个对象包含final修饰的实例字段时，其他线程能够看到已经初始化的final实例字段，这是安全的。</p>
+</li>
+<li><p>Happens-Before的7个规则：<br>(1).程序次序规则：在一个线程内，按照程序代码顺序，书写在前面的操作先行发生于书写在后面的操作。准确地说，应该是控制流顺序而不是程序代码顺序，因为要考虑分支、循环等结构。<br>(2).管程锁定规则：一个unlock操作先行发生于后面对同一个锁的lock操作。这里必须强调的是同一个锁，而”后面”是指时间上的先后顺序。<br>(3).volatile变量规则：对一个volatile变量的写操作先行发生于后面对这个变量的读操作，这里的”后面”同样是指时间上的先后顺序。<br>(4).线程启动规则：Thread对象的start()方法先行发生于此线程的每一个动作。<br>(5).线程终止规则：线程中的所有操作都先行发生于对此线程的终止检测，我们可以通过Thread.join（）方法结束、Thread.isAlive（）的返回值等手段检测到线程已经终止执行。<br>(6).线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生，可以通过Thread.interrupted()方法检测到是否有中断发生。<br>(7).对象终结规则：一个对象的初始化完成(构造函数执行结束)先行发生于它的finalize()方法的开始。</p>
+</li>
+<li><p>Happens-Before的1个特性：传递性。</p>
+</li>
+<li><p><strong>Java内存模型底层怎么实现的？</strong>主要是通过内存屏障(memory barrier)禁止重排序的，即时编译器根据具体的底层体系架构，将这些内存屏障替换成具体的 CPU 指令。对于编译器而言，内存屏障将限制它所能做的重排序优化。而对于处理器而言，内存屏障将会导致缓存的刷新操作。比如，对于volatile，编译器将在volatile字段的读写操作前后各插入一些内存屏障。</p>
+</li>
+</ol>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://time.geekbang.org/column/article/84017" target="_blank" rel="noopener">看Java如何解决可见性和有序性问题</a></p>
+<p><a href="https://www.hollischuang.com/archives/2550" target="_blank" rel="noopener">再有人问你Java内存模型是什么，就把这篇文章发给他</a></p>
+<p><a href="https://www.hollischuang.com/archives/3526" target="_blank" rel="noopener">到底什么是计算机内存模型?</a></p>
+<p>《深入理解Java虚拟机》、《Java并发实战》、《Java并发编程的艺术》</p>
+
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 jaytp@qq.com </span>
+    </div>
+</article>
+
+
+<p>
+    <a  class="dashang" onclick="dashangToggle()">赏</a>
+</p>
+
+
+<div class="article_copyright">
+    <p><span class="copy-title">文章标题:</span>【Java并发编程】-【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">9.6k</span></p>
+    <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
+    <p><span class="copy-title">发布时间:</span>2019-04-13, 00:00:00</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-21, 12:19:57</p>
+    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/04/13/2019-4-13-java-concurreny-memory-model/" title="【Java并发编程】-【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题">http://yoursite.com/2019/04/13/2019-4-13-java-concurreny-memory-model/</a>
+    <p>
+        <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+    </p>
+</div>
+
+
+
+
+
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<input type="hidden" id="MathJax-js"
+        value="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</input>
+    
+
+
+
+
+    </div>
+    <div class="copyright">
+        <p class="footer-entry">©2016-2019 Yelog</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
+
+    </div>
+    <div class="full-toc">
+        <button class="full"><span class="min "></span></button>
+<button class="post-toc-menu"><span class="post-toc-menu-icons"></span></button>
+<div class="post-toc"><span class="post-toc-title">目录</span>
+    <div class="post-toc-content">
+
+    </div>
+</div>
+<a class="" id="rocket" ></a>
+
+    </div>
+</div>
+<div class="acParent"></div>
+
+<div class="hide_box" onclick="dashangToggle()"></div>
+<div class="shang_box">
+    <a class="shang_close"  onclick="dashangToggle()">×</a>
+    <div class="shang_tit">
+        <p>喜欢就点赞,疼爱就打赏</p>
+    </div>
+    <div class="shang_payimg">
+        <div class="pay_img">
+            <img src="/img/alipay.jpg" class="alipay" title="扫码支持">
+            <img src="/img/weixin.jpg" class="weixin" title="扫码支持">
+        </div>
+    </div>
+    <div class="shang_payselect">
+        <span><label><input type="radio" name="pay" checked value="alipay">支付宝</label></span><span><label><input type="radio" name="pay" value="weixin">微信</label></span>
+    </div>
+</div>
+
+
+</body>
+<script src="/js/jquery.pjax.js?v=1.0.1" ></script>
+
+<script src="/js/script.js?v=1.0.1" ></script>
+<script>
+    var img_resize = 'default';
+    /*作者、标签的自动补全*/
+    $(function () {
+        $('.search').AutoComplete({
+            'data': ['#odl','#rpc','#Jetty','#HTTP','#HTTP2','#Markdown','#work summary','#java','#LinkedList','#Collection','#集合','#HashMap','#ArrayList','#LinkedHashMap','#数据结构','#链表','#并发容器','#ConcurrentHashMap','#并发框架','#Executor','#ForkJoin','#算法','#排序','#随机梯度下降','#有监督','#线性回归','#java红黑树','#ThreadPool','#并发','#操作系统','#进程','#线程','#Search','#Solr','#互斥锁','#死锁','#线程的风险','#管程','#生命周期','#线程协作','#wait','#阻塞队列','#信号量','#互斥','#lock','#ReadWriteLock','#synchronized','#可见性','#volatile','#Json Facet','#Lucene','#索引文件','#原子操作','#Lucene工具类','#Lucene压缩算法','#DocValues','#idea','#Collector',],
+            'itemHeight': 20,
+            'width': 418
+        }).AutoComplete('show');
+    })
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $(".post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+        $("input[name=pay]").on("click", function () {
+            if($("input[name=pay]:checked").val()=="weixin"){
+                $(".shang_box .shang_payimg .pay_img").addClass("weixin_img");
+            } else {
+                $(".shang_box .shang_payimg .pay_img").removeClass("weixin_img");
+            }
+        })
+        
+
+        /*高亮代码块行号*/
+        
+        $('pre code').each(function(){
+            var lines = $(this).text().split('\n').length - 1, widther='';
+            if (lines>99) {
+                widther = 'widther'
+            }
+            var $numbering = $('<ul/>').addClass('pre-numbering ' + widther).attr("unselectable","on");
+            $(this).addClass('has-numbering ' + widther)
+                    .parent()
+                    .append($numbering);
+            for(var i=1;i<=lines;i++){
+                $numbering.append($('<li/>').text(i));
+            }
+        });
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
+        
+        
+    }
+
+    /*打赏页面隐藏与展示*/
+    
+    function dashangToggle() {
+        $(".shang_box").fadeToggle();
+        $(".hide_box").fadeToggle();
+    }
+    
+
+</script>
+
+<!--加入行号的高亮代码块样式-->
+
+<style>
+    pre{
+        position: relative;
+        margin-bottom: 24px;
+        border-radius: 10px;
+        border: 1px solid #e2dede;
+        background: #FFF;
+        overflow: hidden;
+    }
+    code.has-numbering{
+        margin-left: 30px;
+    }
+    code.has-numbering.widther{
+        margin-left: 35px;
+    }
+    .pre-numbering{
+        margin: 0px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        padding: 0.5em 3px 0.7em 5px;
+        border-right: 1px solid #C3CCD0;
+        text-align: right;
+        color: #AAA;
+        background-color: #fafafa;
+    }
+    .pre-numbering.widther {
+        width: 35px;
+    }
+</style>
+
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 542px;
+    }
+    .nav.fullscreen {
+        margin-left: -542px;
+    }
+    .nav-left {
+        width: 120px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 492px;
+        }
+        .nav.fullscreen {
+            margin-left: -492px;
+        }
+        .nav-left {
+            width: 100px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 492px;
+            margin-left: -492px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+        .nav .hide-list.fullscreen {
+            left: 492px
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+    .post .pjax article .article-entry>ol, .post .pjax article .article-entry>ul, .post .pjax article>ol, .post .pjax article>ul{
+        border: #e2dede solid 1px;
+        border-radius: 10px;
+        padding: 10px 32px 10px 56px;
+    }
+    .post .pjax article .article-entry li>ol, .post .pjax article .article-entry li>ul,.post .pjax article li>ol, .post .pjax article li>ul{
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .post .pjax article .article-entry>ol>li, .post .pjax article .article-entry>ul>li,.post .pjax article>ol>li, .post .pjax article>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    .post .pjax article .article-entry li>ol>li, .post .pjax article .article-entry li>ul>li,.post .pjax article li>ol>li, .post .pjax article li>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    
+
+    /* 背景图样式 */
+    
+    
+
+
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+    .nav-right:before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.3;
+        background: url("https://i.loli.net/2019/07/22/5d3521411f3f169375.png");
+        background-repeat: no-repeat;
+        background-position: 50% 0;
+        -ms-background-size: cover;
+        -o-background-size: cover;
+        -moz-background-size: cover;
+        -webkit-background-size: cover;
+        background-size: cover;
+    }
+    
+
+    
+</style>
+
+
+
+
+
+
+
+</html>
