@@ -1,4 +1,132 @@
-<!DOCTYPE html><html lang="en"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>Hexo</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/normalize/8.0.1/normalize.min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.1/pure-min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.1/grids-responsive-min.css"><link rel="stylesheet" href="//lib.baomitu.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//lib.baomitu.com/jquery/3.4.1/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><meta name="generator" content="Hexo 4.2.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Hexo</h1><a id="logo" href="/.">Hexo</a><p class="description"></p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> Home</i></a><a href="/archives/"><i class="fa fa-archive"> Archive</i></a><a href="/about/"><i class="fa fa-user"> About</i></a><a href="/atom.xml"><i class="fa fa-rss"> RSS</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title"><a href="/2019/11/27/ODL-RPC-module/">【opendaylight】——MD-SAL RPC源码概览</a></h1><div class="post-meta">2019-11-27</div><div class="post-content"><h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="" />
+  
+
+  
+    <meta name="description" content="Hexo," />
+  
+  
+  
+  <link rel="icon" type="image/x-icon" href="/images/footer-logo.png">
+  
+  <title> [ Hexo ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    
+    <span class="title" style="text-transform:none">Hexo</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            
+              <li class="pure-menu-item actived"><a href="/" class="pure-menu-link">Home</a></li>
+            
+          
+      
+          
+            
+              <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+            
+              <a href="#" id="post" class="pure-menu-link">文章</a>
+              <ul class="pure-menu-children">
+              
+                  
+                    <li class="pure-menu-item"><a href="/categories" style="color:#202020;" class="pure-menu-link">Categories</a></li>
+                  
+              
+                  
+                    <li class="pure-menu-item"><a href="/archives" style="color:#202020;" class="pure-menu-link">Archives</a></li>
+                  
+              
+                  
+                    <li class="pure-menu-item"><a href="/tags" style="color:#202020;" class="pure-menu-link">Tags</a></li>
+                  
+              
+              </ul>
+            </li>
+          
+      
+          
+            
+              <li class="pure-menu-item"><a href="/paper" class="pure-menu-link">Papers</a></li>
+            
+          
+      
+          
+            
+              <li class="pure-menu-item"><a href="/project" class="pure-menu-link">项目</a></li>
+            
+          
+      
+          
+            
+              <li class="pure-menu-item"><a href="/activity" class="pure-menu-link">动态</a></li>
+            
+          
+      
+          
+            
+              <li class="pure-menu-item"><a href="/search" class="pure-menu-link">Search</a></li>
+            
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      
+
+  <div class="recent-posts">
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/11/27/ODL-RPC-module/"><h2>【opendaylight】——MD-SAL RPC源码概览</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-11-26T16:00:00.000Z">
+            2019-11-27
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/odl/" rel="tag">odl</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/rpc/" rel="tag">rpc</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
 <p><img src="/img/in-post/1578029090431.png" alt></p>
 <ul>
 <li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p>
@@ -38,7 +166,31 @@
 </li>
 </ul>
 <h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img src="/img/in-post/1578029278164.png" alt></p>
-<p>RPC跨进程注册和调用的主要类</p></div><p class="readmore"><a href="/2019/11/27/ODL-RPC-module/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/11/27/ODL-mdsal-codereview/">【opendaylight】——MD-SAL服务总线RPC服务源码分析</a></h1><div class="post-meta">2019-11-27</div><div class="post-content"><h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p>RPC跨进程注册和调用的主要类</p>
+          </div>
+        
+        <a class="more" href="/2019/11/27/ODL-RPC-module/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/11/27/ODL-mdsal-codereview/"><h2>【opendaylight】——MD-SAL服务总线RPC服务源码分析</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-11-26T16:00:00.000Z">
+            2019-11-27
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/odl/" rel="tag">odl</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/rpc/" rel="tag">rpc</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
 <p><img src="/img/in-post/1578029380086.png" alt></p>
 <h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img src="/img/in-post/1578029399834.png" alt></p>
 <p>说明：</p>
@@ -49,19 +201,91 @@
 <h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img src="/img/in-post/1578029444552.png" alt></p>
 <ul>
 <li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<t>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</t></li>
-</ul></div><p class="readmore"><a href="/2019/11/27/ODL-mdsal-codereview/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/11/27/NLP-Gradient-Descent/">【NLP】一、线性回归与随机梯度下降法</a></h1><div class="post-meta">2019-11-27</div><div class="post-content"><p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
+</ul>
+          </div>
+        
+        <a class="more" href="/2019/11/27/ODL-mdsal-codereview/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/11/27/java-concurrency-container-Executor/"><h2>【并发容器和框架】四、Executor框架</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-11-26T16:00:00.000Z">
+            2019-11-27
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/Executor/" rel="tag">Executor</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E6%A1%86%E6%9E%B6/" rel="tag">并发框架</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>@[toc]<br>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
+<h1 id="1-Executor框架简介"><a href="#1-Executor框架简介" class="headerlink" title="1. Executor框架简介"></a>1. Executor框架简介</h1><h2 id="1-1-Executor框架的两级调度模型"><a href="#1-1-Executor框架的两级调度模型" class="headerlink" title="1.1 Executor框架的两级调度模型"></a>1.1 Executor框架的两级调度模型</h2><p>在HotSpot VM的线程模型中，Java线程被一对一映射为本地操作系统线程。Java线程启动时会创建一个本地操作系统线程;当该Java线程终止时，这个操作系统线程也会被回收。操作系统会调度所有线程并将它们分配给可用的CPU。</p>
+<p>在上层，Java多线程程序通常应用分解为若干个任务，然后使用用户级的调度器（Executor框架）将这些任务映射为固定数量的线程；在底层，操作系统内核将这些线程映射到硬件处理器上。如这种两级调度模型示意图见下一节。</p>
+<p>从图中可以看出，应用程序通过Executor框架控制上层的调度；而下层的调度由操作系统内核控制，下层的调度不受应用程序的控制。</p>
+<h2 id="1-2-Executor框架的结构与成员"><a href="#1-2-Executor框架的结构与成员" class="headerlink" title="1.2 Executor框架的结构与成员"></a>1.2 Executor框架的结构与成员</h2><p><img src="/img/in-post/image-20191222214449679.png" alt></p>
+<h3 id="1-2-1-Executor框架的结构"><a href="#1-2-1-Executor框架的结构" class="headerlink" title="1.2.1 Executor框架的结构"></a>1.2.1 Executor框架的结构</h3><p>Executor框架主要由3大部分：</p>
+          </div>
+        
+        <a class="more" href="/2019/11/27/java-concurrency-container-Executor/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/11/27/NLP-Gradient-Descent/"><h2>【NLP】一、线性回归与随机梯度下降法</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-11-26T16:00:00.000Z">
+            2019-11-27
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E6%9C%89%E7%9B%91%E7%9D%A3/" rel="tag">有监督</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" rel="tag">线性回归</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/" rel="tag">随机梯度下降</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
 <p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
 <p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
 <p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
 <h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img src="/img/in-post/image-20200102230850144.png" alt></p>
 <p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
 <p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
-<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2></div><p class="readmore"><a href="/2019/11/27/NLP-Gradient-Descent/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/11/27/java-concurrency-container-Executor/">【并发容器和框架】四、Executor框架</a></h1><div class="post-meta">2019-11-27</div><div class="post-content"><p>@[toc]<br>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
-<h1 id="1-Executor框架简介"><a href="#1-Executor框架简介" class="headerlink" title="1. Executor框架简介"></a>1. Executor框架简介</h1><h2 id="1-1-Executor框架的两级调度模型"><a href="#1-1-Executor框架的两级调度模型" class="headerlink" title="1.1 Executor框架的两级调度模型"></a>1.1 Executor框架的两级调度模型</h2><p>在HotSpot VM的线程模型中，Java线程被一对一映射为本地操作系统线程。Java线程启动时会创建一个本地操作系统线程;当该Java线程终止时，这个操作系统线程也会被回收。操作系统会调度所有线程并将它们分配给可用的CPU。</p>
-<p>在上层，Java多线程程序通常应用分解为若干个任务，然后使用用户级的调度器（Executor框架）将这些任务映射为固定数量的线程；在底层，操作系统内核将这些线程映射到硬件处理器上。如这种两级调度模型示意图见下一节。</p>
-<p>从图中可以看出，应用程序通过Executor框架控制上层的调度；而下层的调度由操作系统内核控制，下层的调度不受应用程序的控制。</p>
-<h2 id="1-2-Executor框架的结构与成员"><a href="#1-2-Executor框架的结构与成员" class="headerlink" title="1.2 Executor框架的结构与成员"></a>1.2 Executor框架的结构与成员</h2><p><img src="/img/in-post/image-20191222214449679.png" alt></p>
-<h3 id="1-2-1-Executor框架的结构"><a href="#1-2-1-Executor框架的结构" class="headerlink" title="1.2.1 Executor框架的结构"></a>1.2.1 Executor框架的结构</h3><p>Executor框架主要由3大部分：</p></div><p class="readmore"><a href="/2019/11/27/java-concurrency-container-Executor/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/11/27/Json%20Facet/">【Solr应用】——Json Facet使用总结</a></h1><div class="post-meta">2019-11-27</div><div class="post-content"><h1 id="Faceted-Search"><a href="#Faceted-Search" class="headerlink" title="Faceted Search"></a>Faceted Search</h1><h2 id="Metric-Example"><a href="#Metric-Example" class="headerlink" title="Metric Example"></a>Metric Example</h2><pre><code class="java">curl http://192.168.3.13:31121/xxx/PATENT/query -d &#39;
+<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2>
+          </div>
+        
+        <a class="more" href="/2019/11/27/NLP-Gradient-Descent/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/11/27/Json Facet/"><h2>【Solr应用】——Json Facet使用总结</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-11-26T16:00:00.000Z">
+            2019-11-27
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/Json-Facet/" rel="tag">Json Facet</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/Solr/" rel="tag">Solr</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <h1 id="Faceted-Search"><a href="#Faceted-Search" class="headerlink" title="Faceted Search"></a>Faceted Search</h1><h2 id="Metric-Example"><a href="#Metric-Example" class="headerlink" title="Metric Example"></a>Metric Example</h2><pre><code class="java">curl http://192.168.3.13:31121/xxx/PATENT/query -d &#39;
   q=*:*&amp;
   json.facet={
     &quot;AVG_CITE_COUNT&quot;:&quot;avg(CITE_COUNT)&quot;,
@@ -120,7 +344,31 @@
           &quot;val&quot;:20160527,
           &quot;count&quot;:454}]
     }}}</code></pre>
-<h2 id="Making-a-Facet-Request"><a href="#Making-a-Facet-Request" class="headerlink" title="Making a Facet Request"></a>Making a Facet Request</h2></div><p class="readmore"><a href="/2019/11/27/Json%20Facet/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/11/06/java-concurrency-container-ForkJoin/">【并发容器和框架】二、Fork/Join框架</a></h1><div class="post-meta">2019-11-06</div><div class="post-content"><p>@[toc]</p>
+<h2 id="Making-a-Facet-Request"><a href="#Making-a-Facet-Request" class="headerlink" title="Making a Facet Request"></a>Making a Facet Request</h2>
+          </div>
+        
+        <a class="more" href="/2019/11/27/Json Facet/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/11/06/java-concurrency-container-ForkJoin/"><h2>【并发容器和框架】二、Fork/Join框架</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-11-05T16:00:00.000Z">
+            2019-11-06
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/ForkJoin/" rel="tag">ForkJoin</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E6%A1%86%E6%9E%B6/" rel="tag">并发框架</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>@[toc]</p>
 <h1 id="1-什么是Fork-Join框架"><a href="#1-什么是Fork-Join框架" class="headerlink" title="1.什么是Fork/Join框架"></a>1.什么是Fork/Join框架</h1><p>Fork/Join框架是Java 7提供的一个并行执行任务的框架，是一个把大小任务分割成若干小任务，最终汇总每个小人物结果后得到大任务结果的框架。</p>
 <p>Fork就是把一个大任务切分成若干个小任务并行执行，Join就是合并这些子任务的执行结果，最后得到这个大任务的结果。比如计算1+2….+1000，可以分割成10个子任务，每个子任务分别对1000个数进行求和，最终汇总这10个子任务的结果。流程如下：</p>
 <p><img src="/img/in-post/image-20191108011932771.png" alt></p>
@@ -130,7 +378,31 @@
 <li>工作窃取算法的优点：充分利用线程进行并行计算，减少了线程间的竞争。</li>
 <li>工作窃取算法的缺点：在某些情况下还是存在竞争，比如双端队列里只有一个任务时。并且该算法会消耗了更多的系统资源，比如创建多个线程和多个多段队列。</li>
 </ul>
-<h1 id="3-Fork-Join框架的设计"><a href="#3-Fork-Join框架的设计" class="headerlink" title="3.Fork/Join框架的设计"></a>3.Fork/Join框架的设计</h1></div><p class="readmore"><a href="/2019/11/06/java-concurrency-container-ForkJoin/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/10/30/Algorithms_AL_Sort/">【数据结构与算法】-【算法】排序</a></h1><div class="post-meta">2019-10-30</div><div class="post-content"><p>@[toc]<br>本文将总结众多排序算法中的一小撮，也是最经典、最常用的：冒泡排序、插入排序、选择排序、归并排序、快速排序、计数排序、基数排序、桶排序。依据时间复杂度可以分为三类，我将按照三次来总结。</p>
+<h1 id="3-Fork-Join框架的设计"><a href="#3-Fork-Join框架的设计" class="headerlink" title="3.Fork/Join框架的设计"></a>3.Fork/Join框架的设计</h1>
+          </div>
+        
+        <a class="more" href="/2019/11/06/java-concurrency-container-ForkJoin/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/10/30/Algorithms_AL_Sort/"><h2>【数据结构与算法】-【算法】排序</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-10-29T16:00:00.000Z">
+            2019-10-30
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E6%8E%92%E5%BA%8F/" rel="tag">排序</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>@[toc]<br>本文将总结众多排序算法中的一小撮，也是最经典、最常用的：冒泡排序、插入排序、选择排序、归并排序、快速排序、计数排序、基数排序、桶排序。依据时间复杂度可以分为三类，我将按照三次来总结。</p>
 <table>
 <thead>
 <tr>
@@ -167,7 +439,31 @@
 </li>
 </ol>
 <h2 id="排序算法的内存消耗"><a href="#排序算法的内存消耗" class="headerlink" title="排序算法的内存消耗"></a>排序算法的内存消耗</h2><p>算法内存消耗可以通过空间复杂度衡量，排序算法也不例外。<strong>原地排序</strong>，就是特指空间复杂度是O（1）的排序算法。这篇文章马上要说的都是原地排序的算法。</p>
-<h2 id="排序算法的稳定性"><a href="#排序算法的稳定性" class="headerlink" title="排序算法的稳定性"></a>排序算法的稳定性</h2><p>针对排序算法还有个重要指标就是<strong>稳定性</strong>。是说，如果待排序的序列存在值相等，经过排序后，相等元素之间的原有的先后顺序不变。</p></div><p class="readmore"><a href="/2019/10/30/Algorithms_AL_Sort/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/10/27/java-concurrency-container-ConcurrentHashMap/">【并发容器和框架】一、CocurrentHashMap的实现原理与使用</a></h1><div class="post-meta">2019-10-27</div><div class="post-content"><p>@[toc]</p>
+<h2 id="排序算法的稳定性"><a href="#排序算法的稳定性" class="headerlink" title="排序算法的稳定性"></a>排序算法的稳定性</h2><p>针对排序算法还有个重要指标就是<strong>稳定性</strong>。是说，如果待排序的序列存在值相等，经过排序后，相等元素之间的原有的先后顺序不变。</p>
+          </div>
+        
+        <a class="more" href="/2019/10/30/Algorithms_AL_Sort/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/10/27/java-concurrency-container-ConcurrentHashMap/"><h2>【并发容器和框架】一、CocurrentHashMap的实现原理与使用</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-10-26T16:00:00.000Z">
+            2019-10-27
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/ConcurrentHashMap/" rel="tag">ConcurrentHashMap</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E5%AE%B9%E5%99%A8/" rel="tag">并发容器</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>@[toc]</p>
 <h1 id="为什么引入ConcurrentHashMap"><a href="#为什么引入ConcurrentHashMap" class="headerlink" title="为什么引入ConcurrentHashMap"></a>为什么引入ConcurrentHashMap</h1><p>在并发编程中使用HashMap可能导致程序死循环。而使用线程安全的HashTable效率又非常低下，基于以上两个原因，便有了ConcurrentHash的出现。</p>
 <ul>
 <li><p>线程不安全的HashMap</p>
@@ -191,14 +487,62 @@
 </ul>
 </li>
 <li>HashEntry内部使用volatile的value字段来保证可见性，也利用了不可变对象的机制以改进利用Unsafe提供的底层能力，比如volatile access，直接完成部分操作，以优化性能，毕竟Unsafe中的很多操作是JVM intrinsic优化过的。</li>
-</ul></div><p class="readmore"><a href="/2019/10/27/java-concurrency-container-ConcurrentHashMap/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/10/22/Algorithms_DS_DS_Link/">【数据结构与算法】-【数据结构篇】链表</a></h1><div class="post-meta">2019-10-22</div><div class="post-content"><p>@[toc]</p>
+</ul>
+          </div>
+        
+        <a class="more" href="/2019/10/27/java-concurrency-container-ConcurrentHashMap/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/10/22/Algorithms_DS_DS_Link/"><h2>【数据结构与算法】-【数据结构篇】链表</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-10-21T16:00:00.000Z">
+            2019-10-22
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag">数据结构</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E9%93%BE%E8%A1%A8/" rel="tag">链表</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>@[toc]</p>
 <h1 id="五花八门的链表结构"><a href="#五花八门的链表结构" class="headerlink" title="五花八门的链表结构"></a>五花八门的链表结构</h1><p>相比数组，线性表中的链表是一种稍复杂的数据结构。</p>
 <p>先看<strong>底层的存储结构</strong>，</p>
 <p>数组需要一块<strong>连续的内存空间</strong>，对内存要求比较高。如果没有连续的足够内存会申请失败。</p>
 <p>链表相反，<strong>不需要一块连续的内存空间</strong>，通过“指针”将一组<strong>零散的内存块</strong>串联起来。</p>
 <p><img src="/img/in-post/1571713260510.png" alt></p>
 <p>常用的链表主要有：<strong>单链表、双向链表、循环链表（包括双向循环链表）</strong>。</p>
-<h1 id="单链表"><a href="#单链表" class="headerlink" title="单链表"></a>单链表</h1><p><img src="/img/in-post/1571715568453.png" alt></p></div><p class="readmore"><a href="/2019/10/22/Algorithms_DS_DS_Link/">Read More</a></p></div><div class="post"><h1 class="post-title"><a href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/">【线程互斥篇】六、无锁方案-原子操作的实现原理</a></h1><div class="post-meta">2019-09-01</div><div class="post-content"><p>@[toc]</p>
+<h1 id="单链表"><a href="#单链表" class="headerlink" title="单链表"></a>单链表</h1><p><img src="/img/in-post/1571715568453.png" alt></p>
+          </div>
+        
+        <a class="more" href="/2019/10/22/Algorithms_DS_DS_Link/"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
+        <a class="title" href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/"><h2>【线程互斥篇】六、无锁方案-原子操作的实现原理</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2019-08-31T16:00:00.000Z">
+            2019-09-01
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E4%BA%92%E6%96%A5/" rel="tag">互斥</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" rel="tag">原子操作</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag">并发</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>@[toc]</p>
 <h1 id="原子性问题"><a href="#原子性问题" class="headerlink" title="原子性问题"></a>原子性问题</h1><p>在计算机硬件优化导致的3大BUG源头中，其中有一大源头就是原子性的问题，见<a href="[http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug%E7%9A%84%E6%BA%90%E5%A4%B4%E4%BA%8C%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%B8%A6%E6%9D%A5%E7%9A%84%E5%8E%9F%E5%AD%90%E6%80%A7%E9%97%AE%E9%A2%98](http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug的源头二线程切换带来的原子性问题)">线程切换带来的原子性问题</a>，解决原子性问题的一大方案是<strong>1）有锁方案：synchronized或者互斥锁Lock</strong>，当然这种锁有一个缺陷：需要加锁、解锁、本身加锁、释放锁性能消耗大，而且拿不到锁的线程还会进入阻塞状态，进而触发线程切换，线程切换对性能的消耗也很大。</p>
 <p>当然还有一种<strong>2）无锁方案就是CAS自旋来实现变量的并发操作的原子操作</strong>。下面就来详细讲下CPU的原子操作并引入CAS指令到Java中来实现Java的原子操作，并且Java提供了Atomic包的多个原子操作的封装。</p>
 <p>下面这篇博客是要来说清楚Java解决原子性问题</p>
@@ -226,4 +570,182 @@
 <td>内存顺序冲突一般是由假共享引起的，假共享是指多个CPU同时修改同一个缓存行的不同部分而引起其中一个CPU的操作无效，当出现这个内存顺序冲突时，CPU必须清空流水线</td>
 </tr>
 </tbody></table>
-<h2 id="CPU如何实现原子操作"><a href="#CPU如何实现原子操作" class="headerlink" title="CPU如何实现原子操作"></a>CPU如何实现原子操作</h2><p>32位IA-32 CPU使用基于<strong>缓存加锁、总线加锁</strong>的方式实现多处理器之间的原子操作。</p></div><p class="readmore"><a href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/">Read More</a></p></div><nav class="page-navigator"><a class="extend prev" rel="prev" href="/">Previous</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/">Next</a></nav></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://yoursite.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> Categories</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">并发编程</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/%E9%9B%86%E5%90%88/">集合</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Jetty/">Jetty</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Lucene/">Lucene</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/NLP/">NLP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Solr/">Solr</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opendaylight/">opendaylight</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%81%8C%E4%B8%9A%E7%94%9F%E6%B6%AF/">职业生涯</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> Tags</i></div><div class="tagcloud"><a href="/tags/HTTP/" style="font-size: 15px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 15px;">HTTP2</a> <a href="/tags/Jetty/" style="font-size: 15px;">Jetty</a> <a href="/tags/odl/" style="font-size: 15px;">odl</a> <a href="/tags/rpc/" style="font-size: 15px;">rpc</a> <a href="/tags/Markdown/" style="font-size: 15px;">Markdown</a> <a href="/tags/work-summary/" style="font-size: 15px;">work summary</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/ArrayList/" style="font-size: 15px;">ArrayList</a> <a href="/tags/Collection/" style="font-size: 15px;">Collection</a> <a href="/tags/%E9%9B%86%E5%90%88/" style="font-size: 15px;">集合</a> <a href="/tags/LinkedHashMap/" style="font-size: 15px;">LinkedHashMap</a> <a href="/tags/HashMap/" style="font-size: 15px;">HashMap</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" style="font-size: 15px;">数据结构</a> <a href="/tags/%E9%93%BE%E8%A1%A8/" style="font-size: 15px;">链表</a> <a href="/tags/%E5%B9%B6%E5%8F%91%E5%AE%B9%E5%99%A8/" style="font-size: 15px;">并发容器</a> <a href="/tags/ConcurrentHashMap/" style="font-size: 15px;">ConcurrentHashMap</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 15px;">排序</a> <a href="/tags/%E5%B9%B6%E5%8F%91%E6%A1%86%E6%9E%B6/" style="font-size: 15px;">并发框架</a> <a href="/tags/ForkJoin/" style="font-size: 15px;">ForkJoin</a> <a href="/tags/%E9%9A%8F%E6%9C%BA%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/" style="font-size: 15px;">随机梯度下降</a> <a href="/tags/%E6%9C%89%E7%9B%91%E7%9D%A3/" style="font-size: 15px;">有监督</a> <a href="/tags/%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" style="font-size: 15px;">线性回归</a> <a href="/tags/Executor/" style="font-size: 15px;">Executor</a> <a href="/tags/ThreadPool/" style="font-size: 15px;">ThreadPool</a> <a href="/tags/java%E7%BA%A2%E9%BB%91%E6%A0%91/" style="font-size: 15px;">java红黑树</a> <a href="/tags/LinkedList/" style="font-size: 15px;">LinkedList</a> <a href="/tags/%E5%B9%B6%E5%8F%91/" style="font-size: 15px;">并发</a> <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 15px;">操作系统</a> <a href="/tags/%E8%BF%9B%E7%A8%8B/" style="font-size: 15px;">进程</a> <a href="/tags/%E7%BA%BF%E7%A8%8B/" style="font-size: 15px;">线程</a> <a href="/tags/Search/" style="font-size: 15px;">Search</a> <a href="/tags/Solr/" style="font-size: 15px;">Solr</a> <a href="/tags/%E4%BA%92%E6%96%A5%E9%94%81/" style="font-size: 15px;">互斥锁</a> <a href="/tags/%E6%AD%BB%E9%94%81/" style="font-size: 15px;">死锁</a> <a href="/tags/%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" style="font-size: 15px;">生命周期</a> <a href="/tags/%E7%BA%BF%E7%A8%8B%E7%9A%84%E9%A3%8E%E9%99%A9/" style="font-size: 15px;">线程的风险</a> <a href="/tags/%E7%AE%A1%E7%A8%8B/" style="font-size: 15px;">管程</a> <a href="/tags/%E7%BA%BF%E7%A8%8B%E5%8D%8F%E4%BD%9C/" style="font-size: 15px;">线程协作</a> <a href="/tags/wait/" style="font-size: 15px;">wait</a> <a href="/tags/%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/" style="font-size: 15px;">阻塞队列</a> <a href="/tags/%E4%BF%A1%E5%8F%B7%E9%87%8F/" style="font-size: 15px;">信号量</a> <a href="/tags/%E4%BA%92%E6%96%A5/" style="font-size: 15px;">互斥</a> <a href="/tags/ReadWriteLock/" style="font-size: 15px;">ReadWriteLock</a> <a href="/tags/%E5%8F%AF%E8%A7%81%E6%80%A7/" style="font-size: 15px;">可见性</a> <a href="/tags/volatile/" style="font-size: 15px;">volatile</a> <a href="/tags/lock/" style="font-size: 15px;">lock</a> <a href="/tags/synchronized/" style="font-size: 15px;">synchronized</a> <a href="/tags/%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C/" style="font-size: 15px;">原子操作</a> <a href="/tags/Json-Facet/" style="font-size: 15px;">Json Facet</a> <a href="/tags/Lucene/" style="font-size: 15px;">Lucene</a> <a href="/tags/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/" style="font-size: 15px;">索引文件</a> <a href="/tags/DocValues/" style="font-size: 15px;">DocValues</a> <a href="/tags/Lucene%E5%B7%A5%E5%85%B7%E7%B1%BB/" style="font-size: 15px;">Lucene工具类</a> <a href="/tags/Lucene%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/" style="font-size: 15px;">Lucene压缩算法</a> <a href="/tags/idea/" style="font-size: 15px;">idea</a> <a href="/tags/Collector/" style="font-size: 15px;">Collector</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> Recent</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/03/04/lucence-search-collector1/">【Search】一、Collector</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/07/lucene-dv-SortedDocValues/">【DocValues】一、SortedDocValues</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/07/lucene-yasuocunchu-PackedInts/">【压缩存储&算法】PackedInts</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/07/tools-idea-simple/">【工具使用】IEDA使用分享</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/04/lucene-utils-fixedBitSet/">【工具类】FixedBitSet</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/02/lucene-indexfile-doc/">【索引文件】.doc文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/01/lucene-indexfile-tim-tip/">【索引文件】.tim、.tip文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/01/31/lucene-indexfile-pos-pay/">【索引文件】.pos、.pay文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/01/31/lucene-indexfile-nvd-nvm/">【索引文件】.nvd、.nvm文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/12/23/java-concurrency-container-ThreadPool/">【并发容器和框架】三、Java线程池的实现原理和使用</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> Links</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2020 <a href="/." rel="nofollow">Hexo.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css"><script type="text/javascript" src="//lib.baomitu.com/clipboard.js/2.0.4/clipboard.min.js"></script><script type="text/javascript" src="//lib.baomitu.com/toastr.js/2.1.4/toastr.min.js"></script><link rel="stylesheet" href="//lib.baomitu.com/toastr.js/2.1.4/toastr.min.css"><script type="text/javascript" src="/js/copycode.js" successtext="Copy Successed!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
+<h2 id="CPU如何实现原子操作"><a href="#CPU如何实现原子操作" class="headerlink" title="CPU如何实现原子操作"></a>CPU如何实现原子操作</h2><p>32位IA-32 CPU使用基于<strong>缓存加锁、总线加锁</strong>的方式实现多处理器之间的原子操作。</p>
+          </div>
+        
+        <a class="more" href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/"> 阅读全文〉</a>
+      </article>
+    
+  </div>
+
+
+
+    </div>
+
+    
+      <nav class="page-nav text-center">
+          <a class="extend prev" rel="prev" href="/">〈</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/">〉</a>
+      </nav>
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://github.com/fooying" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="/links">友情链接</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/fooying/hexo-theme-xoxo-plus" target="_blank">Theme xoxo-plus</a> |
+        <a class="bottom-item" href="/atom.xml">RSS</a>
+    </div>
+</footer>
+
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+  
+<script>
+  (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+          bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else {
+          bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+</body>
+</html>
