@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。 tim、tip文件作用 .tim(Term Dicitionary)文件  存放每个term的TermStats，TermStats记录了包含该term的文档数量，term在这些文档中的词频总和；  另外还存放了term的TermMetadata，TermMetadata记录了该term在.doc .po">
@@ -133,9 +133,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -209,7 +224,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -239,12 +268,12 @@
 </ul>
 <p>参考类：<strong>BlockTreeTermsWriter</strong></p>
 <h2 id="tim文件的数据结构"><a href="#tim文件的数据结构" class="headerlink" title="tim文件的数据结构"></a>tim文件的数据结构</h2><p>图1</p>
-<p><img src="/img/in-post/1-20200202114003284.png" alt=""></p>
+<p><img data-src="/img/in-post/1-20200202114003284.png" alt=""></p>
 <p>在tim文件中<strong>NodeBlock</strong>中包含了至少25个entries，每个entries中包含了一个term(或者由相同前缀的term集合)的相关数据，<strong>FieldSummary</strong>记录了域的一些信息。</p>
-<p><img src="/img/in-post/2-20200202114117992.png" alt=""></p>
+<p><img data-src="/img/in-post/2-20200202114117992.png" alt=""></p>
 <p><strong>NodeBlock有两种类型：OuterNode、InnerNode</strong>。</p>
 <p>这两种类型的NodeBlock在数据结构上有细微的差别，先介绍OuterNode的数据，然后再介绍他们之间的差别以及为什么NodeBlock需要两种类型。</p>
-<p><img src="/img/in-post/3-20200202192304527.png" alt=""></p>
+<p><img data-src="/img/in-post/3-20200202192304527.png" alt=""></p>
 <h3 id="OuterNode"><a href="#OuterNode" class="headerlink" title="OuterNode"></a><strong>OuterNode</strong></h3><p>OuterNode包含了所有term的一些信息，在Lucene 7.5.0版本的源码中，<strong>按照term的大小顺序处理</strong>，并且用3个RAMOutputStream对象，即suffixWriter、statsWriter、bytesWriter来记录一个term的<strong>Suffix信息、TermStats信息、TermMetadata信息</strong>。在所有的term处理结束后，将3个RAMOutputStream对象中的内容写入到.tim文件中。</p>
 <ul>
 <li><p>EntryCount</p>
@@ -254,7 +283,7 @@
 <p>这三个值分别描述了所有term的Suffix、TermStats、TermMetadata在.tim文件中的数据长度，在读取.tim时用来确定读取Suffix、TermStats、TermMetadata的范围区间。</p>
 </li>
 <li><p><strong>Suffix</strong></p>
-<p><img src="/img/in-post/4-20200202181659592.png" alt=""></p>
+<p><img data-src="/img/in-post/4-20200202181659592.png" alt=""></p>
 <ul>
 <li><p>Lenth：term的后缀长度</p>
 </li>
@@ -264,7 +293,7 @@
 </ul>
 </li>
 <li><p>TermStats</p>
-<p><img src="/img/in-post/5-20200202182220121.png" alt=""></p>
+<p><img data-src="/img/in-post/5-20200202182220121.png" alt=""></p>
 <ul>
 <li><p>DocFreq</p>
 <p>DocFreq描述了包含当前term的文档个数。</p>
@@ -275,7 +304,7 @@
 </ul>
 </li>
 <li><p>TermMetadata</p>
-<p><img src="/img/in-post/6-20200202182624299.png" alt=""></p>
+<p><img data-src="/img/in-post/6-20200202182624299.png" alt=""></p>
 <ul>
 <li><p>SingletonDocID</p>
 <p>如果只有一篇文档包含当前term，那么SingletonDocID被赋值这篇文档号，如果不止一篇文档包含当前term，那么SingletonDocID不会写入到.tim文件中。</p>
@@ -299,17 +328,17 @@
 </li>
 </ul>
 <h3 id="InnerNode"><a href="#InnerNode" class="headerlink" title="InnerNode"></a><strong>InnerNode</strong></h3><p>给出一个场景，需要处理的term值为下面的情况：</p>
-<p><img src="/img/in-post/7-20200202191811441.png" alt=""></p>
+<p><img data-src="/img/in-post/7-20200202191811441.png" alt=""></p>
 <p>在处理这一批的每一个term，将具有相同前缀”ab”的，并且个数超过25个的term先处理为一个OuterNode，接着前缀值”ab”作为一个term与剩余的term处理为一个InnerNode。如图：</p>
-<p><img src="/img/in-post/8-20200202192014851.png" alt=""></p>
+<p><img data-src="/img/in-post/8-20200202192014851.png" alt=""></p>
 <p>由于InnerNode中的前缀为“ab”的所有term的Suffix、TermStats、TermMetadata已经存在.tim文件中，所有在InnerNode只要记录在.tim文件中的便宜位置，即上图中的红色标注的index。所以通过上图InnerNode数据结构与OuterNode数据结构的区别。</p>
-<p><img src="/img/in-post/3-20200202192304527.png" alt=""></p>
+<p><img data-src="/img/in-post/3-20200202192304527.png" alt=""></p>
 <h3 id="FieldSummary"><a href="#FieldSummary" class="headerlink" title="FieldSummary"></a><strong>FieldSummary</strong></h3><p>图1只是单个域的.tim文件数据结构，下面是多个域的.tim数据结构：</p>
 <p>图9 </p>
-<p><img src="/img/in-post/9-20200202194536482.png" alt=""></p>
+<p><img data-src="/img/in-post/9-20200202194536482.png" alt=""></p>
 <p>下面是FieldSummary的数据结构。</p>
 <p>图10</p>
-<p><img src="/img/in-post/10.png" alt=""></p>
+<p><img data-src="/img/in-post/10.png" alt=""></p>
 <p>图10中Field的个数与图9中Field一一对应。</p>
 <ul>
 <li><p>NumFields：描述.tim文件中有多少种域。</p>
@@ -355,7 +384,7 @@
 </li>
 </ul>
 <h3 id="DirOffset"><a href="#DirOffset" class="headerlink" title="DirOffset"></a><strong>DirOffset</strong></h3><p>记录FieldSummary的信息在.tim文件中的起始位置。</p>
-<h2 id="tip文件的数据结构"><a href="#tip文件的数据结构" class="headerlink" title="tip文件的数据结构"></a>tip文件的数据结构</h2><p><img src="/img/in-post/11.png" alt=""></p>
+<h2 id="tip文件的数据结构"><a href="#tip文件的数据结构" class="headerlink" title="tip文件的数据结构"></a>tip文件的数据结构</h2><p><img data-src="/img/in-post/11.png" alt=""></p>
 <h3 id="FSTIndex"><a href="#FSTIndex" class="headerlink" title="FSTIndex"></a>FSTIndex</h3><p>FSTIndex记录了NodeBlock在.tim文件中的一些信息，比如fp为NodeBlock在.tim文件中的起始位置，hasTerms描述NodeBlock中是否包含pendingTerm对象，isFloor表示是否为floor block，然后将这些信息用FST算法存储。</p>
 <h3 id="IndexStartFP"><a href="#IndexStartFP" class="headerlink" title="IndexStartFP"></a>IndexStartFP</h3><p>描述了当前FSTIndex信息在.tip中的起始位置。</p>
 <h3 id="DirOffset-1"><a href="#DirOffset-1" class="headerlink" title="DirOffset"></a>DirOffset</h3><p>描述了第一个IndexStartFP在.tip中的位置。</p>
@@ -367,6 +396,26 @@
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -453,6 +502,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -475,8 +526,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -502,6 +576,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -519,6 +605,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -532,6 +620,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -551,9 +698,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

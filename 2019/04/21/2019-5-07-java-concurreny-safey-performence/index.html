@@ -17,19 +17,19 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="@[toc] 安全问题线程安全的本质就是正确性，而正确性的含义就是程序按照我们的期望执行。 《可见性、原子性和有序性：并发编程Bug的来源》举例了很多诡异的Bug，都不是按照我们的期望来执行的。 如何才能写出线程安全的程序呢？ 在第四篇中中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。 实际上，只有一种情况下：存在共享数">
+  <meta name="description" content="安全问题线程安全的本质就是正确性，而正确性的含义就是程序按照我们的期望执行。 《可见性、原子性和有序性：并发编程Bug的来源》举例了很多诡异的Bug，都不是按照我们的期望来执行的。 如何才能写出线程安全的程序呢？ 在第四篇中中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。 实际上，只有一种情况下：存在共享数据并且数据会变">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【基本概念篇】八、安全性、活跃性、性能问题">
 <meta property="og:url" content="http://yoursite.com/2019/04/21/2019-5-07-java-concurreny-safey-performence/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="@[toc] 安全问题线程安全的本质就是正确性，而正确性的含义就是程序按照我们的期望执行。 《可见性、原子性和有序性：并发编程Bug的来源》举例了很多诡异的Bug，都不是按照我们的期望来执行的。 如何才能写出线程安全的程序呢？ 在第四篇中中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。 实际上，只有一种情况下：存在共享数">
+<meta property="og:description" content="安全问题线程安全的本质就是正确性，而正确性的含义就是程序按照我们的期望执行。 《可见性、原子性和有序性：并发编程Bug的来源》举例了很多诡异的Bug，都不是按照我们的期望来执行的。 如何才能写出线程安全的程序呢？ 在第四篇中中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。 实际上，只有一种情况下：存在共享数据并且数据会变">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://yoursite.com/img/in-post/1557287822597.png">
 <meta property="article:published_time" content="2019-04-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-03-22T01:06:51.424Z">
+<meta property="article:modified_time" content="2020-03-22T10:10:43.441Z">
 <meta property="article:author" content="ZhouLei">
 <meta property="article:tag" content="java">
 <meta property="article:tag" content="并发">
@@ -123,9 +123,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -187,7 +202,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-22 09:06:51" itemprop="dateModified" datetime="2020-03-22T09:06:51+08:00">2020-03-22</time>
+                <time title="Modified: 2020-03-22 18:10:43" itemprop="dateModified" datetime="2020-03-22T18:10:43+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -203,7 +218,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -214,8 +243,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>@[toc]</p>
-<h1 id="安全问题"><a href="#安全问题" class="headerlink" title="安全问题"></a>安全问题</h1><p>线程安全的本质就是正确性，而正确性的含义就是<strong>程序按照我们的期望执行</strong>。</p>
+        <h1 id="安全问题"><a href="#安全问题" class="headerlink" title="安全问题"></a>安全问题</h1><p>线程安全的本质就是正确性，而正确性的含义就是<strong>程序按照我们的期望执行</strong>。</p>
 <p><a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">《可见性、原子性和有序性：并发编程Bug的来源》</a>举例了很多诡异的Bug，都不是按照我们的<strong>期望</strong>来执行的。</p>
 <p>如何才能写出线程安全的程序呢？</p>
 <p>在<a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">第四篇中</a>中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。</p>
@@ -282,7 +310,7 @@
 <h1 id="性能问题"><a href="#性能问题" class="headerlink" title="性能问题"></a>性能问题</h1><p>使用锁的时候要谨慎，如果使用过度会出现性能问题。锁的过度使用可能导致串行化的范围过大，这样就不能发挥多线程的优势了。</p>
 <h2 id="性能衡量方法"><a href="#性能衡量方法" class="headerlink" title="性能衡量方法"></a>性能衡量方法</h2><p>所以要尽量减少串行化，那串行化对性能的影响是怎么样的？假设串行百分比是5%，我们用多核多线程相比单核单线程提速多少？</p>
 <p>使用阿姆达尔(Amdahl)定律，代表了处理器并行运算之后效率的提升能力，具体公式如下：</p>
-<p><img src="/img/in-post/1557287822597.png" alt=""></p>
+<p><img data-src="/img/in-post/1557287822597.png" alt=""></p>
 <p>n：CPU的核数</p>
 <p>p：并行百分比</p>
 <p>1-p：串行百分比，也就是我们假设的5%</p>
@@ -329,6 +357,26 @@
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -344,12 +392,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/04/21/2019-4-21-java-concurreny-deadlock/" rel="prev" title="【基本概念篇】七、死锁">
-      <i class="fa fa-chevron-left"></i> 【基本概念篇】七、死锁
+    <a href="/2019/04/20/2019-4-20-java-concurrency-lock/" rel="prev" title="【基本概念篇】六、互斥锁：解决原子性问题">
+      <i class="fa fa-chevron-left"></i> 【基本概念篇】六、互斥锁：解决原子性问题
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/" rel="next" title="【基本概念篇】九、从操作系统角度看并发">
-      【基本概念篇】九、从操作系统角度看并发 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/04/21/2019-4-21-java-concurreny-deadlock/" rel="next" title="【基本概念篇】七、死锁">
+      【基本概念篇】七、死锁 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -416,6 +464,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -438,8 +488,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -465,6 +538,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -482,6 +567,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -495,6 +582,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -514,9 +660,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

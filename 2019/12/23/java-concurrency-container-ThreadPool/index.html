@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="1. Java线程池的实现原理线程池是日常开发中使用最多的并发框架（虽然在高并发场景下有的线程池要慎用），几乎所有需要异步或者并发的执行任务的程序都可以使用线程池。总结下，可以带来3个好处。 第一：降低资源消耗。通过重复利用已创建的线程降低线程创建和销毁造成的消耗。 第二：提高响应速度。当任务到达时，任务可以不需要等线程创建就能立即执行。 第三：提高线程的可管理性。无限制创建线程会消耗系统资源、降">
@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://yoursite.com/img/in-post/image-20191221231910407.png">
 <meta property="og:image" content="http://yoursite.com/img/in-post/image-20191221232316027.png">
 <meta property="article:published_time" content="2019-12-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-03-22T01:06:54.534Z">
+<meta property="article:modified_time" content="2020-03-22T10:09:36.370Z">
 <meta property="article:author" content="ZhouLei">
 <meta property="article:tag" content="java">
 <meta property="article:tag" content="并发框架">
@@ -125,9 +125,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -189,7 +204,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-22 09:06:54" itemprop="dateModified" datetime="2020-03-22T09:06:54+08:00">2020-03-22</time>
+                <time title="Modified: 2020-03-22 18:09:36" itemprop="dateModified" datetime="2020-03-22T18:09:36+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -205,7 +220,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>13 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -221,14 +250,14 @@
 <p>第二：提高响应速度。当任务到达时，任务可以不需要等线程创建就能立即执行。</p>
 <p>第三：提高线程的可管理性。无限制创建线程会消耗系统资源、降低系统稳定性，使用线程池可以进行统一分配、调优和监控。</p>
 <h2 id="1-1-线程池的实现原理"><a href="#1-1-线程池的实现原理" class="headerlink" title="1.1 线程池的实现原理"></a>1.1 线程池的实现原理</h2><p>当往线程池提交一个任务之后，线程池是如何处理这个任务的？下面来看线程池主要处理流程。</p>
-<h3 id="1-1-1-主要处理流程"><a href="#1-1-1-主要处理流程" class="headerlink" title="1.1.1 主要处理流程"></a>1.1.1 主要处理流程</h3><p><img src="/img/in-post/1574908942078.png" alt=""></p>
+<h3 id="1-1-1-主要处理流程"><a href="#1-1-1-主要处理流程" class="headerlink" title="1.1.1 主要处理流程"></a>1.1.1 主要处理流程</h3><p><img data-src="/img/in-post/1574908942078.png" alt=""></p>
 <p>当提交一个新任务到线程池时，线程池的处理流程如下：</p>
 <ul>
 <li>1）线程池判断核心线程你的线程是否都在执行任务。如果不是，则创建一个新的工作线程来执行任务。如果核心线程池你的线程池都在执行任务，则进入下个流程。</li>
 <li>2）线程池判断工作队列是否已满。如果工作队列没有满，这将新提交的任务存在这个工作队列里如果队列满了，则进入下一个流程。</li>
 <li>3）线程池判断线程是否都处于工作状态。如果没有，则创建一个新的工作线程来执行任务。如果已经满了，则交给饱和策略来处理这个任务。</li>
 </ul>
-<h3 id="1-1-2-execute执行流程"><a href="#1-1-2-execute执行流程" class="headerlink" title="1.1.2 execute执行流程"></a>1.1.2 execute执行流程</h3><p><img src="/img/in-post/1574910321047.png" alt=""></p>
+<h3 id="1-1-2-execute执行流程"><a href="#1-1-2-execute执行流程" class="headerlink" title="1.1.2 execute执行流程"></a>1.1.2 execute执行流程</h3><p><img data-src="/img/in-post/1574910321047.png" alt=""></p>
 <p>ThreadPoolExectuor执行execute方法分为4种情况。</p>
 <ul>
 <li>1）如果当前运行的线程&lt;corePoolSize，则创建新线程来执行任务（<strong>这一步将获取全局锁</strong>）。</li>
@@ -482,7 +511,7 @@
      * 3. The pool is shutdown and the queue is empty.
      * 4. This worker timed out waiting for a task, and timed-out
      *    workers are subject to termination (that is,
-     *    {@code allowCoreThreadTimeOut || workerCount &gt; corePoolSize})
+     *    {ode allowCoreThreadTimeOut || workerCount &gt; corePoolSize})
      *    both before and after the timed wait, and if the queue is
      *    non-empty, this worker is not the last thread in the pool.
      *
@@ -612,8 +641,8 @@
 <p>DAYS、HOURS、分钟(MINUTES)、毫秒(MILLSECONDS)、微妙(MICROSECONDS，千分之一毫秒)和纳秒（NANOSECONDS，千分之一微秒）。</p>
 </li>
 </ul>
-<h2 id="2-2-向线程池提交任务"><a href="#2-2-向线程池提交任务" class="headerlink" title="2.2 向线程池提交任务"></a>2.2 向线程池提交任务</h2><p><img src="/img/in-post/image-20191221231910407.png" alt=""></p>
-<p><img src="/img/in-post/image-20191221232316027.png" alt=""></p>
+<h2 id="2-2-向线程池提交任务"><a href="#2-2-向线程池提交任务" class="headerlink" title="2.2 向线程池提交任务"></a>2.2 向线程池提交任务</h2><p><img data-src="/img/in-post/image-20191221231910407.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20191221232316027.png" alt=""></p>
 <p>可以使用两个方法向线程池提交任务，分别是<strong>execute和submit方法</strong>。</p>
 <p>submit可以有返回值，返回Future<T>,可以通过Future对象判断任务是否执行完成，并且可以通过future带超时或者不带超时的get()方法阻塞当前一段时间后立即返回。带超时的get()一旦超时会立即返回，可能任务还没执行完。</p>
 <h2 id="2-3-关闭线程池"><a href="#2-3-关闭线程池" class="headerlink" title="2.3 关闭线程池"></a>2.3 关闭线程池</h2><p>调用线程池的shutdown或者shutdownNow方法来关闭线程池。</p>
@@ -626,7 +655,7 @@
      * complete execution.  Use {@link #awaitTermination awaitTermination}
      * to do that.
      *
-     * @throws SecurityException {@inheritDoc}
+     * hrows SecurityException {@inheritDoc}
      */
     public void shutdown() {
         final ReentrantLock mainLock = this.mainLock;
@@ -658,7 +687,7 @@
      * cancels tasks via {@link Thread#interrupt}, so any task that
      * fails to respond to interrupts may never terminate.
      *
-     * @throws SecurityException {@inheritDoc}
+     * hrows SecurityException {@inheritDoc}
      */
     public List&lt;Runnable&gt; shutdownNow() {
         List&lt;Runnable&gt; tasks;
@@ -748,6 +777,26 @@
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -834,6 +883,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -856,8 +907,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -883,6 +957,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -900,6 +986,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -913,6 +1001,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -932,9 +1079,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

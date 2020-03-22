@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta property="og:type" content="website">
@@ -113,9 +113,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -190,7 +205,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -202,7 +231,7 @@
 
       
           <h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
-<p><img src="/img/in-post/1578029090431.png" alt></p>
+<p><img data-src="/img/in-post/1578029090431.png" alt></p>
 <ul>
 <li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p>
 </li>
@@ -215,7 +244,7 @@
 <li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p>
 <h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li>
 </ul>
-<p><img src="/img/in-post/1578029209816.png" alt></p>
+<p><img data-src="/img/in-post/1578029209816.png" alt></p>
 <ul>
 <li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p>
 </li>
@@ -240,7 +269,7 @@
 <li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p>
 </li>
 </ul>
-<h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img src="/img/in-post/1578029278164.png" alt></p>
+<h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt></p>
 <p>RPC跨进程注册和调用的主要类</p>
           <!--noindex-->
             <div class="post-button">
@@ -311,7 +340,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -323,14 +366,14 @@
 
       
           <h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
-<p><img src="/img/in-post/1578029380086.png" alt></p>
-<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img src="/img/in-post/1578029399834.png" alt></p>
+<p><img data-src="/img/in-post/1578029380086.png" alt></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt></p>
 <p>说明：</p>
 <ul>
 <li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<t>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<domrpcimplementation>&gt; 内的List<domrpcimplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</domrpcimplementation></domrpcimplementation></t></li>
 <li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
 </ul>
-<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img src="/img/in-post/1578029444552.png" alt></p>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt></p>
 <ul>
 <li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<t>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</t></li>
 </ul>
@@ -391,7 +434,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-21 23:15:47" itemprop="dateModified" datetime="2020-03-21T23:15:47+08:00">2020-03-21</time>
+                <time title="Modified: 2020-03-22 18:10:50" itemprop="dateModified" datetime="2020-03-22T18:10:50+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -407,7 +450,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -418,11 +475,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>@[toc]<br>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
+          <p>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
 <h1 id="1-Executor框架简介"><a href="#1-Executor框架简介" class="headerlink" title="1. Executor框架简介"></a>1. Executor框架简介</h1><h2 id="1-1-Executor框架的两级调度模型"><a href="#1-1-Executor框架的两级调度模型" class="headerlink" title="1.1 Executor框架的两级调度模型"></a>1.1 Executor框架的两级调度模型</h2><p>在HotSpot VM的线程模型中，Java线程被一对一映射为本地操作系统线程。Java线程启动时会创建一个本地操作系统线程;当该Java线程终止时，这个操作系统线程也会被回收。操作系统会调度所有线程并将它们分配给可用的CPU。</p>
 <p>在上层，Java多线程程序通常应用分解为若干个任务，然后使用用户级的调度器（Executor框架）将这些任务映射为固定数量的线程；在底层，操作系统内核将这些线程映射到硬件处理器上。如这种两级调度模型示意图见下一节。</p>
 <p>从图中可以看出，应用程序通过Executor框架控制上层的调度；而下层的调度由操作系统内核控制，下层的调度不受应用程序的控制。</p>
-<h2 id="1-2-Executor框架的结构与成员"><a href="#1-2-Executor框架的结构与成员" class="headerlink" title="1.2 Executor框架的结构与成员"></a>1.2 Executor框架的结构与成员</h2><p><img src="/img/in-post/image-20191222214449679.png" alt></p>
+<h2 id="1-2-Executor框架的结构与成员"><a href="#1-2-Executor框架的结构与成员" class="headerlink" title="1.2 Executor框架的结构与成员"></a>1.2 Executor框架的结构与成员</h2><p><img data-src="/img/in-post/image-20191222214449679.png" alt></p>
 <h3 id="1-2-1-Executor框架的结构"><a href="#1-2-1-Executor框架的结构" class="headerlink" title="1.2.1 Executor框架的结构"></a>1.2.1 Executor框架的结构</h3><p>Executor框架主要由3大部分：</p>
           <!--noindex-->
             <div class="post-button">
@@ -493,7 +550,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -508,7 +579,7 @@
 <p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
 <p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
 <p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
-<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img src="/img/in-post/image-20200102230850144.png" alt></p>
+<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt></p>
 <p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
 <p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
 <h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2>
@@ -581,7 +652,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>6 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -709,7 +794,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-21 23:15:48" itemprop="dateModified" datetime="2020-03-21T23:15:48+08:00">2020-03-21</time>
+                <time title="Modified: 2020-03-22 18:10:50" itemprop="dateModified" datetime="2020-03-22T18:10:50+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -725,7 +810,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -736,17 +835,16 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>@[toc]</p>
-<h1 id="1-什么是Fork-Join框架"><a href="#1-什么是Fork-Join框架" class="headerlink" title="1.什么是Fork/Join框架"></a>1.什么是Fork/Join框架</h1><p>Fork/Join框架是Java 7提供的一个并行执行任务的框架，是一个把大小任务分割成若干小任务，最终汇总每个小人物结果后得到大任务结果的框架。</p>
+          <h1 id="1-什么是Fork-Join框架"><a href="#1-什么是Fork-Join框架" class="headerlink" title="1.什么是Fork/Join框架"></a>1.什么是Fork/Join框架</h1><p>Fork/Join框架是Java 7提供的一个并行执行任务的框架，是一个把大小任务分割成若干小任务，最终汇总每个小人物结果后得到大任务结果的框架。</p>
 <p>Fork就是把一个大任务切分成若干个小任务并行执行，Join就是合并这些子任务的执行结果，最后得到这个大任务的结果。比如计算1+2….+1000，可以分割成10个子任务，每个子任务分别对1000个数进行求和，最终汇总这10个子任务的结果。流程如下：</p>
-<p><img src="/img/in-post/image-20191108011932771.png" alt></p>
+<p><img data-src="/img/in-post/image-20191108011932771.png" alt></p>
 <h1 id="2-工作窃取算法"><a href="#2-工作窃取算法" class="headerlink" title="2.工作窃取算法"></a>2.工作窃取算法</h1><p>在需要做比较大的任务时，可以把任务分割成若干互不依赖的子任务，减少线程间的竞争。这些子任务被放到不同的队列，并为每个队列创建一个单独的线程来执行队列里的任务。有些线程执行任务比较快，就会”窃取”其他线程队里中的任务帮助干活。为了减少窃取与其他线程的之间的竞争，通常会使用双端队列，被窃取任务线程永远从双端队列头拿任务，而窃取任务的线程永远从双端队列的尾部拿任务执行。</p>
-<p><img src="/img/in-post/image-20191116171122073.png" alt></p>
+<p><img data-src="/img/in-post/image-20191116171122073.png" alt></p>
 <ul>
 <li>工作窃取算法的优点：充分利用线程进行并行计算，减少了线程间的竞争。</li>
 <li>工作窃取算法的缺点：在某些情况下还是存在竞争，比如双端队列里只有一个任务时。并且该算法会消耗了更多的系统资源，比如创建多个线程和多个多段队列。</li>
 </ul>
-<h1 id="3-Fork-Join框架的设计"><a href="#3-Fork-Join框架的设计" class="headerlink" title="3.Fork/Join框架的设计"></a>3.Fork/Join框架的设计</h1>
+<h1 id="3-Fork-Join框架的设计"><a href="#3-Fork-Join框架的设计" class="headerlink" title="3.Fork/Join框架的设计"></a>3.Fork/Join框架的设计</h1><p>如果自己设计，思考几个步骤：</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/11/06/java-concurrency-container-ForkJoin/#more" rel="contents">
@@ -804,7 +902,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-22 09:06:55" itemprop="dateModified" datetime="2020-03-22T09:06:55+08:00">2020-03-22</time>
+                <time title="Modified: 2020-03-22 18:10:51" itemprop="dateModified" datetime="2020-03-22T18:10:51+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -816,7 +914,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -827,7 +939,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>@[toc]<br>本文将总结众多排序算法中的一小撮，也是最经典、最常用的：冒泡排序、插入排序、选择排序、归并排序、快速排序、计数排序、基数排序、桶排序。依据时间复杂度可以分为三类，我将按照三次来总结。</p>
+          <p>本文将总结众多排序算法中的一小撮，也是最经典、最常用的：冒泡排序、插入排序、选择排序、归并排序、快速排序、计数排序、基数排序、桶排序。依据时间复杂度可以分为三类，我将按照三次来总结。</p>
 <table>
 <thead>
 <tr>
@@ -922,7 +1034,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-21 23:15:49" itemprop="dateModified" datetime="2020-03-21T23:15:49+08:00">2020-03-21</time>
+                <time title="Modified: 2020-03-22 18:10:51" itemprop="dateModified" datetime="2020-03-22T18:10:51+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -938,7 +1050,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>10 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -949,8 +1075,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>@[toc]</p>
-<h1 id="为什么引入ConcurrentHashMap"><a href="#为什么引入ConcurrentHashMap" class="headerlink" title="为什么引入ConcurrentHashMap"></a>为什么引入ConcurrentHashMap</h1><p>在并发编程中使用HashMap可能导致程序死循环。而使用线程安全的HashTable效率又非常低下，基于以上两个原因，便有了ConcurrentHash的出现。</p>
+          <h1 id="为什么引入ConcurrentHashMap"><a href="#为什么引入ConcurrentHashMap" class="headerlink" title="为什么引入ConcurrentHashMap"></a>为什么引入ConcurrentHashMap</h1><p>在并发编程中使用HashMap可能导致程序死循环。而使用线程安全的HashTable效率又非常低下，基于以上两个原因，便有了ConcurrentHash的出现。</p>
 <ul>
 <li><p>线程不安全的HashMap</p>
 <p>在多线程环境下，使用HashMap进行put操作会引起死循环，是因为多线程会导致HashMap的Entry链表形成环形数据结构，一旦形成环形数据结构，Entry的next节点永远不为空，就会产生死循环获取Entry，导致CPU利用率接近100%，所以在并发情况下不能使用HashMap。</p>
@@ -974,6 +1099,7 @@
 </li>
 <li>HashEntry内部使用volatile的value字段来保证可见性，也利用了不可变对象的机制以改进利用Unsafe提供的底层能力，比如volatile access，直接完成部分操作，以优化性能，毕竟Unsafe中的很多操作是JVM intrinsic优化过的。</li>
 </ul>
+<p><img data-src="/img/in-post/image-20191030234301439.png" alt></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/10/27/java-concurrency-container-ConcurrentHashMap/#more" rel="contents">
@@ -1031,7 +1157,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-22 09:06:55" itemprop="dateModified" datetime="2020-03-22T09:06:55+08:00">2020-03-22</time>
+                <time title="Modified: 2020-03-22 18:10:52" itemprop="dateModified" datetime="2020-03-22T18:10:52+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1043,7 +1169,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>179</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -1054,14 +1194,14 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>@[toc]</p>
-<h1 id="五花八门的链表结构"><a href="#五花八门的链表结构" class="headerlink" title="五花八门的链表结构"></a>五花八门的链表结构</h1><p>相比数组，线性表中的链表是一种稍复杂的数据结构。</p>
+          <h1 id="五花八门的链表结构"><a href="#五花八门的链表结构" class="headerlink" title="五花八门的链表结构"></a>五花八门的链表结构</h1><p>相比数组，线性表中的链表是一种稍复杂的数据结构。</p>
 <p>先看<strong>底层的存储结构</strong>，</p>
 <p>数组需要一块<strong>连续的内存空间</strong>，对内存要求比较高。如果没有连续的足够内存会申请失败。</p>
 <p>链表相反，<strong>不需要一块连续的内存空间</strong>，通过“指针”将一组<strong>零散的内存块</strong>串联起来。</p>
-<p><img src="/img/in-post/1571713260510.png" alt></p>
+<p><img data-src="/img/in-post/1571713260510.png" alt></p>
 <p>常用的链表主要有：<strong>单链表、双向链表、循环链表（包括双向循环链表）</strong>。</p>
-<h1 id="单链表"><a href="#单链表" class="headerlink" title="单链表"></a>单链表</h1><p><img src="/img/in-post/1571715568453.png" alt></p>
+<h1 id="单链表"><a href="#单链表" class="headerlink" title="单链表"></a>单链表</h1><p><img data-src="/img/in-post/1571715568453.png" alt></p>
+<p><img data-src="/img/in-post/1571715598599.png" alt></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/10/22/Algorithms_DS_DS_Link/#more" rel="contents">
@@ -1119,7 +1259,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-21 23:13:18" itemprop="dateModified" datetime="2020-03-21T23:13:18+08:00">2020-03-21</time>
+                <time title="Modified: 2020-03-22 18:10:55" itemprop="dateModified" datetime="2020-03-22T18:10:55+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1135,7 +1275,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -1146,8 +1300,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>@[toc]</p>
-<h1 id="原子性问题"><a href="#原子性问题" class="headerlink" title="原子性问题"></a>原子性问题</h1><p>在计算机硬件优化导致的3大BUG源头中，其中有一大源头就是原子性的问题，见<a href="[http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug%E7%9A%84%E6%BA%90%E5%A4%B4%E4%BA%8C%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%B8%A6%E6%9D%A5%E7%9A%84%E5%8E%9F%E5%AD%90%E6%80%A7%E9%97%AE%E9%A2%98](http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug的源头二线程切换带来的原子性问题)">线程切换带来的原子性问题</a>，解决原子性问题的一大方案是<strong>1）有锁方案：synchronized或者互斥锁Lock</strong>，当然这种锁有一个缺陷：需要加锁、解锁、本身加锁、释放锁性能消耗大，而且拿不到锁的线程还会进入阻塞状态，进而触发线程切换，线程切换对性能的消耗也很大。</p>
+          <h1 id="原子性问题"><a href="#原子性问题" class="headerlink" title="原子性问题"></a>原子性问题</h1><p>在计算机硬件优化导致的3大BUG源头中，其中有一大源头就是原子性的问题，见<a href="[http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug%E7%9A%84%E6%BA%90%E5%A4%B4%E4%BA%8C%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%B8%A6%E6%9D%A5%E7%9A%84%E5%8E%9F%E5%AD%90%E6%80%A7%E9%97%AE%E9%A2%98](http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug的源头二线程切换带来的原子性问题)">线程切换带来的原子性问题</a>，解决原子性问题的一大方案是<strong>1）有锁方案：synchronized或者互斥锁Lock</strong>，当然这种锁有一个缺陷：需要加锁、解锁、本身加锁、释放锁性能消耗大，而且拿不到锁的线程还会进入阻塞状态，进而触发线程切换，线程切换对性能的消耗也很大。</p>
 <p>当然还有一种<strong>2）无锁方案就是CAS自旋来实现变量的并发操作的原子操作</strong>。下面就来详细讲下CPU的原子操作并引入CAS指令到Java中来实现Java的原子操作，并且Java提供了Atomic包的多个原子操作的封装。</p>
 <p>下面这篇博客是要来说清楚Java解决原子性问题</p>
 <h1 id="原子操作的实现原理"><a href="#原子操作的实现原理" class="headerlink" title="原子操作的实现原理"></a>原子操作的实现原理</h1><h2 id="术语定义"><a href="#术语定义" class="headerlink" title="术语定义"></a>术语定义</h2><table>
@@ -1175,6 +1328,10 @@
 </tr>
 </tbody></table>
 <h2 id="CPU如何实现原子操作"><a href="#CPU如何实现原子操作" class="headerlink" title="CPU如何实现原子操作"></a>CPU如何实现原子操作</h2><p>32位IA-32 CPU使用基于<strong>缓存加锁、总线加锁</strong>的方式实现多处理器之间的原子操作。</p>
+<ul>
+<li>首先处理器会自动保证基本的内存操作的原子性。处理器保证从系统内存中读取或者写入一个字节是原子的，意思是当一个处理器读取一个字节数，其他处理器不能访问这个字节的内存地址。</li>
+<li>Pentium 6和最新处理器能自动保证<strong>单</strong>处理器对同一个缓存行里进行16/32/64位的操作是原子的</li>
+</ul>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/#more" rel="contents">
@@ -1259,6 +1416,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -1281,8 +1440,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -1308,6 +1490,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -1325,6 +1519,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -1338,6 +1534,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -1357,9 +1612,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

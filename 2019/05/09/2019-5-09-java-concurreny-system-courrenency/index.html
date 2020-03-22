@@ -17,15 +17,15 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="@[toc]本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。 在并发进程与并发线程一样如果不控制共享资源都会产生错误，这点暂不赘述。 先来看下进程之间的关系是怎么样的？ 进程间的关系 直接式与间接式制约 直接式制约：一程序段等待另一程序段的执行结果 间接式制约：并发程序段竞争同一资源  相交进程与无关进程：这个不用展开讲了，主要是逻辑上有无联系的区分。">
+  <meta name="description" content="本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。 在并发进程与并发线程一样如果不控制共享资源都会产生错误，这点暂不赘述。 先来看下进程之间的关系是怎么样的？ 进程间的关系 直接式与间接式制约 直接式制约：一程序段等待另一程序段的执行结果 间接式制约：并发程序段竞争同一资源  相交进程与无关进程：这个不用展开讲了，主要是逻辑上有无联系的区分。  进程的同步">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【基本概念篇】九、从操作系统角度看并发">
 <meta property="og:url" content="http://yoursite.com/2019/05/09/2019-5-09-java-concurreny-system-courrenency/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="@[toc]本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。 在并发进程与并发线程一样如果不控制共享资源都会产生错误，这点暂不赘述。 先来看下进程之间的关系是怎么样的？ 进程间的关系 直接式与间接式制约 直接式制约：一程序段等待另一程序段的执行结果 间接式制约：并发程序段竞争同一资源  相交进程与无关进程：这个不用展开讲了，主要是逻辑上有无联系的区分。">
+<meta property="og:description" content="本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。 在并发进程与并发线程一样如果不控制共享资源都会产生错误，这点暂不赘述。 先来看下进程之间的关系是怎么样的？ 进程间的关系 直接式与间接式制约 直接式制约：一程序段等待另一程序段的执行结果 间接式制约：并发程序段竞争同一资源  相交进程与无关进程：这个不用展开讲了，主要是逻辑上有无联系的区分。  进程的同步">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://yoursite.com/img/in-post/1557480839440.png">
 <meta property="og:image" content="http://yoursite.com/img/in-post/1557480647158.png">
@@ -42,7 +42,7 @@
 <meta property="og:image" content="http://yoursite.com/img/in-post/1557828401466.png">
 <meta property="og:image" content="http://yoursite.com/img/in-post/1557891985426.png">
 <meta property="article:published_time" content="2019-05-08T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-03-22T01:06:50.923Z">
+<meta property="article:modified_time" content="2020-03-22T10:10:42.857Z">
 <meta property="article:author" content="ZhouLei">
 <meta property="article:tag" content="并发">
 <meta property="article:tag" content="操作系统">
@@ -135,9 +135,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -199,7 +214,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-22 09:06:50" itemprop="dateModified" datetime="2020-03-22T09:06:50+08:00">2020-03-22</time>
+                <time title="Modified: 2020-03-22 18:10:42" itemprop="dateModified" datetime="2020-03-22T18:10:42+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -215,7 +230,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.9k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -226,7 +255,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>@[toc]<br>本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。</p>
+        <p>本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。</p>
 <p>在并发进程与并发线程一样如果不控制共享资源都会产生错误，这点暂不赘述。</p>
 <p>先来看下进程之间的关系是怎么样的？</p>
 <h1 id="进程间的关系"><a href="#进程间的关系" class="headerlink" title="进程间的关系"></a>进程间的关系</h1><ol>
@@ -244,7 +273,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="/img/in-post/1557480839440.png" alt=""></p>
+<p><img data-src="/img/in-post/1557480839440.png" alt=""></p>
 <ul>
 <li><p>进程互斥（间接作用）：各进程竞争使用临界资源</p>
 <ul>
@@ -253,7 +282,7 @@
 <li><p>进程互斥是进程同步的一种特殊情况</p>
 </li>
 <li><p>进程间要通过某种中介发生联系，是无意识安排的，可以发生在相交进程之间，也可发生在无关进程之间。</p>
-<p><img src="/img/in-post/1557480647158.png" alt=""></p>
+<p><img data-src="/img/in-post/1557480647158.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -273,15 +302,15 @@
 </ul>
 <h2 id="临界区管理的软件方法"><a href="#临界区管理的软件方法" class="headerlink" title="临界区管理的软件方法"></a>临界区管理的软件方法</h2><ol>
 <li><p>两个失败的尝试（1）</p>
-<p><img src="/img/in-post/1557481280511.png" alt=""></p>
+<p><img data-src="/img/in-post/1557481280511.png" alt=""></p>
 </li>
 <li><p>两个失败的尝试（2）</p>
-<p><img src="/img/in-post/1557483560956.png" alt=""></p>
+<p><img data-src="/img/in-post/1557483560956.png" alt=""></p>
 </li>
 </ol>
 <ol start="3">
 <li><p>成功解决方法（Dekker算法）</p>
-<p><img src="/img/in-post/1557483597707.png" alt=""></p>
+<p><img data-src="/img/in-post/1557483597707.png" alt=""></p>
 </li>
 </ol>
 <p>实现临界区管理当然还有硬件方法比如测试并建立指令TS、交换指令SWAP、开关中断指令。</p>
@@ -317,7 +346,7 @@
 <p>信号量说明：<strong>semaphore s</strong> </p>
 </li>
 </ul>
-<p><img src="/img/in-post/1558404234145.png" alt=""></p>
+<p><img data-src="/img/in-post/1558404234145.png" alt=""></p>
 <ul>
 <li>信号量的特性<ul>
 <li>信号量代表对某种公共资源的管理（如车开出停车场）时，此时若信号量队列有等待进程则释放一个（如让一辆车进入停车场）。</li>
@@ -343,7 +372,7 @@
    }    
    //若s.value减1后仍大于或等于零，则进程继续执行         
 } </code></pre>
-<p><img src="/img/in-post/1558405062067.png" alt=""></p>
+<p><img data-src="/img/in-post/1558405062067.png" alt=""></p>
 </li>
 </ol>
 <ol start="3">
@@ -360,7 +389,7 @@
      } 
   //若相加结果大于零，则进程继续执行 
 }</code></pre>
-<p><img src="/img/in-post/1558405115200.png" alt=""></p>
+<p><img data-src="/img/in-post/1558405115200.png" alt=""></p>
 </li>
 </ol>
 <h2 id="信号量的使用"><a href="#信号量的使用" class="headerlink" title="信号量的使用"></a>信号量的使用</h2><ul>
@@ -404,7 +433,7 @@ Coend</code></pre>
 <ul>
 <li><p>生产者——消费者问题</p>
 <p>问题描述：生产者往缓冲区中放产品，消费者从缓冲区中取产品，如下图所示</p>
-<p><img src="/img/in-post/1558405630788.png" alt=""></p>
+<p><img data-src="/img/in-post/1558405630788.png" alt=""></p>
 <p>生产者P进程不能往“满”的缓冲区中放产品，设置<strong>信号量为S1，初值为1，代表缓冲区有1个空闲空间</strong></p>
 <p>消费者Q进程不能从“空”的缓冲区中取产品，设置<strong>信号量S2 ，初值为0，代表缓冲区有0个产品</strong></p>
 <pre><code class="c++">P        //生产者进程
@@ -501,7 +530,7 @@ while  (true)  {
 <li><p>共享存储区为内存中的某一个区域，映射在若干需通过该区域通信的进程的虚地址空间中。</p>
 </li>
 <li><p>一个进程的虚地址空间可以连接多个共享存储区。</p>
-<p><img src="/img/in-post/1557804687065.png" alt=""></p>
+<p><img data-src="/img/in-post/1557804687065.png" alt=""></p>
 </li>
 <li><p>现在内存中建立一共享存储区，然后将它符街道自己的虚地址空间上。此后，进程对该区的访问操作，与对其虚地址空间的其他部分操作完全相同，通过对共享存储区的读、写来进行直接通信。</p>
 </li>
@@ -520,7 +549,7 @@ while  (true)  {
 <li><p>当一个进程收到多个消息时，可将它们排成一个消息队列</p>
 </li>
 <li><p>每个消息队列都有一个成为关键字（key）的名字，即<strong>消息队列描述符</strong>，由用户指定，其作用与用户文件描述符一样，是为了方便用户和系统对消息队列的访问。</p>
-<p><img src="/img/in-post/1557805094747.png" alt=""></p>
+<p><img data-src="/img/in-post/1557805094747.png" alt=""></p>
 <p><strong>共享存储区和消息通信机制对比</strong>：</p>
 <ul>
 <li>建立：<strong>消息队列的建立消耗资源更少</strong>，只是软件上的设定问题；而共享区需要对硬件操作，实现内存的映像，控制起来更复杂。如果每次都重新进行队列或共享的建立，共享区的设立没什么优势</li>
@@ -537,9 +566,9 @@ while  (true)  {
 <li><p>由写进程从管道的写入端（句柄1）将数据写入管道，而读进程则从管道的读出端（句柄0）读出数据。</p>
 </li>
 <li><p>通信管道的互斥问题：主要通过检查索引文件是否被上锁，上锁则进程休眠等待。</p>
-<p><img src="/img/in-post/1557828358133.png" alt=""></p>
+<p><img data-src="/img/in-post/1557828358133.png" alt=""></p>
 <p>​    </p>
-<p><img src="/img/in-post/1557828401466.png" alt=""></p>
+<p><img data-src="/img/in-post/1557828401466.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -571,13 +600,33 @@ use 本管程外部定义、内部可调用的函数名表;
 <li>任何进程要归还资源时，也必须进入管程通过调用其内的某个函数进行归还</li>
 <li>进程必须互斥访问管程，即同一时刻只能由一个进程在调用管程内的某个函数</li>
 </ul>
-<h3 id="管程运行示意图"><a href="#管程运行示意图" class="headerlink" title="管程运行示意图"></a>管程运行示意图</h3><p><img src="/img/in-post/1557891985426.png" alt=""></p>
+<h3 id="管程运行示意图"><a href="#管程运行示意图" class="headerlink" title="管程运行示意图"></a>管程运行示意图</h3><p><img data-src="/img/in-post/1557891985426.png" alt=""></p>
 
     </div>
 
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -592,8 +641,8 @@ use 本管程外部定义、内部可调用的函数名表;
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/" rel="prev" title="【基本概念篇】八、安全性、活跃性、性能问题">
-      <i class="fa fa-chevron-left"></i> 【基本概念篇】八、安全性、活跃性、性能问题
+    <a href="/2019/04/21/2019-4-21-java-concurreny-deadlock/" rel="prev" title="【基本概念篇】七、死锁">
+      <i class="fa fa-chevron-left"></i> 【基本概念篇】七、死锁
     </a></div>
       <div class="post-nav-item">
     <a href="/2019/05/10/2019-5-10-java-concurreny-java-monitor/" rel="next" title="【基本概念篇】十、管程——并发编程的万能钥匙">
@@ -664,6 +713,8 @@ use 本管程外部定义、内部可调用的函数名表;
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -686,8 +737,31 @@ use 本管程外部定义、内部可调用的函数名表;
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -713,6 +787,18 @@ use 本管程外部定义、内部可调用的函数名表;
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -730,6 +816,8 @@ use 本管程外部定义、内部可调用的函数名表;
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -743,6 +831,65 @@ use 本管程外部定义、内部可调用的函数名表;
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -762,9 +909,11 @@ use 本管程外部定义、内部可调用的函数名表;
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

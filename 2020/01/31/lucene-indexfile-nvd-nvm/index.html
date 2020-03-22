@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。 nvd、nvm文件作用nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最">
@@ -130,9 +130,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -206,7 +221,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -220,15 +249,15 @@
         <p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
 <h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
 <p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
-<p><img src="/img/in-post/1-20200201134606149.png" alt=""></p>
-<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img src="/img/in-post/2.png" alt=""></p>
+<p><img data-src="/img/in-post/1-20200201134606149.png" alt=""></p>
+<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt=""></p>
 <ul>
 <li><p><strong>FieldData</strong></p>
 <p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
 <p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
 <ul>
 <li><p><strong>DocsWithFieldData</strong></p>
-<p><img src="/img/in-post/3.png" alt=""></p>
+<p><img data-src="/img/in-post/3.png" alt=""></p>
 <p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
 <ul>
 <li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
@@ -249,11 +278,11 @@
 <ul>
 <li><strong>NormsData</strong></li>
 </ul>
-<p>  <img src="/img/in-post/4.png" alt=""></p>
+<p>  <img data-src="/img/in-post/4.png" alt=""></p>
 <ul>
 <li>Value</li>
 </ul>
-<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img src="/img/in-post/5.png" alt=""></p>
+<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img data-src="/img/in-post/5.png" alt=""></p>
 <ul>
 <li><p><strong>FieldNumber</strong></p>
 <p>域的编号，用来唯一标识一种域</p>
@@ -264,7 +293,7 @@
 <p>如果numDocWithValue == maxDoc 或者 numDocWithValue == 0 , 那么DocWithFieldAddress跟DocsWithFieldLength会被设置为固定值。否则这两个值作为索引去映射nvd中的一块数据区域。</p>
 </li>
 </ul>
-<p>  <img src="/img/in-post/6.png" alt=""></p>
+<p>  <img data-src="/img/in-post/6.png" alt=""></p>
 <ul>
 <li><p><strong>NumDocsWithField</strong></p>
 <p>NumDocsWithField描述了包含当前域的文档个数。</p>
@@ -280,16 +309,36 @@
 <p>NormsAddress作为索引映射nvd中一块数据区域，这块数据区域即当前域所在文档中的标准化值。</p>
 </li>
 </ul>
-<p>  <img src="/img/in-post/7.png" alt=""></p>
-<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img src="/img/in-post/8.png" alt=""></p>
+<p>  <img data-src="/img/in-post/7.png" alt=""></p>
+<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img data-src="/img/in-post/8.png" alt=""></p>
 <h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
-<p><img src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
+<p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
 
     </div>
 
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -376,6 +425,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -398,8 +449,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -425,6 +499,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -442,6 +528,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -455,6 +543,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -474,9 +621,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

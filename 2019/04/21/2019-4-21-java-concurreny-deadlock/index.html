@@ -17,15 +17,15 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="@[toc] 死锁问题当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。 在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。 死锁发生的场景顺序死锁p">
+  <meta name="description" content="死锁问题当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。 在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。 死锁发生的场景顺序死锁public c">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【基本概念篇】七、死锁">
 <meta property="og:url" content="http://yoursite.com/2019/04/21/2019-4-21-java-concurreny-deadlock/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="@[toc] 死锁问题当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。 在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。 死锁发生的场景顺序死锁p">
+<meta property="og:description" content="死锁问题当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。 在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。 死锁发生的场景顺序死锁public c">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://yoursite.com/img/in-post/image-20190429231508637.png">
 <meta property="og:image" content="http://yoursite.com/img/in-post/image-20190504230927674.png">
@@ -41,7 +41,7 @@
 <meta property="og:image" content="http://yoursite.com/img/in-post/1557889601088.png">
 <meta property="og:image" content="http://yoursite.com/img/in-post/1557890546652.png">
 <meta property="article:published_time" content="2019-04-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-03-22T01:06:51.992Z">
+<meta property="article:modified_time" content="2020-03-22T10:10:43.983Z">
 <meta property="article:author" content="ZhouLei">
 <meta property="article:tag" content="java">
 <meta property="article:tag" content="并发">
@@ -134,9 +134,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -198,7 +213,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-22 09:06:51" itemprop="dateModified" datetime="2020-03-22T09:06:51+08:00">2020-03-22</time>
+                <time title="Modified: 2020-03-22 18:10:43" itemprop="dateModified" datetime="2020-03-22T18:10:43+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -214,7 +229,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5.8k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -225,8 +254,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>@[toc]</p>
-<h1 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h1><p><strong>当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。</strong></p>
+        <h1 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h1><p><strong>当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。</strong></p>
 <p>在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。</p>
 <h1 id="死锁发生的场景"><a href="#死锁发生的场景" class="headerlink" title="死锁发生的场景"></a>死锁发生的场景</h1><h2 id="顺序死锁"><a href="#顺序死锁" class="headerlink" title="顺序死锁"></a>顺序死锁</h2><pre><code class="java">public class LeaftRightLock {
     private final Object leftLock = new Object();
@@ -248,7 +276,7 @@
         }
     }
 }</code></pre>
-<p><img src="/img/in-post/image-20190429231508637.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190429231508637.png" alt=""></p>
 <ul>
 <li><p>死锁场景：两个线程试图以不同顺序来获得相同的锁。</p>
 </li>
@@ -256,17 +284,17 @@
 </li>
 </ul>
 <h2 id="动态的锁顺序死锁"><a href="#动态的锁顺序死锁" class="headerlink" title="动态的锁顺序死锁"></a>动态的锁顺序死锁</h2><p>有时候，不能清楚知道是否在锁顺序上有足够的控制权来避免死锁的发生。如下程序看似没什么问题，将资金从一个账户转入另外一个账户，在转账之前要获得者两个Account对象的锁，以确保通过原子方式来更新两个账户中的余额。</p>
-<p><img src="/img/in-post/image-20190504230927674.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190504230927674.png" alt=""></p>
 <ul>
 <li><p>死锁场景：</p>
-<p><img src="/img/in-post/image-20190504231105232.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190504231105232.png" alt=""></p>
 </li>
 <li><p>死锁避免：不要在不定的参数中获取锁。通过定义锁获取顺序，并在整个应用中都按照整个顺序来获取锁。</p>
 </li>
 </ul>
 <h2 id="在协作对象之间发生的死锁"><a href="#在协作对象之间发生的死锁" class="headerlink" title="在协作对象之间发生的死锁"></a>在协作对象之间发生的死锁</h2><p>有些操作获取多个锁不一定是在同一个方法或者同一个类中获取，比如有一些协同的类，如下：</p>
-<p><img src="/img/in-post/image-20190504231654991.png" alt=""></p>
-<p><img src="/img/in-post/image-20190504231712322.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190504231654991.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190504231712322.png" alt=""></p>
 <p> Taxi类的setLocation方法会调用Dispatcher的notifyAvailable(this)。</p>
 <p>而Dispatcher的getImage方法会调用Taxit的getLocation方法。</p>
 <ul>
@@ -291,7 +319,7 @@
 <li>可以总结，当多个互相协作的线程都对彼此进行响应从而修复各自的状态，并使得任何一个线程都无法继续执行时，就发生了<strong>活锁</strong>。就好像两个人过马路，两个人同时选择让出对方的芦，这样他们就会反复避让下去。</li>
 </ul>
 <h1 id="死锁预防"><a href="#死锁预防" class="headerlink" title="死锁预防"></a>死锁预防</h1><h2 id="案例分析-转账与存款问题"><a href="#案例分析-转账与存款问题" class="headerlink" title="案例分析(转账与存款问题)"></a>案例分析(转账与存款问题)</h2><p>细粒度锁分别保护账户与目标账户</p>
-<p><img src="/img/in-post/image-20190506233557203.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190506233557203.png" alt=""></p>
 <p>问题代码如下：</p>
 <pre><code class="java">class Account {
   private int balance;
@@ -310,8 +338,8 @@
   } 
 }</code></pre>
 <p>发生死锁：</p>
-<p><img src="/img/in-post/image-20190506233658857.png" alt=""></p>
-<p><img src="/img/in-post/image-20190506233741175.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190506233658857.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20190506233741175.png" alt=""></p>
 <h2 id="死锁发生的四个条件"><a href="#死锁发生的四个条件" class="headerlink" title="死锁发生的四个条件"></a>死锁发生的四个条件</h2><ol>
 <li><p><strong>互斥</strong>：共享资源X和Y只能被一个线程占用；</p>
 </li>
@@ -331,7 +359,7 @@
 <p>上面说的是理论上如何预防死锁，那具体体现在代码上是怎么样的？就按照案例分析中（转账与存款问题）的问题代码来实践下。</p>
 <h2 id="解决死锁的静态方法：破坏三个条件实践"><a href="#解决死锁的静态方法：破坏三个条件实践" class="headerlink" title="解决死锁的静态方法：破坏三个条件实践"></a>解决死锁的静态方法：破坏三个条件实践</h2><h3 id="1-破坏“占用且等待”条件"><a href="#1-破坏“占用且等待”条件" class="headerlink" title="1. 破坏“占用且等待”条件"></a>1. 破坏“占用且等待”条件</h3><p>理论上讲，要破坏这个条件可以一次申请所有资源。如上面的案例，资源有两个：转出账户、转入账户。要同时申请这两个账户，怎么解决？</p>
 <p>增加一个账户管理员，只允许账户管理员拿账户。当张三申请账户A和账户B，如果当前只有账户A空闲，那么就不会把账户A给张三。</p>
-<p><img src="/img/in-post/1557199878669.png" alt=""></p>
+<p><img data-src="/img/in-post/1557199878669.png" alt=""></p>
 <p>因此，“同时申请”就是一个临界区，需要新增一个角色（类）来管理整个临界区。</p>
 <p>角色定义：Allocator。</p>
 <p>两个功能：申请apply()和释放free()。</p>
@@ -419,7 +447,7 @@ class Account {
 <li><p>在系统运行过程中，对进程发出的系统资源申请进行动态检查，并根据检查决定是否分配资源，若分配后系统可能发生死锁，则不予分配，否则予以分配。</p>
 </li>
 <li><p>关键在与区分安全状态与不安全状态，安全状态一定没有死锁发生，因而对进程的申请进行试分配，分配后系统状态为安全状态则满足，否则不满足。</p>
-<p><img src="/img/in-post/1557888026650.png" alt=""></p>
+<p><img data-src="/img/in-post/1557888026650.png" alt=""></p>
 </li>
 </ul>
 <h3 id="一个典型的死锁避免算法：银行家算法"><a href="#一个典型的死锁避免算法：银行家算法" class="headerlink" title="一个典型的死锁避免算法：银行家算法"></a>一个典型的死锁避免算法：银行家算法</h3><ul>
@@ -429,10 +457,10 @@ class Account {
 <p><strong>安全状态</strong>是：如果系统的所有进程能够排成一个安全序列，则系统处于安全状态。</p>
 </li>
 <li><p>解决单种资源的案例（存在安全序列、不存在安全序列）</p>
-<p><img src="/img/in-post/1557889587309.png" alt=""></p>
+<p><img data-src="/img/in-post/1557889587309.png" alt=""></p>
 </li>
 </ul>
-<p><img src="/img/in-post/1557889601088.png" alt=""></p>
+<p><img data-src="/img/in-post/1557889601088.png" alt=""></p>
 <p>另外银行家算法还用来解决多种资源申请避免死锁的场景应用中，这里就不在展开来讲了。</p>
 <h1 id="死锁的检测及解除"><a href="#死锁的检测及解除" class="headerlink" title="死锁的检测及解除"></a>死锁的检测及解除</h1><h2 id="基本策略-1"><a href="#基本策略-1" class="headerlink" title="基本策略"></a>基本策略</h2><ul>
 <li>允许死锁发生</li>
@@ -458,7 +486,7 @@ class Account {
 <li><p>有环路，且每个资源类中仅有一个资源，则系统中发生了死锁。此时，环路是系统发生死锁的<strong>充分条件</strong>，环路中的进程便成为死锁进程。</p>
 </li>
 <li><p>有环路，且涉及的资源类中有多个资源，则环路的存在只是产生死锁的<strong>必要条件</strong>而不是充分条件。</p>
-<p><img src="/img/in-post/1557890546652.png" alt=""></p>
+<p><img data-src="/img/in-post/1557890546652.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -491,6 +519,26 @@ class Account {
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -505,12 +553,12 @@ class Account {
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/04/20/2019-4-20-java-concurrency-lock/" rel="prev" title="【基本概念篇】六、互斥锁：解决原子性问题">
-      <i class="fa fa-chevron-left"></i> 【基本概念篇】六、互斥锁：解决原子性问题
+    <a href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/" rel="prev" title="【基本概念篇】八、安全性、活跃性、性能问题">
+      <i class="fa fa-chevron-left"></i> 【基本概念篇】八、安全性、活跃性、性能问题
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/" rel="next" title="【基本概念篇】八、安全性、活跃性、性能问题">
-      【基本概念篇】八、安全性、活跃性、性能问题 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/" rel="next" title="【基本概念篇】九、从操作系统角度看并发">
+      【基本概念篇】九、从操作系统角度看并发 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -577,6 +625,8 @@ class Account {
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -599,8 +649,31 @@ class Account {
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -626,6 +699,18 @@ class Account {
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -643,6 +728,8 @@ class Account {
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -656,6 +743,65 @@ class Account {
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -675,9 +821,11 @@ class Account {
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

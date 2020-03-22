@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta property="og:type" content="website">
@@ -113,9 +113,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -190,7 +205,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>0</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -201,7 +230,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p><img src="/img/in-post/image-20200304223050677.png" alt></p>
+          <p><img data-src="/img/in-post/image-20200304223050677.png" alt></p>
 
           <!--noindex-->
             <div class="post-button">
@@ -272,7 +301,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -371,7 +414,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -385,7 +442,7 @@
           <p><strong>源码位置：org/apache/lucene/util/FixedBitSet.java</strong></p>
 <p>FixedBitSet类在Lucene中属于一个工具类(Util)，一个用途主要是存储文档号，用一个bit位来描述（存储）一个文档号。</p>
 <p>特别<strong>适合存储连续并且没有重复的int类型的数值</strong>。最好情况可以用8个字节描述64个int类型的值。</p>
-<p><img src="/img/in-post/image-20200204105429938.png" alt></p>
+<p><img data-src="/img/in-post/image-20200204105429938.png" alt></p>
 <p>如图，8个字节即8*8=64位，每一位（置1）表示一个文档号，可以连续存储0~63 这64个文档号。</p>
 <p>下面通过源码解读的方式总结FixedBitSet的存储原理。</p>
 <h1 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h1><pre><code class="java">  /**
@@ -469,7 +526,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -489,8 +560,8 @@
 <li>⬇ -&gt; 下箭头</li>
 <li>⌃ -&gt; Control</li>
 </ul>
-<h2 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h2><p><img src="/img/in-post/image-20200208004639972.png" alt></p>
-<p><img src="/img/in-post/image-20200208004702512.png" alt></p>
+<h2 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h2><p><img data-src="/img/in-post/image-20200208004639972.png" alt></p>
+<p><img data-src="/img/in-post/image-20200208004702512.png" alt></p>
 <table>
 <thead>
 <tr>
@@ -520,7 +591,7 @@
 <td>Find in Path</td>
 </tr>
 </tbody></table>
-<h2 id="快速跳转"><a href="#快速跳转" class="headerlink" title="快速跳转"></a>快速跳转</h2><p><img src="/img/in-post/image-20200208011618763.png" alt></p>
+<h2 id="快速跳转"><a href="#快速跳转" class="headerlink" title="快速跳转"></a>快速跳转</h2><p><img data-src="/img/in-post/image-20200208011618763.png" alt></p>
 <table>
 <thead>
 <tr>
@@ -619,7 +690,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -633,7 +718,7 @@
           <p><strong>源码位置：org/apache/lucene/util/FixedBitSet.java</strong></p>
 <p>FixedBitSet类在Lucene中属于一个工具类(Util)，一个用途主要是存储文档号，用一个bit位来描述（存储）一个文档号。</p>
 <p>特别<strong>适合存储连续并且没有重复的int类型的数值</strong>。最好情况可以用8个字节描述64个int类型的值。</p>
-<p><img src="/img/in-post/image-20200204105429938.png" alt></p>
+<p><img data-src="/img/in-post/image-20200204105429938.png" alt></p>
 <p>如图，8个字节即8*8=64位，每一位（置1）表示一个文档号，可以连续存储0~63 这64个文档号。</p>
 <p>下面通过源码解读的方式总结FixedBitSet的存储原理。</p>
 <h1 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h1><pre><code class="java">  /**
@@ -717,7 +802,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -730,9 +829,9 @@
       
           <p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
 <h1 id="doc文件"><a href="#doc文件" class="headerlink" title="doc文件"></a>doc文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>索引文件.doc按块block的方式存放每一个<strong>term的文档号、词频</strong>，并且保存skip data来实现块之间的快速跳转，本篇只介绍.doc的数据结构，生成过程后续文章总结。</p>
-<h2 id="doc文件的数据结构"><a href="#doc文件的数据结构" class="headerlink" title="doc文件的数据结构"></a>doc文件的数据结构</h2><p><img src="/img/in-post/1-20200202100530710.png" alt></p>
+<h2 id="doc文件的数据结构"><a href="#doc文件的数据结构" class="headerlink" title="doc文件的数据结构"></a>doc文件的数据结构</h2><p><img data-src="/img/in-post/1-20200202100530710.png" alt></p>
 <p>TermFreqs保存了term的所有文档号、词频信息，TermFreqs中按块存储，使用SkipData实现这些块之间的快速跳转。</p>
-<h3 id="TermFreqs"><a href="#TermFreqs" class="headerlink" title="TermFreqs"></a>TermFreqs</h3><p><img src="/img/in-post/2-20200202100922059.png" alt></p>
+<h3 id="TermFreqs"><a href="#TermFreqs" class="headerlink" title="TermFreqs"></a>TermFreqs</h3><p><img data-src="/img/in-post/2-20200202100922059.png" alt></p>
 <ul>
 <li><p><strong>PackedBlock</strong></p>
 <p>每处理包含term的128篇文档，就将这些文档的信息处理为一个PackedBlock。</p>
@@ -826,7 +925,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -925,7 +1038,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -939,15 +1066,15 @@
           <p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
 <h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
 <p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
-<p><img src="/img/in-post/1-20200201134606149.png" alt></p>
-<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img src="/img/in-post/2.png" alt></p>
+<p><img data-src="/img/in-post/1-20200201134606149.png" alt></p>
+<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt></p>
 <ul>
 <li><p><strong>FieldData</strong></p>
 <p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
 <p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
 <ul>
 <li><p><strong>DocsWithFieldData</strong></p>
-<p><img src="/img/in-post/3.png" alt></p>
+<p><img data-src="/img/in-post/3.png" alt></p>
 <p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
 <ul>
 <li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
@@ -1037,7 +1164,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -1054,7 +1195,7 @@
 <p><strong>offset</strong>是一对整数值(a pair of integers)，即startOffset跟endOffset，它们分别描述了term的第一个字符跟最后一个在文档中的位置。</p>
 <p>每一个term在所有文档中的position、payload、offset信息在IndexWriter.addDocument()的过程中计算出来，在内存在生成一张<strong>倒排表</strong>，最终持久化到磁盘时，通过读取倒排表，将<strong>position信息写入到.pos</strong>文件中，将<strong>payload、offset信息写入到.pay</strong>文件中。</p>
 <p>下面总结.pos文件和.pay的数据结构，关于.pos、.pay的生成过程，在后续文章总结。</p>
-<h2 id="pay文件的数据结构"><a href="#pay文件的数据结构" class="headerlink" title="pay文件的数据结构"></a>pay文件的数据结构</h2><p><img src="/img/in-post/1-20200201154718749.png" alt></p>
+<h2 id="pay文件的数据结构"><a href="#pay文件的数据结构" class="headerlink" title="pay文件的数据结构"></a>pay文件的数据结构</h2><p><img data-src="/img/in-post/1-20200201154718749.png" alt></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/01/31/lucene-indexfile-pos-pay/#more" rel="contents">
@@ -1112,7 +1253,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-22 09:06:54" itemprop="dateModified" datetime="2020-03-22T09:06:54+08:00">2020-03-22</time>
+                <time title="Modified: 2020-03-22 18:09:36" itemprop="dateModified" datetime="2020-03-22T18:09:36+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1128,7 +1269,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>13 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -1144,7 +1299,7 @@
 <p>第二：提高响应速度。当任务到达时，任务可以不需要等线程创建就能立即执行。</p>
 <p>第三：提高线程的可管理性。无限制创建线程会消耗系统资源、降低系统稳定性，使用线程池可以进行统一分配、调优和监控。</p>
 <h2 id="1-1-线程池的实现原理"><a href="#1-1-线程池的实现原理" class="headerlink" title="1.1 线程池的实现原理"></a>1.1 线程池的实现原理</h2><p>当往线程池提交一个任务之后，线程池是如何处理这个任务的？下面来看线程池主要处理流程。</p>
-<h3 id="1-1-1-主要处理流程"><a href="#1-1-1-主要处理流程" class="headerlink" title="1.1.1 主要处理流程"></a>1.1.1 主要处理流程</h3><p><img src="/img/in-post/1574908942078.png" alt></p>
+<h3 id="1-1-1-主要处理流程"><a href="#1-1-1-主要处理流程" class="headerlink" title="1.1.1 主要处理流程"></a>1.1.1 主要处理流程</h3><p><img data-src="/img/in-post/1574908942078.png" alt></p>
 <p>当提交一个新任务到线程池时，线程池的处理流程如下：</p>
           <!--noindex-->
             <div class="post-button">
@@ -1230,6 +1385,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -1252,8 +1409,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -1279,6 +1459,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -1296,6 +1488,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -1309,6 +1503,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -1328,9 +1581,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

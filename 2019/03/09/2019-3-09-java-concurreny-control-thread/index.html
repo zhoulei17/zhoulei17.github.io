@@ -17,18 +17,18 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="@[toc] 控制Java线程线程休眠sleep如果想让当前线程暂停执行一段时间并进入阻塞状态，调用Thread的静态方法sleep()。 在调用sleep后，当前线程会睡眠（即阻塞）。 线程让步yieldyield暗示线程调度器来做出CPU时间片切换。当调用yield时，是在建议具有相同优先级的其他线程可运行。注：实际任何机制都不能依赖于yield来控制线程的调度和执行。 sleep与yield">
+  <meta name="description" content="控制Java线程线程休眠sleep如果想让当前线程暂停执行一段时间并进入阻塞状态，调用Thread的静态方法sleep()。 在调用sleep后，当前线程会睡眠（即阻塞）。 线程让步yieldyield暗示线程调度器来做出CPU时间片切换。当调用yield时，是在建议具有相同优先级的其他线程可运行。注：实际任何机制都不能依赖于yield来控制线程的调度和执行。 sleep与yield的区别 优先级">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【基本概念篇】三、控制线程">
 <meta property="og:url" content="http://yoursite.com/2019/03/09/2019-3-09-java-concurreny-control-thread/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="@[toc] 控制Java线程线程休眠sleep如果想让当前线程暂停执行一段时间并进入阻塞状态，调用Thread的静态方法sleep()。 在调用sleep后，当前线程会睡眠（即阻塞）。 线程让步yieldyield暗示线程调度器来做出CPU时间片切换。当调用yield时，是在建议具有相同优先级的其他线程可运行。注：实际任何机制都不能依赖于yield来控制线程的调度和执行。 sleep与yield">
+<meta property="og:description" content="控制Java线程线程休眠sleep如果想让当前线程暂停执行一段时间并进入阻塞状态，调用Thread的静态方法sleep()。 在调用sleep后，当前线程会睡眠（即阻塞）。 线程让步yieldyield暗示线程调度器来做出CPU时间片切换。当调用yield时，是在建议具有相同优先级的其他线程可运行。注：实际任何机制都不能依赖于yield来控制线程的调度和执行。 sleep与yield的区别 优先级">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2019-03-08T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-03-21T15:15:43.486Z">
+<meta property="article:modified_time" content="2020-03-22T10:10:46.076Z">
 <meta property="article:author" content="ZhouLei">
 <meta property="article:tag" content="java">
 <meta property="article:tag" content="并发">
@@ -119,9 +119,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -183,7 +198,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-21 23:15:43" itemprop="dateModified" datetime="2020-03-21T23:15:43+08:00">2020-03-21</time>
+                <time title="Modified: 2020-03-22 18:10:46" itemprop="dateModified" datetime="2020-03-22T18:10:46+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -199,7 +214,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>12 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -210,8 +239,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>@[toc]</p>
-<h1 id="控制Java线程"><a href="#控制Java线程" class="headerlink" title="控制Java线程"></a>控制Java线程</h1><h2 id="线程休眠sleep"><a href="#线程休眠sleep" class="headerlink" title="线程休眠sleep"></a>线程休眠sleep</h2><p>如果想让当前线程暂停执行一段时间并进入<strong>阻塞</strong>状态，调用Thread的静态方法sleep()。</p>
+        <h1 id="控制Java线程"><a href="#控制Java线程" class="headerlink" title="控制Java线程"></a>控制Java线程</h1><h2 id="线程休眠sleep"><a href="#线程休眠sleep" class="headerlink" title="线程休眠sleep"></a>线程休眠sleep</h2><p>如果想让当前线程暂停执行一段时间并进入<strong>阻塞</strong>状态，调用Thread的静态方法sleep()。</p>
 <p>在调用sleep后，当前线程会睡眠（即阻塞）。</p>
 <h2 id="线程让步yield"><a href="#线程让步yield" class="headerlink" title="线程让步yield"></a>线程让步yield</h2><p>yield暗示线程调度器来做出CPU时间片切换。当调用yield时，是在建议具有相同优先级的其他线程可运行。注：实际任何机制都不能依赖于yield来控制线程的调度和执行。</p>
 <h3 id="sleep与yield的区别"><a href="#sleep与yield的区别" class="headerlink" title="sleep与yield的区别"></a>sleep与yield的区别</h3><ul>
@@ -254,7 +282,7 @@
 <p><strong>对于非后台线程来说：而所有非后台线程全部中止时，程序（父线程）才会中止。既只要有非后台线程在运行，程序就不会中止。</strong></p>
 <pre><code class="java">public class SimpleDaemons implements Runnable{
 
-    @Override
+    verride
     public void run() {
         // TODO Auto-generated method stub
         while(true)
@@ -317,7 +345,7 @@ Thread[Thread-3,5,main] thread.SimpleDaemons@2a57e4d</code></pre>
 
     }
 
-    @Override
+    verride
     public void run() {
         // TODO Auto-generated method stub
         System.out.println(Thread.currentThread().getName()+&quot; join thread&quot;);
@@ -411,7 +439,7 @@ public class Interrupting {
 
 class SleepBlocked implements Runnable {
 
-    @Override
+    verride
     public void run() {
         try {
             TimeUnit.SECONDS.sleep(100);
@@ -429,7 +457,7 @@ class IOBlocked implements Runnable {
         this.in = in;
     }
 
-    @Override
+    verride
     public void run() {
         try {
             System.out.println(&quot;Waiting for read():&quot;);
@@ -459,7 +487,7 @@ class SynchronizedBlocked implements Runnable {
         }.start();
     }
 
-    @Override
+    verride
     public void run() {
         System.out.println(&quot;Trying to call f()&quot;);
         f();
@@ -551,7 +579,7 @@ class NIOBlocked implements Runnable {
         this.sc = sc;
     }
 
-    @Override
+    verride
     public void run() {
         try {
             System.out.println(&quot;Waiting for read() in &quot; + this);
@@ -648,7 +676,7 @@ class BlockedMutex {
 class Blocked2 implements Runnable {
     BlockedMutex blocked = new BlockedMutex();
 
-    @Override
+    verride
     public void run() {
         // TODO Auto-generated method stub
         System.out.println(&quot;Waiting for f() in BlockedMutex()&quot;);
@@ -681,7 +709,7 @@ Broken out of blocked call</code></pre>
 class Blocked3 implements Runnable {
     private volatile double d = 0.0;
 
-    @Override
+    verride
     public void run() {
         // TODO Auto-generated method stub
         NeedsCleanup n1 = null;
@@ -769,6 +797,26 @@ Exiting via while() test</code></pre>
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -854,6 +902,8 @@ Exiting via while() test</code></pre>
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -876,8 +926,31 @@ Exiting via while() test</code></pre>
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -903,6 +976,18 @@ Exiting via while() test</code></pre>
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -920,6 +1005,8 @@ Exiting via while() test</code></pre>
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -933,6 +1020,65 @@ Exiting via while() test</code></pre>
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -952,9 +1098,11 @@ Exiting via while() test</code></pre>
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

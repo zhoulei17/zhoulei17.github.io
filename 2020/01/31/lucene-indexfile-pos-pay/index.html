@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。 pos、pay文件作用position在Lucene中描述的是一个term在一篇文档中的位置，并且存在一个或多个position。 payload是一个自定义的元数据来描述term的某个属性，term在一篇文章中的多个位置可以一一对应多个payload，也可以只有部分位置带有payload。 offset">
@@ -128,9 +128,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -204,7 +219,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -221,9 +250,9 @@
 <p><strong>offset</strong>是一对整数值(a pair of integers)，即startOffset跟endOffset，它们分别描述了term的第一个字符跟最后一个在文档中的位置。</p>
 <p>每一个term在所有文档中的position、payload、offset信息在IndexWriter.addDocument()的过程中计算出来，在内存在生成一张<strong>倒排表</strong>，最终持久化到磁盘时，通过读取倒排表，将<strong>position信息写入到.pos</strong>文件中，将<strong>payload、offset信息写入到.pay</strong>文件中。</p>
 <p>下面总结.pos文件和.pay的数据结构，关于.pos、.pay的生成过程，在后续文章总结。</p>
-<h2 id="pay文件的数据结构"><a href="#pay文件的数据结构" class="headerlink" title="pay文件的数据结构"></a>pay文件的数据结构</h2><p><img src="/img/in-post/1-20200201154718749.png" alt=""></p>
+<h2 id="pay文件的数据结构"><a href="#pay文件的数据结构" class="headerlink" title="pay文件的数据结构"></a>pay文件的数据结构</h2><p><img data-src="/img/in-post/1-20200201154718749.png" alt=""></p>
 <p>在.pay文件中，TermPlayload、TermOffset分别记录一个term的payload、offset信息。</p>
-<h3 id="TermPayload"><a href="#TermPayload" class="headerlink" title="TermPayload"></a>TermPayload</h3><p><img src="/img/in-post/2-20200201155325824.png" alt=""></p>
+<h3 id="TermPayload"><a href="#TermPayload" class="headerlink" title="TermPayload"></a>TermPayload</h3><p><img data-src="/img/in-post/2-20200201155325824.png" alt=""></p>
 <ul>
 <li><p><strong>PackedPayBlock</strong></p>
 <p>每次处理一个term的128个position信息，就会将对应的128个payload信息（不一定每个position都会对应一个payload）处理为一个PackedPayBlock。即除了最后一个PackedPayBlock，其他PackedPayBlock中都包含了当前term的128个payload信息。</p>
@@ -240,7 +269,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="TermOffset"><a href="#TermOffset" class="headerlink" title="TermOffset"></a>TermOffset</h3><p><img src="/img/in-post/3-20200201160951731.png" alt=""></p>
+<h3 id="TermOffset"><a href="#TermOffset" class="headerlink" title="TermOffset"></a>TermOffset</h3><p><img data-src="/img/in-post/3-20200201160951731.png" alt=""></p>
 <ul>
 <li><p><strong>PackedOffsetBlock</strong></p>
 <p>跟TermPayload一样的是，都是每次处理一个term的128个position信息后，就会将对应的128个offset信息处理为一个block。</p>
@@ -257,9 +286,9 @@
 <p>PackedOffsetLengthBlock存放了128个offset的startOffset跟endOffset差值，同样使用PackedInts压缩存储。</p>
 </li>
 </ul>
-<h2 id="pos文件的数据结构"><a href="#pos文件的数据结构" class="headerlink" title="pos文件的数据结构"></a>pos文件的数据结构</h2><p><img src="/img/in-post/4-20200201162107840.png" alt=""></p>
+<h2 id="pos文件的数据结构"><a href="#pos文件的数据结构" class="headerlink" title="pos文件的数据结构"></a>pos文件的数据结构</h2><p><img data-src="/img/in-post/4-20200201162107840.png" alt=""></p>
 <p>在.pos文件中，TermPosition记录一个term的position信息。</p>
-<h3 id="TermPosition"><a href="#TermPosition" class="headerlink" title="TermPosition"></a>TermPosition</h3><p><img src="/img/in-post/5-20200201162351662.png" alt=""></p>
+<h3 id="TermPosition"><a href="#TermPosition" class="headerlink" title="TermPosition"></a>TermPosition</h3><p><img data-src="/img/in-post/5-20200201162351662.png" alt=""></p>
 <ul>
 <li><p><strong>PackedPosBlock</strong></p>
 <p>每次处理一个term的128个position信息，就会将这些position处理为一个PackedPosBlock。</p>
@@ -292,8 +321,8 @@
 <p>当前position对应的offset的endOffset与startOffset的差值。</p>
 </li>
 </ul>
-<h2 id="多个域的pay文件的数据结构"><a href="#多个域的pay文件的数据结构" class="headerlink" title="多个域的pay文件的数据结构"></a>多个域的pay文件的数据结构</h2><p><img src="/img/in-post/6-20200201164502459.png" alt=""></p>
-<h2 id="多个域的pos文件的数据结构"><a href="#多个域的pos文件的数据结构" class="headerlink" title="多个域的pos文件的数据结构"></a>多个域的pos文件的数据结构</h2><p><img src="/img/in-post/7-20200201164528840.png" alt=""></p>
+<h2 id="多个域的pay文件的数据结构"><a href="#多个域的pay文件的数据结构" class="headerlink" title="多个域的pay文件的数据结构"></a>多个域的pay文件的数据结构</h2><p><img data-src="/img/in-post/6-20200201164502459.png" alt=""></p>
+<h2 id="多个域的pos文件的数据结构"><a href="#多个域的pos文件的数据结构" class="headerlink" title="多个域的pos文件的数据结构"></a>多个域的pos文件的数据结构</h2><p><img data-src="/img/in-post/7-20200201164528840.png" alt=""></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>.pos 、.pay、.doc、.tim 、.tip文件都是在<a href="https://www.amazingkoala.com.cn/Lucene/Index/2019/0716/74.html" target="_blank" rel="noopener">flush</a>阶段通过读取倒排表一起生成的，另外.doc跟.pos、.pay文件还有映射关系，后续总结.doc文件会涉及。</p>
 
     </div>
@@ -301,6 +330,26 @@
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -387,6 +436,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -409,8 +460,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -436,6 +510,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -453,6 +539,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -466,6 +554,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -485,9 +632,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>

@@ -17,15 +17,15 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="@[toc] HTTP&#x2F;2 更简单，高效，强大。它在传输层解决了以前我们HTTP1.x中一直存在的问题。使用它可以优化我们的应用。HTTP&#x2F;2 的首要目标是通过完全的请求，响应多路复用，头部的压缩头部域来减小头部的体积，添加了请求优先级，服务端推送。为了支持这些特性，他需要大量的协议增加头部字段来支持。例如新的流量控制，差错处理，升级机制。而这些是每个web开发者都应该在他们的应用中用到的。HTT">
+  <meta name="description" content="HTTP&#x2F;2 更简单，高效，强大。它在传输层解决了以前我们HTTP1.x中一直存在的问题。使用它可以优化我们的应用。HTTP&#x2F;2 的首要目标是通过完全的请求，响应多路复用，头部的压缩头部域来减小头部的体积，添加了请求优先级，服务端推送。为了支持这些特性，他需要大量的协议增加头部字段来支持。例如新的流量控制，差错处理，升级机制。而这些是每个web开发者都应该在他们的应用中用到的。HTTP&#x2F;2并没有在">
 <meta property="og:type" content="article">
 <meta property="og:title" content="HTTP&#x2F;2特性总结">
 <meta property="og:url" content="http://yoursite.com/2015/11/11/http2-features-introduce/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="@[toc] HTTP&#x2F;2 更简单，高效，强大。它在传输层解决了以前我们HTTP1.x中一直存在的问题。使用它可以优化我们的应用。HTTP&#x2F;2 的首要目标是通过完全的请求，响应多路复用，头部的压缩头部域来减小头部的体积，添加了请求优先级，服务端推送。为了支持这些特性，他需要大量的协议增加头部字段来支持。例如新的流量控制，差错处理，升级机制。而这些是每个web开发者都应该在他们的应用中用到的。HTT">
+<meta property="og:description" content="HTTP&#x2F;2 更简单，高效，强大。它在传输层解决了以前我们HTTP1.x中一直存在的问题。使用它可以优化我们的应用。HTTP&#x2F;2 的首要目标是通过完全的请求，响应多路复用，头部的压缩头部域来减小头部的体积，添加了请求优先级，服务端推送。为了支持这些特性，他需要大量的协议增加头部字段来支持。例如新的流量控制，差错处理，升级机制。而这些是每个web开发者都应该在他们的应用中用到的。HTTP&#x2F;2并没有在">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5281821-5e2e23de6cbbc698.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/607/format/webp">
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5281821-7b0c2aa12ccc6d42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/603/format/webp">
@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5281821-d8687e8eed1e6823.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/642/format/webp">
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5281821-b28c3451bc8fc3fc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/682/format/webp">
 <meta property="article:published_time" content="2015-11-10T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-03-21T15:15:52.890Z">
+<meta property="article:modified_time" content="2020-03-22T10:10:55.076Z">
 <meta property="article:author" content="ZhouLei">
 <meta property="article:tag" content="HTTP">
 <meta property="article:tag" content="HTTP2">
@@ -128,9 +128,24 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories<span class="badge">12</span></a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives<span class="badge">53</span></a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags<span class="badge">58</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
   </ul>
@@ -192,7 +207,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-21 23:15:52" itemprop="dateModified" datetime="2020-03-21T23:15:52+08:00">2020-03-21</time>
+                <time title="Modified: 2020-03-22 18:10:55" itemprop="dateModified" datetime="2020-03-22T18:10:55+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -204,7 +219,21 @@
                 </span>
             </span>
 
-          
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
 
         </div>
       </header>
@@ -215,15 +244,14 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>@[toc]</p>
-<p>HTTP/2 更简单，高效，强大。它在传输层解决了以前我们HTTP1.x中一直存在的问题。使用它可以优化我们的应用。HTTP/2 的首要目标是通过完全的请求，响应多路复用，头部的压缩头部域来减小头部的体积，添加了请求优先级，服务端推送。为了支持这些特性，他需要大量的协议增加头部字段来支持。例如新的流量控制，差错处理，升级机制。而这些是每个web开发者都应该在他们的应用中用到的。HTTP/2并没有在应用中改变HTTP的语义，而是通过在客户端和服务端传输的数据格式(frame)和传输。它通过在新的二进制帧层控制整个过程以及隐藏复杂性，而这不需要改变原来有的东西就可以实现。</p>
+        <p>HTTP/2 更简单，高效，强大。它在传输层解决了以前我们HTTP1.x中一直存在的问题。使用它可以优化我们的应用。HTTP/2 的首要目标是通过完全的请求，响应多路复用，头部的压缩头部域来减小头部的体积，添加了请求优先级，服务端推送。为了支持这些特性，他需要大量的协议增加头部字段来支持。例如新的流量控制，差错处理，升级机制。而这些是每个web开发者都应该在他们的应用中用到的。HTTP/2并没有在应用中改变HTTP的语义，而是通过在客户端和服务端传输的数据格式(frame)和传输。它通过在新的二进制帧层控制整个过程以及隐藏复杂性，而这不需要改变原来有的东西就可以实现。</p>
 <h1 id="1-HTTP2的设计和目标"><a href="#1-HTTP2的设计和目标" class="headerlink" title="1.HTTP2的设计和目标"></a>1.HTTP2的设计和目标</h1><ul>
 <li>HTTP2更简单，高效，强大。解决了HTTP1.x中一直存在的问题。（待扩展）</li>
 <li>特点：响应多路复用、头部压缩、请求优先级、服务端推送等。</li>
 <li>解决问题：HTTP1.x需要开启多个连接来实现并发和潜在影响。HTTP1.x的头部没有压缩，造成不必要的网络拥塞。HTTP1.x没有应用资源优先级，导致重要TCP连接的糟糕使用。</li>
 </ul>
 <h1 id="2-二进制帧"><a href="#2-二进制帧" class="headerlink" title="2.二进制帧"></a>2.二进制帧</h1><p>性能提升的核心在于二进制帧。指HTTP消息在客户端和服务端何如封装和传输。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-5e2e23de6cbbc698.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/607/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-5e2e23de6cbbc698.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/607/format/webp" alt=""></p>
 <p>这一层主要是将原先的应用层HTTP1.1的txt文本传输转换为headers与data等二进制帧。HTTP1.x阶段采用的换行分割文本不同，HTTP2消息分成很小的消息和frame。然后每个消息和frame用二进制编码。客户端和服务端都用二进制编码和解码。HTTP1.x的客户端不能与只有HTTP2的服务端通信。不过这对应用来说高层的API没什么变化，只在底层的消息二进制格式和编解码上的变化来改变性能。</p>
 <h1 id="3-流、消息，帧"><a href="#3-流、消息，帧" class="headerlink" title="3.流、消息，帧"></a>3.流、消息，帧</h1><p>下面介绍下二进制帧机制，明白数据如何在客户端和服务端交互。</p>
 <blockquote>
@@ -237,9 +265,9 @@
 <li>每个消息都是逻辑上的请求和响应消息。由一个活多个帧组成。</li>
 <li>来自不同流的帧可以通过帧头的标志关联和组装起来。</li>
 </ul>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-7b0c2aa12ccc6d42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/603/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-7b0c2aa12ccc6d42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/603/format/webp" alt=""></p>
 <h1 id="4-请求和响应的多路复用"><a href="#4-请求和响应的多路复用" class="headerlink" title="4.请求和响应的多路复用"></a>4.请求和响应的多路复用</h1><p>在HTTP1.x中，用户想要多个并行的请求来提供性能，必须得使用多个TCP连接。它能保证在每个连接中在一个时间点只有个响应被发送出去。糟糕的是，它使得队头阻塞和重要TCP连接的低效使用。在HTTP2中，新的二进制帧层解除了这个限制。使得所有的请求和响应可以多路复用。通过允许客户端和服务端把HTTP消息分解成独立的帧，交错的传输，然后在另一端组装。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-ce9d374b7d0adf09.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/654/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-ce9d374b7d0adf09.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/654/format/webp" alt=""></p>
 <p>上图显示了在一次连接中的多个流。客户端传输帧到服务端(stream5)。服务端传输交错的帧序列(stream1，stream3)到客户端。此时，同时存在并行的3个流。能够把HTTP消息分解成交错的帧，并在另一端组装它们是HTTP2中一个非常重要的提高。</p>
 <ul>
 <li>交错的多个并行的请求，而不需要阻塞。</li>
@@ -254,7 +282,7 @@
 <li>每个流可以详细给出对其他流的依赖</li>
 </ul>
 <p>流权重和依赖的结合使客户端可以构造和通信一个优先级二叉树来表达它更想得到哪种响应。然后服务端可以按权重分配硬件资源（CPU，内存）。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-a424cc207432cde0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/666/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-a424cc207432cde0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/666/format/webp" alt=""></p>
 <p>在HTTP2，一个流的依赖可以显式用其他流的标志来表达，如果省略了标志，则说明它的依赖是根流。一般来说，父流应该在它的依赖流之前分配资源。例如D应该是C之前被发送。依赖于同一个父节点的应该按照他们的权重分配资源。例如A节点的权重为12，它的兄弟结点B的结点权重为4。然后按分配资源，A占12/16，B占4/16。如上面所述，流的依赖和权重提供了一种很好的表达式语言来表达资源的优先级。但是，流的依赖和权重只是提供了一种传输偏好，而不是说一定是这样的比例。</p>
 <h1 id="6-每个源一个连接"><a href="#6-每个源一个连接" class="headerlink" title="6.每个源一个连接"></a>6.每个源一个连接</h1><p>HTTP2.0的连接是持久的，每个源仅仅需要一个连接。大部分HTTP的传输是短的，并且突然的。然而TCP连接却适合长期存活，批量的数据传输。通过利用相同的HTTP2连接，既能够充分利用TCP连接，也能够减少整体协议的头部。更进一步来说，更少的连接内存的占用以及全连接路径的处理过程。向HTTP2的转移不仅减少了网络潜在因素，更减少了操作代价。</p>
 <blockquote>
@@ -271,7 +299,7 @@
 <p>HTTP2没有规定用于实现流量控制的任何特定算法。相反，它提供了简单的构建模块并将实现推迟到客户端和服务器，这可以用它来实现自定义策略来调节资源使用和分配，以及实现新的传输功能。</p>
 <p>例如，应用程序层流量控制允许浏览器仅提取特定资源的一部分，通过将流量控制窗口降至零来暂停提取，然后稍后恢复。例如，获取预览或第一预览图像，显示图像并允许进行其他高优先级操作，并在关键资源完成加载后又开始取。</p>
 <h1 id="7-服务端推送"><a href="#7-服务端推送" class="headerlink" title="7.服务端推送"></a>7.服务端推送</h1><p>HTTP2的另一个强大的新功能是服务器为单个客户端请求发送多个响应的能力。也就是说，除了对原始请求的响应之外，服务器还可以向客户端推送额外的资源（如下图），而不需要客户端请求每一个资源！</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-d97e0c65b1491baa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/636/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-d97e0c65b1491baa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/636/format/webp" alt=""></p>
 <p>为什么需要在浏览器中使用这种机制？一个典型的Web应用程序由几十个资源组成，所有这些资源都是客户端通过检查服务器提供的文档发现的。因此，为什么不消除额外的延迟并让服务器推送相关资源？服务器已经知道客户端需要哪些资源；这是服务器推送。</p>
 <ul>
 <li>推送的资源可以由客户端缓存</li>
@@ -287,11 +315,11 @@
 <li>它要求客户端和服务端都维护和更新先前看到的标题字段的索引列表（即，建立共享压缩上下文），然后将其用作参考以高效编码先前传输的值。</li>
 </ul>
 <p>霍夫曼编码允许单个值在传输时被压缩，并且先前传输值得索引列表允许我们通过传输索引值来编码重复值（下图），索引值可用于有效地查找和重建完整头部键和值。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-38055e8dde4b4436.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/654/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-38055e8dde4b4436.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/654/format/webp" alt=""></p>
 <p>作为进一步优化，HPACK压缩上下文由静态和动态表组成：静态表在规范中定义，并提供给所有连接可能使用的常见HTTP头部字段的列表（例如，有效头名称）。动态表最终是空的，并基于特定连接内的交换值进行更新。因此，通过对以前未见过的值使用静态霍夫曼编码，并将索引替换为已存在与客户端和服务端静态或动态表中的值得索引，可以减少每个请求的大小。</p>
 <h1 id="9-二进制帧的简短介绍"><a href="#9-二进制帧的简短介绍" class="headerlink" title="9.二进制帧的简短介绍"></a>9.二进制帧的简短介绍</h1><p>HTTP2改进的核心是新的二进制帧层。与以换行符分割的纯文本HTTP1.x协议相比，二进制框架提供了更紧凑的表示形式，可以更高效地处理并更容易正确实现。</p>
 <p>一旦建立了HTTP2连接，客户端和服务端就通过交换帧来进行通信，这些帧用作协议内最小的通信单元。所有帧共享一个共同的9字节头，其中包含帧的长度，类型，标志位字段和31位流标识符。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-d8687e8eed1e6823.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/642/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-d8687e8eed1e6823.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/642/format/webp" alt=""></p>
 <ul>
 <li>24位长度字段：允许一个帧携带2的24次方数据字节。</li>
 <li>8位类型字段：确定帧的格式和语义。</li>
@@ -302,7 +330,7 @@
 <p>从技术上讲，长度字段允许每帧高达字段（<del>16MB）的有效载荷。但是，HTTP2标准将DATA帧的默认最大有效负载大小设置为每帧字节（</del>16KB），并允许客户端和服务器协商较高的值。更大并不总是更好：较小的帧大小能够实现高效的多路复用并将头部阻塞降至最低。</p>
 </blockquote>
 <h1 id="10-分析二进制帧数据流"><a href="#10-分析二进制帧数据流" class="headerlink" title="10.分析二进制帧数据流"></a>10.分析二进制帧数据流</h1><p>掌握了不同的帧类型的只是后，现在可以重新看下前面在请求和响应复用中遇到的图（下图）并分析HTTP2交换：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/5281821-b28c3451bc8fc3fc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/682/format/webp" alt=""></p>
+<p><img data-src="https://upload-images.jianshu.io/upload_images/5281821-b28c3451bc8fc3fc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/682/format/webp" alt=""></p>
 <ul>
 <li>有三个流，ID设置为1,3和5</li>
 <li>所有三个流ID都是奇数；所有这三个都是客户端启动的流。（即发起方是客户端）</li>
@@ -318,6 +346,26 @@
     
     
     
+        <div class="reward-container">
+  <div>如果觉得文章对你有帮助，请喝杯茶吧.</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    Donate
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/webchatpay.jpeg" alt="ZhouLei WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpeg" alt="ZhouLei Alipay">
+        <p>Alipay</p>
+      </div>
+
+  </div>
+</div>
+
 
       <footer class="post-footer">
           <div class="post-tags">
@@ -403,6 +451,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZhouLei"
+      src="/images/avatar.gif">
   <p class="site-author-name" itemprop="name">ZhouLei</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -425,8 +475,31 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="/zhoulei.site" title="zhoulei.site">site</a>
+        </li>
+    </ul>
+  </div>
 
       </div>
 
@@ -452,6 +525,18 @@
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">ZhouLei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">221k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">3:21</span>
 </div>
 
         
@@ -469,6 +554,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -482,6 +569,65 @@
 
 <script src="/js/next-boot.js"></script>
 
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      script.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
 
 
 
@@ -501,9 +647,11 @@
 
 
 
+    <div id="pjax">
   
 
   
 
+    </div>
 </body>
 </html>
