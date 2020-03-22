@@ -528,7 +528,7 @@
     <nav id="title-list-nav">
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           href="/2019/11/27/ODL-RPC-module/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
@@ -536,7 +536,7 @@
         </a>
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           href="/2019/11/27/ODL-mdsal-codereview/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
@@ -560,7 +560,7 @@
         </a>
         
         <a  class="工具 "
-           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
            data-tag="Markdown"
            data-author="" >
             <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
@@ -993,7 +993,7 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2020-03-21 23:15:38'>2019-05-15 00:00</time>
+        创建时间:<time class="date" title='更新时间: 2020-03-22 09:06:50'>2019-05-15 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -1037,7 +1037,7 @@
 <p>在操作系统层面，线程也有“生老病死”，专业的说法叫生命周期。对于有生命周期的事物，要学好它，思路非常简单，只要能搞懂<strong>生命周期中各个节点的状态转换机制</strong>就可以了。</p>
 <p>虽然不同的开发语言对于操作系统线程进行了不同的封装，但是对于线程的生命周期这部分，基本上是雷同的。所以，我们先来了解一下通用的线程生命周期模型，这部分内容也适用于很多其他编程语言；然后再针对性地学习一下Java中线程的生命周期。</p>
 <h1 id="通用的线程生命周期"><a href="#通用的线程生命周期" class="headerlink" title="通用的线程生命周期"></a>通用的线程生命周期</h1><p>通用的线程生命基本上可以用下图“五态模型”来描述。这五态分别是：<strong>初始状态、可运行状态、休眠状态和终止状态</strong>。</p>
-<p><img src="/img/in-post/1558418791341.png" alt="1558418791341"></p>
+<p><img src="/img/in-post/1558418791341.png" alt=""></p>
 <ol>
 <li><strong>初始状态</strong>：指线程已经被创建，但是还不允许分配CPU执行。此状态属于编程语言特有，仅仅是在编程语言层面被创建（如果是Java开发，可以认为是Java内部状态），在操作系统层面真正的线程还没有被创建。</li>
 <li><strong>可运行状态</strong>：指的是线程可以分配CPU执行。在这种状态下，真正的操作系统线程已经被成功创建了，所以可以分配CPU执行。</li>
@@ -1124,7 +1124,7 @@
 </ol>
 <p>相比操作系统的五种状态比较多，实际在操作层面，Java线程中的BLOCKED、WAITING、TIME_WAITING是一种状态，即前面提到的<strong>休眠状态</strong>。也就说<strong>只要Java线程处于这三种状态之一，那么这个线程就永远没有CPU使用权</strong>。</p>
 <p>所以Java线程的生命周期可以简化转化为：</p>
-<p><img src="/img/in-post/1558418772484.png" alt="1558418772484"></p>
+<p><img src="/img/in-post/1558418772484.png" alt=""></p>
 <p>其中，BLOCKED、WAITING、TIMED_WAITING可以理解为导致线程休眠的三种原因。</p>
 <p>那么那些情形会导致线程从RUNNABLE状态转换到这三种状态？</p>
 <p>这三种状态又是何时转换回RUNNABLE的呢？</p>
@@ -1258,7 +1258,7 @@
     <p><span class="copy-title">文章字数:</span><span class="post-count">3.1k</span></p>
     <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
     <p><span class="copy-title">发布时间:</span>2019-05-15, 00:00:00</p>
-    <p><span class="copy-title">最后更新:</span>2020-03-21, 23:15:38</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-22, 09:06:50</p>
     <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" title="【基本概念篇】十一、Java线程的状态和生命周期">http://yoursite.com/2019/05/15/2019-5-15-java-concurreny-java-thread-status/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。

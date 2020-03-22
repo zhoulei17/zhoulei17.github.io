@@ -528,7 +528,7 @@
     <nav id="title-list-nav">
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           href="/2019/11/27/ODL-RPC-module/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
@@ -536,7 +536,7 @@
         </a>
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           href="/2019/11/27/ODL-mdsal-codereview/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
@@ -560,7 +560,7 @@
         </a>
         
         <a  class="工具 "
-           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
            data-tag="Markdown"
            data-author="" >
             <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
@@ -993,7 +993,7 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2020-03-21 23:15:39'>2019-05-09 00:00</time>
+        创建时间:<time class="date" title='更新时间: 2020-03-22 09:06:50'>2019-05-09 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -1051,7 +1051,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="/img/in-post/1557480839440.png" alt="1557480839440"></p>
+<p><img src="/img/in-post/1557480839440.png" alt=""></p>
 <ul>
 <li><p>进程互斥（间接作用）：各进程竞争使用临界资源</p>
 <ul>
@@ -1060,7 +1060,7 @@
 <li><p>进程互斥是进程同步的一种特殊情况</p>
 </li>
 <li><p>进程间要通过某种中介发生联系，是无意识安排的，可以发生在相交进程之间，也可发生在无关进程之间。</p>
-<p><img src="/img/in-post/1557480647158.png" alt="1557480647158"></p>
+<p><img src="/img/in-post/1557480647158.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -1080,15 +1080,15 @@
 </ul>
 <h2 id="临界区管理的软件方法"><a href="#临界区管理的软件方法" class="headerlink" title="临界区管理的软件方法"></a>临界区管理的软件方法</h2><ol>
 <li><p>两个失败的尝试（1）</p>
-<p><img src="/img/in-post/1557481280511.png" alt="1557481280511"></p>
+<p><img src="/img/in-post/1557481280511.png" alt=""></p>
 </li>
 <li><p>两个失败的尝试（2）</p>
-<p><img src="/img/in-post/1557483560956.png" alt="1557483560956"></p>
+<p><img src="/img/in-post/1557483560956.png" alt=""></p>
 </li>
 </ol>
 <ol start="3">
 <li><p>成功解决方法（Dekker算法）</p>
-<p><img src="/img/in-post/1557483597707.png" alt="1557483597707"></p>
+<p><img src="/img/in-post/1557483597707.png" alt=""></p>
 </li>
 </ol>
 <p>实现临界区管理当然还有硬件方法比如测试并建立指令TS、交换指令SWAP、开关中断指令。</p>
@@ -1124,7 +1124,7 @@
 <p>信号量说明：<strong>semaphore s</strong> </p>
 </li>
 </ul>
-<p><img src="/img/in-post/1558404234145.png" alt="1558404234145"></p>
+<p><img src="/img/in-post/1558404234145.png" alt=""></p>
 <ul>
 <li>信号量的特性<ul>
 <li>信号量代表对某种公共资源的管理（如车开出停车场）时，此时若信号量队列有等待进程则释放一个（如让一辆车进入停车场）。</li>
@@ -1150,7 +1150,7 @@
    }    
    //若s.value减1后仍大于或等于零，则进程继续执行         
 } </code></pre>
-<p><img src="/img/in-post/1558405062067.png" alt="1558405062067"></p>
+<p><img src="/img/in-post/1558405062067.png" alt=""></p>
 </li>
 </ol>
 <ol start="3">
@@ -1167,7 +1167,7 @@
      } 
   //若相加结果大于零，则进程继续执行 
 }</code></pre>
-<p><img src="/img/in-post/1558405115200.png" alt="1558405115200"></p>
+<p><img src="/img/in-post/1558405115200.png" alt=""></p>
 </li>
 </ol>
 <h2 id="信号量的使用"><a href="#信号量的使用" class="headerlink" title="信号量的使用"></a>信号量的使用</h2><ul>
@@ -1211,7 +1211,7 @@ Coend</code></pre>
 <ul>
 <li><p>生产者——消费者问题</p>
 <p>问题描述：生产者往缓冲区中放产品，消费者从缓冲区中取产品，如下图所示</p>
-<p><img src="/img/in-post/1558405630788.png" alt="1558405630788"></p>
+<p><img src="/img/in-post/1558405630788.png" alt=""></p>
 <p>生产者P进程不能往“满”的缓冲区中放产品，设置<strong>信号量为S1，初值为1，代表缓冲区有1个空闲空间</strong></p>
 <p>消费者Q进程不能从“空”的缓冲区中取产品，设置<strong>信号量S2 ，初值为0，代表缓冲区有0个产品</strong></p>
 <pre><code class="c++">P        //生产者进程
@@ -1308,7 +1308,7 @@ while  (true)  {
 <li><p>共享存储区为内存中的某一个区域，映射在若干需通过该区域通信的进程的虚地址空间中。</p>
 </li>
 <li><p>一个进程的虚地址空间可以连接多个共享存储区。</p>
-<p><img src="/img/in-post/1557804687065.png" alt="1557804687065"></p>
+<p><img src="/img/in-post/1557804687065.png" alt=""></p>
 </li>
 <li><p>现在内存中建立一共享存储区，然后将它符街道自己的虚地址空间上。此后，进程对该区的访问操作，与对其虚地址空间的其他部分操作完全相同，通过对共享存储区的读、写来进行直接通信。</p>
 </li>
@@ -1327,7 +1327,7 @@ while  (true)  {
 <li><p>当一个进程收到多个消息时，可将它们排成一个消息队列</p>
 </li>
 <li><p>每个消息队列都有一个成为关键字（key）的名字，即<strong>消息队列描述符</strong>，由用户指定，其作用与用户文件描述符一样，是为了方便用户和系统对消息队列的访问。</p>
-<p><img src="/img/in-post/1557805094747.png" alt="1557805094747"></p>
+<p><img src="/img/in-post/1557805094747.png" alt=""></p>
 <p><strong>共享存储区和消息通信机制对比</strong>：</p>
 <ul>
 <li>建立：<strong>消息队列的建立消耗资源更少</strong>，只是软件上的设定问题；而共享区需要对硬件操作，实现内存的映像，控制起来更复杂。如果每次都重新进行队列或共享的建立，共享区的设立没什么优势</li>
@@ -1344,9 +1344,9 @@ while  (true)  {
 <li><p>由写进程从管道的写入端（句柄1）将数据写入管道，而读进程则从管道的读出端（句柄0）读出数据。</p>
 </li>
 <li><p>通信管道的互斥问题：主要通过检查索引文件是否被上锁，上锁则进程休眠等待。</p>
-<p><img src="/img/in-post/1557828358133.png" alt="1557828358133"></p>
+<p><img src="/img/in-post/1557828358133.png" alt=""></p>
 <p>​    </p>
-<p><img src="/img/in-post/1557828401466.png" alt="1557828401466"></p>
+<p><img src="/img/in-post/1557828401466.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -1378,7 +1378,7 @@ use 本管程外部定义、内部可调用的函数名表;
 <li>任何进程要归还资源时，也必须进入管程通过调用其内的某个函数进行归还</li>
 <li>进程必须互斥访问管程，即同一时刻只能由一个进程在调用管程内的某个函数</li>
 </ul>
-<h3 id="管程运行示意图"><a href="#管程运行示意图" class="headerlink" title="管程运行示意图"></a>管程运行示意图</h3><p><img src="/img/in-post/1557891985426.png" alt="1557891985426"></p>
+<h3 id="管程运行示意图"><a href="#管程运行示意图" class="headerlink" title="管程运行示意图"></a>管程运行示意图</h3><p><img src="/img/in-post/1557891985426.png" alt=""></p>
 
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 tcals1@163.com </span>
@@ -1396,7 +1396,7 @@ use 本管程外部定义、内部可调用的函数名表;
     <p><span class="copy-title">文章字数:</span><span class="post-count">4.1k</span></p>
     <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
     <p><span class="copy-title">发布时间:</span>2019-05-09, 00:00:00</p>
-    <p><span class="copy-title">最后更新:</span>2020-03-21, 23:15:39</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-22, 09:06:50</p>
     <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/" title="【基本概念篇】九、从操作系统角度看并发">http://yoursite.com/2019/05/09/2019-5-09-java-concurreny-system-courrenency/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。

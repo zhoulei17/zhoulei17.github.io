@@ -528,7 +528,7 @@
     <nav id="title-list-nav">
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           href="/2019/11/27/ODL-RPC-module/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
@@ -536,7 +536,7 @@
         </a>
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           href="/2019/11/27/ODL-mdsal-codereview/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
@@ -560,7 +560,7 @@
         </a>
         
         <a  class="工具 "
-           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
            data-tag="Markdown"
            data-author="" >
             <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
@@ -991,7 +991,7 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2020-03-21 23:15:42'>2019-04-13 00:00</time>
+        创建时间:<time class="date" title='更新时间: 2020-03-22 09:06:52'>2019-04-13 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -1047,7 +1047,7 @@
 </li>
 </ul>
 <p><strong>这些因素都会使得一个线程无法看到变量的最新值。</strong></p>
-<p><img src="/img/in-post/1555661841317.png" alt="1555661841317"></p>
+<p><img src="/img/in-post/1555661841317.png" alt=""></p>
 <p>为什么有这些因素，原因是由于计算机的发展以及优化带来的，下面说下，</p>
 <h2 id="计算机发展的背景"><a href="#计算机发展的背景" class="headerlink" title="计算机发展的背景"></a>计算机发展的背景</h2><p>在<strong>单线程环境</strong>下，我们不用关注这些底层技术，因为它们提高了程序执行速度以外，不会产生什么其他影响。Java语言规范要求JVM在线程中维护类似串行的语义：只要程序的最终结果与严格串行环境执行结果相同，那么上述操作都是允许的。</p>
 <ul>
@@ -1078,7 +1078,7 @@
 <p>在现代支持共享内存的多处理器（和编译器中），当跨线程共享数据时，会出现一些奇怪的情况，除非通过使用内存删栏来防止这些情况发生。幸运的是，Java程序不需要指定内存删栏的位置，而只需要正确地使用同步来找出何时将访问共享状态。</p>
 </blockquote>
 <h2 id="重排序案例"><a href="#重排序案例" class="headerlink" title="重排序案例"></a>重排序案例</h2><p>在没有充分同步的程序中，如果调度器采用不恰当的方式来交替执行不同线程的操作，那么将导致不正确的结果。更糟糕的是，JMM还使得不同线程看到的操作执行顺序是不同的，从而导致在缺乏同步的情况下，要推断操作的执行顺序变得更加复杂。各种使操作延迟或者看似乱序执行的不同原因，都可以归为<strong>重排序</strong>。</p>
-<p><img src="/img/in-post/1555641870914.png" alt="1555641870914"></p>
+<p><img src="/img/in-post/1555641870914.png" alt=""></p>
 <p>PossibleReording要列举它所有可能的结果是非常困难的。内存级的重排序会使程序行为变得不可预测。如果没有同步，基本推断不出执行顺序。而要确保在程序中正确使用同步却很容易。<strong>同步</strong>将限制编译器、运行时、硬件对内存操作重排序的方式，从而在实施重排序时不会破坏JMM提供的可见性保证。</p>
 <h1 id="什么是Java内存模型，为什么需要它？"><a href="#什么是Java内存模型，为什么需要它？" class="headerlink" title="什么是Java内存模型，为什么需要它？"></a>什么是Java内存模型，为什么需要它？</h1><p>已经知道，导致可见性的原因是缓存、导致有序性的原因是编译优化，那么解决可加性、有序性问题的直接办法就是<strong>禁用缓存和编译优化</strong>，虽然这样问题可以解决，但是我们程序的性能就堪忧了。</p>
 <p>因此合理的方案应该是<strong>按需禁用缓存以及编译优化</strong>。那么，如何做到“按需禁用”呢？其实就是按照程序员的要求来禁用。所以，为了解决可见性、有序性问题，只需要提供给程序员按需禁用缓存和编译优化的方法即可。</p>
@@ -1160,7 +1160,7 @@ class VolatileExample {
 <p>在1.5 之前会出现x=0的情况，变量可能被CPU缓存导致了可见性问题。但是在JDK 1.5及以后，Java模型对volatile语义进行了增强。怎么增强的呢，下面就来看规则3.传递性</p>
 <h2 id="3-传递性"><a href="#3-传递性" class="headerlink" title="3. 传递性"></a>3. 传递性</h2><p>这条规则是指 如果A happens-before B，且B happens-before C，那么A happens-before C。</p>
 <p>将规则3的传递性运用到例子中，会发生什么？看下面这幅图</p>
-<p><img src="/img/in-post/1555644709228.png" alt="1555644709228"></p>
+<p><img src="/img/in-post/1555644709228.png" alt=""></p>
 <p>从图中，我们可以看到：</p>
 <ol>
 <li>“x=42” Happens-Before 写变量 “v=true”，这是<strong>规则1.程序顺序规则</strong></li>
@@ -1205,7 +1205,7 @@ B.join()
 <h1 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h1><p>造成不正确发布的真正原因，就是在“发布一个共享对象”与“另一个线程访问该对象”之前缺少一种Happens-Before排序。</p>
 <h2 id="不安全的发布"><a href="#不安全的发布" class="headerlink" title="不安全的发布"></a>不安全的发布</h2><p>当缺少Happens-Before关系时，就可能出现重排序问题，这就解释了为什么在没有充分同步的情况下发布一个对象会导致另一个线程只看到一个只被<strong>部分构造的对象</strong>。在初始化一个新的对象时需要写入多个变量，即新对象中的各个域。同样，在发布一个引用时也需要写入一个变量，即新对象的引用，即新对象中的各个域。<strong>如果无法确保发布共享引用的操作在另一个线程加载该引用之前执行，那么对新对象引用的写入将与对象中各个域的写入操作重排序（从使用该对象的线程角度看）</strong>。在这种情况下，另一个线程可能看到对象引用的最新值，但同时也将看到对象的某些或全部状态中包含无效值，即一个被部分构造对象。</p>
 <p>错误的延迟初始化将导致不正确的发布：</p>
-<p><img src="/img/in-post/1555657300626.png" alt="1555657300626"></p>
+<p><img src="/img/in-post/1555657300626.png" alt=""></p>
 <p>初看起来这个程序没什么问题，实际这个代码是不安全的，因为另一个线程可能看到部分构造的Resource实例的引用。</p>
 <p>假设线程A是第一个调用getInstance的线程，A将看到resource是null，并且初始化一个新的Resource，然后将resource初始化。当线程B随后调用getInstance，它能看到resource的值非空，因此使用这个已经构造好的Resource。最初看不出什么问题，但线程A写入resource操作与线程B读取resource的操作之间不存在Happens-Before关系。在发布对象时存在数据竞争问题，因此B并不一定能看到Resource的正确状态。</p>
 <blockquote>
@@ -1213,12 +1213,12 @@ B.join()
 </blockquote>
 <h2 id="安全的发布"><a href="#安全的发布" class="headerlink" title="安全的发布"></a>安全的发布</h2><p>通过使用一个由锁保护共享变量或者使用共享的volatile类型的变量，也可以确保对该变量的读取操作和写入操作按照Happens-Before关系来排序。当然也可以把变量X放入Blocking队列中，供另外一个线程来读取，BlockingQueue内部同步确保了put方法在take方法之前执行。</p>
 <h2 id="安全初始化模式"><a href="#安全初始化模式" class="headerlink" title="安全初始化模式"></a>安全初始化模式</h2><p>对上面不安全的发布的正确发布代码修改如下：</p>
-<p><img src="/img/in-post/1555658802950.png" alt="1555658802950"></p>
+<p><img src="/img/in-post/1555658802950.png" alt=""></p>
 <p>静态初始化器是由JVM在类的初始化阶段执行，即在类被加载后并且被线程使用之前。由于JVM将在初始化期间获得一个锁，并且每个线程都至少获取一次这个锁以确保这个类已经被加载，<strong>因此在静态初始化期间，内存写入操作将自动对所有线程可见。因此无论是在被构造期间还是被引用时，静态初始化的对象都不需要显式的同步。然而，这个规则仅适用于构造时的状态，如果对象是可变的，那么在读线程和写线程之间依然需要通过同步来确保随后的修改操作是可见的，以避免数据破坏，就如上图代码。</strong></p>
 <p>可以把以上代码修改成延迟初始化的版本如下代码</p>
-<p><img src="/img/in-post/1555659121643.png" alt="1555659121643"></p>
+<p><img src="/img/in-post/1555659121643.png" alt=""></p>
 <p>并且可以和JVM的延迟加载机制结合起来，形成一种延迟初始化技术，从而在常用的代码路径中不需要同步。在下面的代码可称为“延迟初始化站位(Holder)模式”，使用一个专门的类来初始化Resource。JVM将推迟ResourceHolder的初始化操作，知道开始使用这个类才初始化，并且由于通过一个静态初始化来初始化Resource，因此不需要额外的同步。当任何一个线程第一次调用getResource时，都会使ResourceHolder被加载和被初始化，此时静态初始化器将执行Resource的初始化操作。</p>
-<p><img src="/img/in-post/1555659329426.png" alt="1555659329426"></p>
+<p><img src="/img/in-post/1555659329426.png" alt=""></p>
 <h2 id="初始化过程中的安全性"><a href="#初始化过程中的安全性" class="headerlink" title="初始化过程中的安全性"></a>初始化过程中的安全性</h2><p>如果能确保初始化过程中的安全性，那么就可以使得被正确构造的不可变对象在没有同步的情况下也能安全地在多个线程之间共享，而不管它们是如何发布的，甚至通过某种数据竞争来发布。（这以为着如果Resources是不可变的，那么UnsafeLazyUnitialization实际上是安全的）。</p>
 <p>如果不能确保初始化安全性，那么挡在发布或线程中没有使用同步时，一些本应为不可变对象（例如String）的值将会发生改变。</p>
 <blockquote>
@@ -1226,7 +1226,7 @@ B.join()
 </blockquote>
 <p>对于含有final域的对象，初始化安全性可以防止对象的初始化引用被重排序到构造过程之前。当构造函数完成时，构造函数对final域的所有写入操作，以及对通过这些域可以到达的任何变量的写入操作都将被“冻结”，并且任何获得该对象引用的线程都至少能确保看到被冻结的值。对于通过final域可以到达的初始变量的写入操作，将不会与构造过程后的操作仪器被重排序。</p>
 <p>初始化安全性意味着，下面的代码可以被安全地发布，即便通过不安全的延迟初始化，或者在同步的情况下将SafeStates的引用放到一个公有的静态域，或者没有使用同步以及依赖于费线程安全的HashSet。</p>
-<p><img src="/img/in-post/1555660600515.png" alt="1555660600515"></p>
+<p><img src="/img/in-post/1555660600515.png" alt=""></p>
 <p>然而，许多对SafeStatus的细微修改都可能破坏它的安全性。如果status不是final类，或者存在构造函数以外的其他地方能修改stats，那么初始化安全性将无法确保在缺少同步的情况下安全地访问SafeStates。如果在SafeStates类海油其他非final域，那么其他线程依然可能看到这些域上的不正确值。这也导致了对象在构造过程中逸出，从而初始化安全性的保证无效。</p>
 <p>下面再来补充一点<strong>final</strong>关键字对对象初始化和对象发布安全性的应用：</p>
 <h3 id="被我们忽视的final-amp-安全发布"><a href="#被我们忽视的final-amp-安全发布" class="headerlink" title="被我们忽视的final&amp;安全发布"></a>被我们忽视的final&amp;安全发布</h3><p>前面讲了volatile为的是禁用缓存以及编译优化，我们再从另外一个方面来看，有没有办法告诉编译器优化得更好一点呢？就是<strong>final关键字</strong>。</p>
@@ -1285,7 +1285,7 @@ public FinalFieldExample() {
     <p><span class="copy-title">文章字数:</span><span class="post-count">9.7k</span></p>
     <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
     <p><span class="copy-title">发布时间:</span>2019-04-13, 00:00:00</p>
-    <p><span class="copy-title">最后更新:</span>2020-03-21, 23:15:42</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-22, 09:06:52</p>
     <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/04/13/2019-4-13-java-concurreny-memory-model/" title="【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题">http://yoursite.com/2019/04/13/2019-4-13-java-concurreny-memory-model/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。

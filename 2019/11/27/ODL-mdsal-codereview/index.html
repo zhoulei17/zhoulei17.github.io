@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Markdown学习笔记 | Hexo</title>
-  <meta name="keywords" content=" Markdown ">
-  <meta name="description" content="Markdown学习笔记 | Hexo">
+  <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析 | Hexo</title>
+  <meta name="keywords" content=" odl , rpc ">
+  <meta name="description" content="【opendaylight】——MD-SAL服务总线RPC服务源码分析 | Hexo">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta property="og:type" content="website">
 <meta property="og:title" content="about">
@@ -528,7 +528,7 @@
     <nav id="title-list-nav">
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           href="/2019/11/27/ODL-RPC-module/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
@@ -536,7 +536,7 @@
         </a>
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           href="/2019/11/27/ODL-mdsal-codereview/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
@@ -560,7 +560,7 @@
         </a>
         
         <a  class="工具 "
-           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
            data-tag="Markdown"
            data-author="" >
             <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
@@ -963,9 +963,9 @@
 </aside>
 <div class="post">
     <div class="pjax">
-        <article id="post-2018-11-4-markdown studying knowledage" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-ODL-mdsal-codereview" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <h1 class="article-title">Markdown学习笔记</h1>
+        <h1 class="article-title">【opendaylight】——MD-SAL服务总线RPC服务源码分析</h1>
     
     <div class="article-meta">
         
@@ -973,26 +973,28 @@
         
         <span class="book">
             
-                <a  data-rel="工具">工具</a>
+                <a  data-rel="opendaylight">opendaylight</a>
             
         </span>
         
         
         <span class="tag">
             
-            <a class="color4">Markdown</a>
+            <a class="color4">odl</a>
+            
+            <a class="color4">rpc</a>
             
         </span>
         
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2020-03-21 12:19:57'>2015-11-04 00:00</time>
+        创建时间:<time class="date" title='更新时间: 2020-03-22 09:06:59'>2019-11-27 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>字数:385</span>
+        <span>字数:1.4k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -1011,7 +1013,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#这是一级标题"><span class="toc-text">这是一级标题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#这是二级标题"><span class="toc-text">这是二级标题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#这是三级标题"><span class="toc-text">这是三级标题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#这是四级标题"><span class="toc-text">这是四级标题</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#这是五级标题"><span class="toc-text">这是五级标题</span></a></li></ol></li></ol></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1、RPC服务简单介绍"><span class="toc-text">1、RPC服务简单介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2、注册RPC服务（Global-RPC）"><span class="toc-text">2、注册RPC服务（Global RPC）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3、注册RPC服务（Routed-RPC）"><span class="toc-text">3、注册RPC服务（Routed RPC）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4、RPC集群内部路由表信息同步（Gossiper）"><span class="toc-text">4、RPC集群内部路由表信息同步（Gossiper）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5、获取RPC服务"><span class="toc-text">5、获取RPC服务</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6、Global-RPC服务调用"><span class="toc-text">6、Global RPC服务调用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7、Routed-RPC服务调用-注册服务节点调用"><span class="toc-text">7、Routed RPC服务调用 (注册服务节点调用)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#8、Routed-RPC服务调用-非注册服务节点调用"><span class="toc-text">8、Routed RPC服务调用 (非注册服务节点调用)</span></a></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -1027,95 +1029,50 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>1、标题</strong></p>
-<h1 id="这是一级标题"><a href="#这是一级标题" class="headerlink" title="这是一级标题"></a>这是一级标题</h1><h2 id="这是二级标题"><a href="#这是二级标题" class="headerlink" title="这是二级标题"></a>这是二级标题</h2><h3 id="这是三级标题"><a href="#这是三级标题" class="headerlink" title="这是三级标题"></a>这是三级标题</h3><h4 id="这是四级标题"><a href="#这是四级标题" class="headerlink" title="这是四级标题"></a>这是四级标题</h4><h5 id="这是五级标题"><a href="#这是五级标题" class="headerlink" title="这是五级标题"></a>这是五级标题</h5><p><strong>2、字体</strong></p>
-<p><strong>这是加粗的文字</strong></p>
-<p><em>这是倾斜的文字</em></p>
-<p><strong><em>这是斜体加粗的文字</em></strong></p>
-<p><del>这是加删除线的文字</del></p>
-<p><strong>3、引用</strong></p>
-<blockquote>
-<p>这是引用的内容</p>
-<blockquote>
-<p>这是引用的内容</p>
-<blockquote>
-<p>这是引用的内容</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p><strong>4、分割线</strong></p>
-<hr>
-<hr>
-<hr>
-<p><strong>5、图片</strong></p>
-<p><img src="F:%5CA7R3%E7%85%A7%E7%89%87%E5%AF%BC%E5%87%BA%5C2018.10.28%E7%AC%AC%E4%B8%89%E6%AC%A1%E5%8E%BB%E6%B3%B0%E8%BF%AA%5CDSC04322-3.jpg" alt="这是我的图片"></p>
-<p><strong>6、超链接</strong></p>
-<p><a href="超链接测试地址">这是我的超链接</a></p>
-<p><strong>7、链表</strong></p>
+        <h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p><img src="/img/in-post/1578029380086.png" alt=""></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img src="/img/in-post/1578029399834.png" alt=""></p>
+<p>说明：</p>
 <ul>
-<li><p>列表内容</p>
-</li>
-<li><p>列表内容</p>
-</li>
-<li><p>列表内容</p>
-</li>
+<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
+<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
 </ul>
-<p>1.有序列表<br>2.有序列表<br>3.有序列表</p>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img src="/img/in-post/1578029444552.png" alt=""></p>
 <ul>
-<li>列表嵌套</li>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
 </ul>
-<p>上一级和下一级之间敲三个空格即可</p>
+<p><img src="/img/in-post/1578029474636.png" alt=""></p>
 <ul>
-<li><p>一级无须列表内容</p>
-<ul>
-<li>二级无序列表</li>
-<li>二级有序列表</li>
+<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
 </ul>
-<ol>
-<li>三级有序列表</li>
-<li>三级有序列表</li>
-</ol>
+<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img src="/img/in-post/1578029504176.png" alt=""></p>
 <ul>
-<li>二级无序列表<ul>
-<li>三级无序列表<ul>
-<li>四级无序列表</li>
-</ul>
+<li><p>说明：</p>
+<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
+<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
+<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
+<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
+<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
+<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
+<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
 </li>
 </ul>
-</li>
+<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img src="/img/in-post/1578029520537.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
 </ul>
-</li>
+<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img src="/img/in-post/1578029543412.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
 </ul>
-<p><strong>8、表格</strong></p>
-<table>
-<thead>
-<tr>
-<th>表头</th>
-<th align="center">表头</th>
-<th align="right">表头</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>内容</td>
-<td align="center">内容</td>
-<td align="right">内容</td>
-</tr>
-<tr>
-<td>内容</td>
-<td align="center">内容</td>
-<td align="right">内容</td>
-</tr>
-</tbody></table>
-<p>第二行分割表头和内容。</p>
-<p>有一个就行，为了对齐，多加了几个<br>文字默认居左<br>-两边加：表示文字居中<br>-右边加：表示文字居右<br>注：原生的语法两边都要用 | 包起来。此处省略</p>
-<p><strong>9、代码</strong></p>
-<p>单行代码：代码之间分别用一个反引号包起来</p>
-<p><code>System.out.println(&quot;hello world&quot;)</code></p>
-<p>代码块：代码之间分别用三个反引号抱起来，且两边的反引号独占一行</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        String a = <span class="string">"abc"</span>;</span><br><span class="line">        System.out.println(a);</span><br><span class="line">        <span class="keyword">if</span> ( a != <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            System.out.println(<span class="string">"hello world!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
+<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img src="/img/in-post/1578029563999.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img src="/img/in-post/1578029582983.png" alt=""></p>
+<ul>
+<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
+</ul>
 
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 tcals1@163.com </span>
@@ -1129,12 +1086,12 @@
 
 
 <div class="article_copyright">
-    <p><span class="copy-title">文章标题:</span>Markdown学习笔记</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">385</span></p>
+    <p><span class="copy-title">文章标题:</span>【opendaylight】——MD-SAL服务总线RPC服务源码分析</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">1.4k</span></p>
     <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
-    <p><span class="copy-title">发布时间:</span>2015-11-04, 00:00:00</p>
-    <p><span class="copy-title">最后更新:</span>2020-03-21, 12:19:57</p>
-    <span class="copy-title">原始链接:</span><a class="post-url" href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/" title="Markdown学习笔记">http://yoursite.com/2015/11/04/2018-11-4-markdown%20studying%20knowledage/</a>
+    <p><span class="copy-title">发布时间:</span>2019-11-27, 00:00:00</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-22, 09:06:59</p>
+    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/11/27/ODL-mdsal-codereview/" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">http://yoursite.com/2019/11/27/ODL-mdsal-codereview/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
     </p>

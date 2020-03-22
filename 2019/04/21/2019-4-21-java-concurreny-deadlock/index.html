@@ -528,7 +528,7 @@
     <nav id="title-list-nav">
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           href="/2019/11/27/ODL-RPC-module/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
@@ -536,7 +536,7 @@
         </a>
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           href="/2019/11/27/ODL-mdsal-codereview/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
@@ -560,7 +560,7 @@
         </a>
         
         <a  class="工具 "
-           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
            data-tag="Markdown"
            data-author="" >
             <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
@@ -993,7 +993,7 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2020-03-21 23:15:41'>2019-04-21 00:00</time>
+        创建时间:<time class="date" title='更新时间: 2020-03-22 09:06:51'>2019-04-21 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -1139,7 +1139,7 @@
 <p>上面说的是理论上如何预防死锁，那具体体现在代码上是怎么样的？就按照案例分析中（转账与存款问题）的问题代码来实践下。</p>
 <h2 id="解决死锁的静态方法：破坏三个条件实践"><a href="#解决死锁的静态方法：破坏三个条件实践" class="headerlink" title="解决死锁的静态方法：破坏三个条件实践"></a>解决死锁的静态方法：破坏三个条件实践</h2><h3 id="1-破坏“占用且等待”条件"><a href="#1-破坏“占用且等待”条件" class="headerlink" title="1. 破坏“占用且等待”条件"></a>1. 破坏“占用且等待”条件</h3><p>理论上讲，要破坏这个条件可以一次申请所有资源。如上面的案例，资源有两个：转出账户、转入账户。要同时申请这两个账户，怎么解决？</p>
 <p>增加一个账户管理员，只允许账户管理员拿账户。当张三申请账户A和账户B，如果当前只有账户A空闲，那么就不会把账户A给张三。</p>
-<p><img src="/img/in-post/1557199878669.png" alt="1557199878669"></p>
+<p><img src="/img/in-post/1557199878669.png" alt=""></p>
 <p>因此，“同时申请”就是一个临界区，需要新增一个角色（类）来管理整个临界区。</p>
 <p>角色定义：Allocator。</p>
 <p>两个功能：申请apply()和释放free()。</p>
@@ -1227,7 +1227,7 @@ class Account {
 <li><p>在系统运行过程中，对进程发出的系统资源申请进行动态检查，并根据检查决定是否分配资源，若分配后系统可能发生死锁，则不予分配，否则予以分配。</p>
 </li>
 <li><p>关键在与区分安全状态与不安全状态，安全状态一定没有死锁发生，因而对进程的申请进行试分配，分配后系统状态为安全状态则满足，否则不满足。</p>
-<p><img src="/img/in-post/1557888026650.png" alt="1557888026650"></p>
+<p><img src="/img/in-post/1557888026650.png" alt=""></p>
 </li>
 </ul>
 <h3 id="一个典型的死锁避免算法：银行家算法"><a href="#一个典型的死锁避免算法：银行家算法" class="headerlink" title="一个典型的死锁避免算法：银行家算法"></a>一个典型的死锁避免算法：银行家算法</h3><ul>
@@ -1237,10 +1237,10 @@ class Account {
 <p><strong>安全状态</strong>是：如果系统的所有进程能够排成一个安全序列，则系统处于安全状态。</p>
 </li>
 <li><p>解决单种资源的案例（存在安全序列、不存在安全序列）</p>
-<p><img src="/img/in-post/1557889587309.png" alt="1557889587309"></p>
+<p><img src="/img/in-post/1557889587309.png" alt=""></p>
 </li>
 </ul>
-<p><img src="/img/in-post/1557889601088.png" alt="1557889601088"></p>
+<p><img src="/img/in-post/1557889601088.png" alt=""></p>
 <p>另外银行家算法还用来解决多种资源申请避免死锁的场景应用中，这里就不在展开来讲了。</p>
 <h1 id="死锁的检测及解除"><a href="#死锁的检测及解除" class="headerlink" title="死锁的检测及解除"></a>死锁的检测及解除</h1><h2 id="基本策略-1"><a href="#基本策略-1" class="headerlink" title="基本策略"></a>基本策略</h2><ul>
 <li>允许死锁发生</li>
@@ -1266,7 +1266,7 @@ class Account {
 <li><p>有环路，且每个资源类中仅有一个资源，则系统中发生了死锁。此时，环路是系统发生死锁的<strong>充分条件</strong>，环路中的进程便成为死锁进程。</p>
 </li>
 <li><p>有环路，且涉及的资源类中有多个资源，则环路的存在只是产生死锁的<strong>必要条件</strong>而不是充分条件。</p>
-<p><img src="/img/in-post/1557890546652.png" alt="1557890546652"></p>
+<p><img src="/img/in-post/1557890546652.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -1310,7 +1310,7 @@ class Account {
     <p><span class="copy-title">文章字数:</span><span class="post-count">4.4k</span></p>
     <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
     <p><span class="copy-title">发布时间:</span>2019-04-21, 00:00:00</p>
-    <p><span class="copy-title">最后更新:</span>2020-03-21, 23:15:41</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-22, 09:06:51</p>
     <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/04/21/2019-4-21-java-concurreny-deadlock/" title="【基本概念篇】七、死锁">http://yoursite.com/2019/04/21/2019-4-21-java-concurreny-deadlock/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。

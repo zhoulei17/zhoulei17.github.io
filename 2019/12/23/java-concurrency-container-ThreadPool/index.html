@@ -528,7 +528,7 @@
     <nav id="title-list-nav">
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           href="/2019/11/27/ODL-RPC-module/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
@@ -536,7 +536,7 @@
         </a>
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           href="/2019/11/27/ODL-mdsal-codereview/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
@@ -560,7 +560,7 @@
         </a>
         
         <a  class="工具 "
-           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
            data-tag="Markdown"
            data-author="" >
             <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
@@ -993,7 +993,7 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2020-03-21 20:36:04'>2019-12-23 00:00</time>
+        创建时间:<time class="date" title='更新时间: 2020-03-22 09:06:54'>2019-12-23 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -1038,14 +1038,14 @@
 <p>第二：提高响应速度。当任务到达时，任务可以不需要等线程创建就能立即执行。</p>
 <p>第三：提高线程的可管理性。无限制创建线程会消耗系统资源、降低系统稳定性，使用线程池可以进行统一分配、调优和监控。</p>
 <h2 id="1-1-线程池的实现原理"><a href="#1-1-线程池的实现原理" class="headerlink" title="1.1 线程池的实现原理"></a>1.1 线程池的实现原理</h2><p>当往线程池提交一个任务之后，线程池是如何处理这个任务的？下面来看线程池主要处理流程。</p>
-<h3 id="1-1-1-主要处理流程"><a href="#1-1-1-主要处理流程" class="headerlink" title="1.1.1 主要处理流程"></a>1.1.1 主要处理流程</h3><p><img src="/img/in-post/1574908942078.png" alt="1574908942078"></p>
+<h3 id="1-1-1-主要处理流程"><a href="#1-1-1-主要处理流程" class="headerlink" title="1.1.1 主要处理流程"></a>1.1.1 主要处理流程</h3><p><img src="/img/in-post/1574908942078.png" alt=""></p>
 <p>当提交一个新任务到线程池时，线程池的处理流程如下：</p>
 <ul>
 <li>1）线程池判断核心线程你的线程是否都在执行任务。如果不是，则创建一个新的工作线程来执行任务。如果核心线程池你的线程池都在执行任务，则进入下个流程。</li>
 <li>2）线程池判断工作队列是否已满。如果工作队列没有满，这将新提交的任务存在这个工作队列里如果队列满了，则进入下一个流程。</li>
 <li>3）线程池判断线程是否都处于工作状态。如果没有，则创建一个新的工作线程来执行任务。如果已经满了，则交给饱和策略来处理这个任务。</li>
 </ul>
-<h3 id="1-1-2-execute执行流程"><a href="#1-1-2-execute执行流程" class="headerlink" title="1.1.2 execute执行流程"></a>1.1.2 execute执行流程</h3><p><img src="/img/in-post/1574910321047.png" alt="1574910321047"></p>
+<h3 id="1-1-2-execute执行流程"><a href="#1-1-2-execute执行流程" class="headerlink" title="1.1.2 execute执行流程"></a>1.1.2 execute执行流程</h3><p><img src="/img/in-post/1574910321047.png" alt=""></p>
 <p>ThreadPoolExectuor执行execute方法分为4种情况。</p>
 <ul>
 <li>1）如果当前运行的线程&lt;corePoolSize，则创建新线程来执行任务（<strong>这一步将获取全局锁</strong>）。</li>
@@ -1576,7 +1576,7 @@
     <p><span class="copy-title">文章字数:</span><span class="post-count">4.5k</span></p>
     <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
     <p><span class="copy-title">发布时间:</span>2019-12-23, 00:00:00</p>
-    <p><span class="copy-title">最后更新:</span>2020-03-21, 20:36:04</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-22, 09:06:54</p>
     <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/12/23/java-concurrency-container-ThreadPool/" title="【并发容器和框架】三、Java线程池的实现原理和使用">http://yoursite.com/2019/12/23/java-concurrency-container-ThreadPool/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。

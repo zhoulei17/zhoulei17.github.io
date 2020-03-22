@@ -528,7 +528,7 @@
     <nav id="title-list-nav">
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-RPC-module/"
+           href="/2019/11/27/ODL-RPC-module/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
@@ -536,7 +536,7 @@
         </a>
         
         <a  class="opendaylight "
-           href="/2019/11/27/2018-07-30-ODL-mdsal-codereview/"
+           href="/2019/11/27/ODL-mdsal-codereview/"
            data-tag="odl,rpc"
            data-author="" >
             <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
@@ -560,7 +560,7 @@
         </a>
         
         <a  class="工具 "
-           href="/2015/11/04/2018-11-4-markdown%20studying%20knowledage/"
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
            data-tag="Markdown"
            data-author="" >
             <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
@@ -997,7 +997,7 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2020-03-21 23:15:16'>2019-08-23 00:00</time>
+        创建时间:<time class="date" title='更新时间: 2020-03-22 09:06:47'>2019-08-23 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -1055,7 +1055,7 @@
 <li>编译器会在final域的写之后，构造函数return之前，插入StoreStore屏障。这个屏障禁止处理器把final域的写重排序到构造函数之外。</li>
 </ol>
 <p>如果线程B读对象引用与读对象的成员域之间没有重排序。如下图为可能的读取顺序。</p>
-<p><img src="/img/in-post/1566963176995.png" alt="1566963176995"></p>
+<p><img src="/img/in-post/1566963176995.png" alt=""></p>
 <p>写普通域操作被编译器重排序到构造函数之外，因此线程B错误地读取了普通变量i初始化之前的值。</p>
 <p>而写final域的操作，被写final重排序规则”限定”在了构造函数之内，线程B正确地读取了final变量初始化之后的值。</p>
 <h2 id="读final域的重排序规则"><a href="#读final域的重排序规则" class="headerlink" title="读final域的重排序规则"></a>读final域的重排序规则</h2><p>读final域的重排序规则是，在一个线程中，<strong>初次读对象引用与初次读该对象包含的final域，JMM禁止处理器重排序这两个操作(注意，这个规则仅仅针对处理器)</strong>。编译器会在读final域操作的前面插入LoadLoad屏蔽。</p>
@@ -1070,7 +1070,7 @@
 </li>
 </ul>
 <p>假设写线程A没有发生任何重排序，同时程序在不遵守间接依赖的处理器上执行，如下图是一种可能的执行时序</p>
-<p><img src="/img/in-post/1566961981214.png" alt="1566961981214"></p>
+<p><img src="/img/in-post/1566961981214.png" alt=""></p>
 <p>图中，读对象的普通域操作被处理器重排序到读对象引用之前。读普通域时，该域还没有被线程A写入，这就是一个错误的读取操作。而读final域的重排序规则会把读对象的final域的操作“限定”在读对象引用之后，此时该final域应被A线程初始化过，这是一个正确的读取操作。</p>
 <h2 id="final域为引用类型"><a href="#final域为引用类型" class="headerlink" title="final域为引用类型"></a>final域为引用类型</h2><p><img src="/img/in-post/image-20190829234658132.png" alt=""></p>
 <p>本例final域为一个引用类型，它引用了一个int型的数组对象。对于引用类型，写final域的重排序规则对编译器和处理器增加约束：</p>
@@ -1121,7 +1121,7 @@
     <p><span class="copy-title">文章字数:</span><span class="post-count">1.9k</span></p>
     <p><span class="copy-title">本文作者:</span><a  title="ZhouLei">ZhouLei</a></p>
     <p><span class="copy-title">发布时间:</span>2019-08-23, 00:00:00</p>
-    <p><span class="copy-title">最后更新:</span>2020-03-21, 23:15:16</p>
+    <p><span class="copy-title">最后更新:</span>2020-03-22, 09:06:47</p>
     <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/08/23/2019-8-23-java-concurrency-mutex-final/" title="【线程互斥篇】五、无锁方案-不可变性final与内存语义">http://yoursite.com/2019/08/23/2019-8-23-java-concurrency-mutex-final/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
