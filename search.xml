@@ -62,6 +62,31 @@
     
     
     <entry>
+      <title>【工具使用】IEDA使用分享</title>
+      <link href="/2020/02/07/tools-idea-simple/"/>
+      <url>/2020/02/07/tools-idea-simple/</url>
+      
+        <content type="html"><![CDATA[<h1 id="IDEA-MAC下原生快捷键"><a href="#IDEA-MAC下原生快捷键" class="headerlink" title="IDEA MAC下原生快捷键"></a>IDEA MAC下原生快捷键</h1><p>之前一直在window平台使用eclipse后来切换成linux开发环境使用idea更加高效，快捷键一直沿用的eclipse，后来又切换成mac下办公，发现沿用eclipse的快捷键总不能习惯，于是索性完全去使用idea原生快捷键。本总结是本人最常用的一些快捷键。</p><ul><li>⌘ -&gt; command</li><li>⇧ -&gt; shift</li><li>⌥ -&gt; option</li><li>⬆ -&gt; 上箭头</li><li>⬇ -&gt; 下箭头</li><li>⌃ -&gt; Control</li></ul><h2 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h2><p><img data-src="/img/in-post/image-20200208004639972.png" alt=""></p><p><img data-src="/img/in-post/image-20200208004702512.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘+O</td><td>查找类</td><td>Class</td></tr><tr><td>⌘+⇧+O</td><td>查找文件</td><td>File</td></tr><tr><td>⌘+⌥+O</td><td>查找符号</td><td>Symbols</td></tr><tr><td>⌘+⇧+F</td><td>全局查找</td><td>Find in Path</td></tr></tbody></table><h2 id="快速跳转"><a href="#快速跳转" class="headerlink" title="快速跳转"></a>快速跳转</h2><p><img data-src="/img/in-post/image-20200208011618763.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘+E</td><td>跳转最近打开的文件</td><td>recent files</td></tr><tr><td>⌘+⇧+delete</td><td>跳转上一次修改的位置</td><td>last edit location</td></tr><tr><td>⌘+⌥+←</td><td>跳转上一次浏览的位置</td><td>back</td></tr><tr><td>⌘+⌥+→</td><td>撤销跳转上一次浏览的位置</td><td>forward</td></tr></tbody></table><h2 id="代码阅读"><a href="#代码阅读" class="headerlink" title="代码阅读"></a>代码阅读</h2><p><img data-src="/img/in-post/image-20200208011729084.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘ + b/点击</td><td>从定义跳转到使用/使用跳转到定义</td><td>Declaration or Usages</td></tr><tr><td>⌘ + ⌥ + b/点击</td><td>查看实现</td><td>Implemention</td></tr><tr><td>⇧ + ⌘/⌃ + b/点击</td><td>查看变量对应类型定义</td><td>Type Declaration</td></tr><tr><td>⌃ + h</td><td>查看类型层次</td><td>Type Hierarchy</td></tr><tr><td>⇧ + ⌘ + h</td><td>查看方法层次</td><td>Method Hierarchy</td></tr><tr><td>⌃ + ⌥ + h</td><td>查看调用层次</td><td>Call Hieratchy</td></tr><tr><td>⌥ + ⌘ + ⬆</td><td>查看上一个类</td><td>Previous Occurrence</td></tr><tr><td>⌥ + ⌘ + ⬇</td><td>查看下一个类</td><td>Next Occurrence</td></tr></tbody></table><h2 id="快速重构"><a href="#快速重构" class="headerlink" title="快速重构"></a>快速重构</h2><p><img data-src="/img/in-post/image-20200208010359074.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⇧+F6</td><td>重命名</td><td>Rename</td></tr><tr><td>⌘+⌥+v</td><td>抽取为局部变量</td><td>Variable</td></tr><tr><td>⌘+⌥+c</td><td>抽取为静态变量</td><td>Constant</td></tr><tr><td>⌘+⌥+f</td><td>抽取为成员变量</td><td>Field</td></tr><tr><td>⌘+⌥+p</td><td>抽取为形参</td><td>Parameter</td></tr><tr><td>⌘+⌥+m</td><td>抽取为方法</td><td>Method</td></tr></tbody></table><h2 id="快捷操作"><a href="#快捷操作" class="headerlink" title="快捷操作"></a>快捷操作</h2><p><img data-src="/img/in-post/image-20200208011130506.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘+delete</td><td>删除行</td><td>Delete</td></tr><tr><td>⌘+D</td><td>复制行</td><td>Duplicate Line</td></tr><tr><td>⌘+N</td><td>快捷生成代码</td><td>Generate</td></tr><tr><td>⌘+⌥+L</td><td>格式化代码</td><td>Reformat Code</td></tr><tr><td>⌘+⌥+T</td><td>快捷生成语法</td><td>Surround With</td></tr><tr><td>⌃+O</td><td>覆盖父类方法</td><td>Override Methods</td></tr><tr><td>⌃+I</td><td>实现父类方法</td><td>Implement Methods</td></tr><tr><td>⌘+7</td><td>查看类属性列表</td><td>Structure</td></tr><tr><td>⌘+⇧+U</td><td>大小写转换</td><td>Toggle Case</td></tr></tbody></table><h2 id="书签收藏"><a href="#书签收藏" class="headerlink" title="书签收藏"></a>书签收藏</h2><p><img data-src="/img/in-post/image-20200208012849703.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>F3</td><td>定义书签</td><td>Toggle bookmarks</td></tr><tr><td>⌘+F3</td><td>显示书签列表</td><td>Show bookmarks</td></tr><tr><td>⌃+⇧+数字键</td><td>定义数字书签</td><td>Toggle bookmarks with Mnemonic</td></tr><tr><td>⌃+数字键</td><td>跳转到指定的数字书签</td><td>Go to Bookmark $num</td></tr><tr><td>⌥+⇧+F</td><td>加入收藏</td><td>Add to Favorites</td></tr><tr><td>⌘+2</td><td>显示收藏窗口 包括书签、收藏、断点</td><td>Favorites</td></tr></tbody></table><h2 id="快捷Debug"><a href="#快捷Debug" class="headerlink" title="快捷Debug"></a>快捷Debug</h2><table><thead><tr><th><strong>快捷键</strong></th><th><strong>中文描述</strong></th><th><strong>英文描述</strong></th></tr></thead><tbody><tr><td>F7</td><td>单步运行 进入方法体</td><td>Step Into</td></tr><tr><td>F8</td><td>单步运行 不进入方法体</td><td>Step Over</td></tr><tr><td>alt+F9</td><td>运行到光标</td><td>Run to Cursor</td></tr><tr><td>F9</td><td>运行到下一个断点</td><td>Resume</td></tr><tr><td>cmd+F8</td><td>添加普通断点</td><td>Toggle Line Breakpoint</td></tr><tr><td>cmd+shift+F8</td><td>查看/编辑断点</td><td>View Breakpoints</td></tr><tr><td>F2</td><td>修改变量值</td><td>Set Value</td></tr><tr><td>alt+F8</td><td>运行表达式求值</td><td>Evaluate Expression</td></tr></tbody></table>]]></content>
+      
+      
+      <categories>
+          
+          <category> 工具 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> idea </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>【压缩存储&amp;算法】PackedInts</title>
       <link href="/2020/02/07/lucene-yasuocunchu-PackedInts/"/>
       <url>/2020/02/07/lucene-yasuocunchu-PackedInts/</url>
@@ -83,31 +108,6 @@
             <tag> Lucene </tag>
             
             <tag> Lucene压缩算法 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>【工具使用】IEDA使用分享</title>
-      <link href="/2020/02/07/tools-idea-simple/"/>
-      <url>/2020/02/07/tools-idea-simple/</url>
-      
-        <content type="html"><![CDATA[<h1 id="IDEA-MAC下原生快捷键"><a href="#IDEA-MAC下原生快捷键" class="headerlink" title="IDEA MAC下原生快捷键"></a>IDEA MAC下原生快捷键</h1><p>之前一直在window平台使用eclipse后来切换成linux开发环境使用idea更加高效，快捷键一直沿用的eclipse，后来又切换成mac下办公，发现沿用eclipse的快捷键总不能习惯，于是索性完全去使用idea原生快捷键。本总结是本人最常用的一些快捷键。</p><ul><li>⌘ -&gt; command</li><li>⇧ -&gt; shift</li><li>⌥ -&gt; option</li><li>⬆ -&gt; 上箭头</li><li>⬇ -&gt; 下箭头</li><li>⌃ -&gt; Control</li></ul><h2 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h2><p><img data-src="/img/in-post/image-20200208004639972.png" alt=""></p><p><img data-src="/img/in-post/image-20200208004702512.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘+O</td><td>查找类</td><td>Class</td></tr><tr><td>⌘+⇧+O</td><td>查找文件</td><td>File</td></tr><tr><td>⌘+⌥+O</td><td>查找符号</td><td>Symbols</td></tr><tr><td>⌘+⇧+F</td><td>全局查找</td><td>Find in Path</td></tr></tbody></table><h2 id="快速跳转"><a href="#快速跳转" class="headerlink" title="快速跳转"></a>快速跳转</h2><p><img data-src="/img/in-post/image-20200208011618763.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘+E</td><td>跳转最近打开的文件</td><td>recent files</td></tr><tr><td>⌘+⇧+delete</td><td>跳转上一次修改的位置</td><td>last edit location</td></tr><tr><td>⌘+⌥+←</td><td>跳转上一次浏览的位置</td><td>back</td></tr><tr><td>⌘+⌥+→</td><td>撤销跳转上一次浏览的位置</td><td>forward</td></tr></tbody></table><h2 id="代码阅读"><a href="#代码阅读" class="headerlink" title="代码阅读"></a>代码阅读</h2><p><img data-src="/img/in-post/image-20200208011729084.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘ + b/点击</td><td>从定义跳转到使用/使用跳转到定义</td><td>Declaration or Usages</td></tr><tr><td>⌘ + ⌥ + b/点击</td><td>查看实现</td><td>Implemention</td></tr><tr><td>⇧ + ⌘/⌃ + b/点击</td><td>查看变量对应类型定义</td><td>Type Declaration</td></tr><tr><td>⌃ + h</td><td>查看类型层次</td><td>Type Hierarchy</td></tr><tr><td>⇧ + ⌘ + h</td><td>查看方法层次</td><td>Method Hierarchy</td></tr><tr><td>⌃ + ⌥ + h</td><td>查看调用层次</td><td>Call Hieratchy</td></tr><tr><td>⌥ + ⌘ + ⬆</td><td>查看上一个类</td><td>Previous Occurrence</td></tr><tr><td>⌥ + ⌘ + ⬇</td><td>查看下一个类</td><td>Next Occurrence</td></tr></tbody></table><h2 id="快速重构"><a href="#快速重构" class="headerlink" title="快速重构"></a>快速重构</h2><p><img data-src="/img/in-post/image-20200208010359074.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⇧+F6</td><td>重命名</td><td>Rename</td></tr><tr><td>⌘+⌥+v</td><td>抽取为局部变量</td><td>Variable</td></tr><tr><td>⌘+⌥+c</td><td>抽取为静态变量</td><td>Constant</td></tr><tr><td>⌘+⌥+f</td><td>抽取为成员变量</td><td>Field</td></tr><tr><td>⌘+⌥+p</td><td>抽取为形参</td><td>Parameter</td></tr><tr><td>⌘+⌥+m</td><td>抽取为方法</td><td>Method</td></tr></tbody></table><h2 id="快捷操作"><a href="#快捷操作" class="headerlink" title="快捷操作"></a>快捷操作</h2><p><img data-src="/img/in-post/image-20200208011130506.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>⌘+delete</td><td>删除行</td><td>Delete</td></tr><tr><td>⌘+D</td><td>复制行</td><td>Duplicate Line</td></tr><tr><td>⌘+N</td><td>快捷生成代码</td><td>Generate</td></tr><tr><td>⌘+⌥+L</td><td>格式化代码</td><td>Reformat Code</td></tr><tr><td>⌘+⌥+T</td><td>快捷生成语法</td><td>Surround With</td></tr><tr><td>⌃+O</td><td>覆盖父类方法</td><td>Override Methods</td></tr><tr><td>⌃+I</td><td>实现父类方法</td><td>Implement Methods</td></tr><tr><td>⌘+7</td><td>查看类属性列表</td><td>Structure</td></tr><tr><td>⌘+⇧+U</td><td>大小写转换</td><td>Toggle Case</td></tr></tbody></table><h2 id="书签收藏"><a href="#书签收藏" class="headerlink" title="书签收藏"></a>书签收藏</h2><p><img data-src="/img/in-post/image-20200208012849703.png" alt=""></p><table><thead><tr><th>快捷键</th><th>中文描述</th><th>英文描述</th></tr></thead><tbody><tr><td>F3</td><td>定义书签</td><td>Toggle bookmarks</td></tr><tr><td>⌘+F3</td><td>显示书签列表</td><td>Show bookmarks</td></tr><tr><td>⌃+⇧+数字键</td><td>定义数字书签</td><td>Toggle bookmarks with Mnemonic</td></tr><tr><td>⌃+数字键</td><td>跳转到指定的数字书签</td><td>Go to Bookmark $num</td></tr><tr><td>⌥+⇧+F</td><td>加入收藏</td><td>Add to Favorites</td></tr><tr><td>⌘+2</td><td>显示收藏窗口 包括书签、收藏、断点</td><td>Favorites</td></tr></tbody></table><h2 id="快捷Debug"><a href="#快捷Debug" class="headerlink" title="快捷Debug"></a>快捷Debug</h2><table><thead><tr><th><strong>快捷键</strong></th><th><strong>中文描述</strong></th><th><strong>英文描述</strong></th></tr></thead><tbody><tr><td>F7</td><td>单步运行 进入方法体</td><td>Step Into</td></tr><tr><td>F8</td><td>单步运行 不进入方法体</td><td>Step Over</td></tr><tr><td>alt+F9</td><td>运行到光标</td><td>Run to Cursor</td></tr><tr><td>F9</td><td>运行到下一个断点</td><td>Resume</td></tr><tr><td>cmd+F8</td><td>添加普通断点</td><td>Toggle Line Breakpoint</td></tr><tr><td>cmd+shift+F8</td><td>查看/编辑断点</td><td>View Breakpoints</td></tr><tr><td>F2</td><td>修改变量值</td><td>Set Value</td></tr><tr><td>alt+F8</td><td>运行表达式求值</td><td>Evaluate Expression</td></tr></tbody></table>]]></content>
-      
-      
-      <categories>
-          
-          <category> 工具 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> idea </tag>
             
         </tags>
       
