@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。 Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。 可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的并发策略：  不在线程之间共享该状态变量，也可">
@@ -489,12 +489,12 @@ public void initialize() {
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" rel="prev" title="【基本概念篇】十一、Java线程的状态和生命周期">
-      <i class="fa fa-chevron-left"></i> 【基本概念篇】十一、Java线程的状态和生命周期
+    <a href="/2019/05/10/2019-5-10-java-concurreny-java-monitor/" rel="prev" title="【基本概念篇】十、管程——并发编程的万能钥匙">
+      <i class="fa fa-chevron-left"></i> 【基本概念篇】十、管程——并发编程的万能钥匙
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/06/19/2019-6-19-java-concurrency-communication-wait-notify/" rel="next" title="【线程协作篇】一、wait、notify、notifyAll&Lock、Condition">
-      【线程协作篇】一、wait、notify、notifyAll&Lock、Condition <i class="fa fa-chevron-right"></i>
+    <a href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" rel="next" title="【基本概念篇】十一、Java线程的状态和生命周期">
+      【基本概念篇】十一、Java线程的状态和生命周期 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -700,7 +700,7 @@ public void initialize() {
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/pisces.js"></script>
+<script src="/js/schemes/muse.js"></script>
 
 
 <script src="/js/next-boot.js"></script>

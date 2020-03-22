@@ -16,6 +16,37 @@
       </tags>
   </entry>
   <entry>
+    <title>【DocValues】一、SortedDocValues</title>
+    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
+    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
+<ul>
+<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
+<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
+</ul>
+<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
+<blockquote>
+<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
+<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
+<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
+</blockquote>
+<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
+<li>NumericDocValues</li>
+<li>SortedNumericDocValues</li>
+<li>SortedDocValues</li>
+<li>SortedSetDocValues</li>
+<li>BinaryDocValues</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>DocValues</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【压缩存储&amp;算法】PackedInts</title>
     <url>/2020/02/07/lucene-yasuocunchu-PackedInts/</url>
     <content><![CDATA[<p><strong>源码位置：org/apache/lucene/util/FixedBitSet.java</strong></p>
@@ -105,37 +136,6 @@
         <tag>Search</tag>
         <tag>Lucene</tag>
         <tag>Lucene压缩算法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【DocValues】一、SortedDocValues</title>
-    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
-    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
-<ul>
-<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
-<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
-</ul>
-<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
-<blockquote>
-<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
-<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
-<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
-</blockquote>
-<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
-<li>NumericDocValues</li>
-<li>SortedNumericDocValues</li>
-<li>SortedDocValues</li>
-<li>SortedSetDocValues</li>
-<li>BinaryDocValues</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>DocValues</tag>
       </tags>
   </entry>
   <entry>
@@ -787,6 +787,86 @@
       </tags>
   </entry>
   <entry>
+    <title>【索引文件】.nvd、.nvm文件</title>
+    <url>/2020/01/31/lucene-indexfile-nvd-nvm/</url>
+    <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
+<h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
+<p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
+<p><img data-src="/img/in-post/1-20200201134606149.png" alt=""></p>
+<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt=""></p>
+<ul>
+<li><p><strong>FieldData</strong></p>
+<p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
+<p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
+<ul>
+<li><p><strong>DocsWithFieldData</strong></p>
+<p><img data-src="/img/in-post/3.png" alt=""></p>
+<p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
+<ul>
+<li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
+</li>
+<li><p>numDocsWithValue == maxDoc</p>
+<p>maxDoc表示当前处理的文档个数，这种情况说明所有文档都包含当前域。<br>DocsWithFieldData无数据，通过nvm文件中同样存放固定值来描述当前情况。<br>在本文中,域”author”属于此情况。</p>
+</li>
+<li><p>numDocsWithValue &lt; maxDoc</p>
+<p>这种情况说明并不是所有的文档都包含当前域，所以需要存储所有包含当前域的文档号。</p>
+<p>使用IndexedDISI类来实现对文档号docID的存储，IndexedDISI类随后文章中再总结。</p>
+<p>在索引阶段不同的添加document的方式会有不同数据结构的nvd文件产生，导致生成索引跟查询的性能各不相同。 在本文的例子中，域”content”、”attachment”的DocsWithFieldData属于当前情况。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>NormsData</strong></li>
+</ul>
+<p>  <img data-src="/img/in-post/4.png" alt=""></p>
+<ul>
+<li>Value</li>
+</ul>
+<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img data-src="/img/in-post/5.png" alt=""></p>
+<ul>
+<li><p><strong>FieldNumber</strong></p>
+<p>域的编号，用来唯一标识一种域</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>DocsWithFieldAddress &amp;&amp; DocsWithFieldLength</strong></p>
+<p>如果numDocWithValue == maxDoc 或者 numDocWithValue == 0 , 那么DocWithFieldAddress跟DocsWithFieldLength会被设置为固定值。否则这两个值作为索引去映射nvd中的一块数据区域。</p>
+</li>
+</ul>
+<p>  <img data-src="/img/in-post/6.png" alt=""></p>
+<ul>
+<li><p><strong>NumDocsWithField</strong></p>
+<p>NumDocsWithField描述了包含当前域的文档个数。</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>BytesPernNorm</strong></p>
+<p>找出当前域在所有所属文档中的最大和最小的两个标准化值来判断存储一个标准化值最大需要的字节数，这里还是处于优化索引空间目的。由于最小值可能是负数，所以不能仅仅靠最大值判断标准化值需要的字节数。比如最小值min为-130（需要2个字节），最大值max 5(需要1个字节)，那测试需要根据min来决定需要字节的个数。</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>NormsAddress</strong></p>
+<p>NormsAddress作为索引映射nvd中一块数据区域，这块数据区域即当前域所在文档中的标准化值。</p>
+</li>
+</ul>
+<p>  <img data-src="/img/in-post/7.png" alt=""></p>
+<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img data-src="/img/in-post/8.png" alt=""></p>
+<h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
+<p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>索引文件</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【索引文件】.pos、.pay文件</title>
     <url>/2020/01/31/lucene-indexfile-pos-pay/</url>
     <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
@@ -869,86 +949,6 @@
 <h2 id="多个域的pay文件的数据结构"><a href="#多个域的pay文件的数据结构" class="headerlink" title="多个域的pay文件的数据结构"></a>多个域的pay文件的数据结构</h2><p><img data-src="/img/in-post/6-20200201164502459.png" alt=""></p>
 <h2 id="多个域的pos文件的数据结构"><a href="#多个域的pos文件的数据结构" class="headerlink" title="多个域的pos文件的数据结构"></a>多个域的pos文件的数据结构</h2><p><img data-src="/img/in-post/7-20200201164528840.png" alt=""></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>.pos 、.pay、.doc、.tim 、.tip文件都是在<a href="https://www.amazingkoala.com.cn/Lucene/Index/2019/0716/74.html" target="_blank" rel="noopener">flush</a>阶段通过读取倒排表一起生成的，另外.doc跟.pos、.pay文件还有映射关系，后续总结.doc文件会涉及。</p>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>索引文件</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【索引文件】.nvd、.nvm文件</title>
-    <url>/2020/01/31/lucene-indexfile-nvd-nvm/</url>
-    <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
-<h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
-<p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
-<p><img data-src="/img/in-post/1-20200201134606149.png" alt=""></p>
-<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt=""></p>
-<ul>
-<li><p><strong>FieldData</strong></p>
-<p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
-<p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
-<ul>
-<li><p><strong>DocsWithFieldData</strong></p>
-<p><img data-src="/img/in-post/3.png" alt=""></p>
-<p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
-<ul>
-<li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
-</li>
-<li><p>numDocsWithValue == maxDoc</p>
-<p>maxDoc表示当前处理的文档个数，这种情况说明所有文档都包含当前域。<br>DocsWithFieldData无数据，通过nvm文件中同样存放固定值来描述当前情况。<br>在本文中,域”author”属于此情况。</p>
-</li>
-<li><p>numDocsWithValue &lt; maxDoc</p>
-<p>这种情况说明并不是所有的文档都包含当前域，所以需要存储所有包含当前域的文档号。</p>
-<p>使用IndexedDISI类来实现对文档号docID的存储，IndexedDISI类随后文章中再总结。</p>
-<p>在索引阶段不同的添加document的方式会有不同数据结构的nvd文件产生，导致生成索引跟查询的性能各不相同。 在本文的例子中，域”content”、”attachment”的DocsWithFieldData属于当前情况。</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><strong>NormsData</strong></li>
-</ul>
-<p>  <img data-src="/img/in-post/4.png" alt=""></p>
-<ul>
-<li>Value</li>
-</ul>
-<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img data-src="/img/in-post/5.png" alt=""></p>
-<ul>
-<li><p><strong>FieldNumber</strong></p>
-<p>域的编号，用来唯一标识一种域</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>DocsWithFieldAddress &amp;&amp; DocsWithFieldLength</strong></p>
-<p>如果numDocWithValue == maxDoc 或者 numDocWithValue == 0 , 那么DocWithFieldAddress跟DocsWithFieldLength会被设置为固定值。否则这两个值作为索引去映射nvd中的一块数据区域。</p>
-</li>
-</ul>
-<p>  <img data-src="/img/in-post/6.png" alt=""></p>
-<ul>
-<li><p><strong>NumDocsWithField</strong></p>
-<p>NumDocsWithField描述了包含当前域的文档个数。</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>BytesPernNorm</strong></p>
-<p>找出当前域在所有所属文档中的最大和最小的两个标准化值来判断存储一个标准化值最大需要的字节数，这里还是处于优化索引空间目的。由于最小值可能是负数，所以不能仅仅靠最大值判断标准化值需要的字节数。比如最小值min为-130（需要2个字节），最大值max 5(需要1个字节)，那测试需要根据min来决定需要字节的个数。</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>NormsAddress</strong></p>
-<p>NormsAddress作为索引映射nvd中一块数据区域，这块数据区域即当前域所在文档中的标准化值。</p>
-</li>
-</ul>
-<p>  <img data-src="/img/in-post/7.png" alt=""></p>
-<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img data-src="/img/in-post/8.png" alt=""></p>
-<h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
-<p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
 ]]></content>
       <categories>
         <category>Lucene</category>
@@ -1576,6 +1576,62 @@
       </tags>
   </entry>
   <entry>
+    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
+    <url>/2019/11/27/ODL-mdsal-codereview/</url>
+    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
+<p>说明：</p>
+<ul>
+<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
+<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
+</ul>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
+</ul>
+<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
+<ul>
+<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
+</ul>
+<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
+<ul>
+<li><p>说明：</p>
+<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
+<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
+<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
+<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
+<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
+<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
+<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
+</li>
+</ul>
+<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
+</ul>
+<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
+<ul>
+<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>opendaylight</category>
+      </categories>
+      <tags>
+        <tag>odl</tag>
+        <tag>rpc</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【并发容器和框架】四、Executor框架</title>
     <url>/2019/11/27/java-concurrency-container-Executor/</url>
     <content><![CDATA[<p>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
@@ -1764,62 +1820,6 @@
         <tag>随机梯度下降</tag>
         <tag>有监督</tag>
         <tag>线性回归</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
-    <url>/2019/11/27/ODL-mdsal-codereview/</url>
-    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
-<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
-<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
-<p>说明：</p>
-<ul>
-<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
-<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
-</ul>
-<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
-</ul>
-<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
-<ul>
-<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
-</ul>
-<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
-<ul>
-<li><p>说明：</p>
-<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
-<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
-<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
-<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
-<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
-<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
-<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
-</li>
-</ul>
-<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
-</ul>
-<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
-<ul>
-<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>opendaylight</category>
-      </categories>
-      <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
       </tags>
   </entry>
   <entry>
@@ -4962,173 +4962,6 @@ class WaitPerson implements Runnable {
       </tags>
   </entry>
   <entry>
-    <title>【基本概念篇】十二、如何构建线程安全的对象——对象的共享</title>
-    <url>/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/</url>
-    <content><![CDATA[<p>当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。</p>
-<p>Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。</p>
-<p>可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的<strong>并发策略</strong>：</p>
-<ul>
-<li>不在线程之间共享该状态变量，也可以说<strong>无状态</strong>的对象的肯定是线程安全的</li>
-<li>将状态变量修改为<strong>不可变的变量</strong></li>
-<li>在访问状态变量时<strong>使用同步</strong></li>
-</ul>
-<p>之前总结了如何通过同步来避免多个线程同一时刻访问相同的数据。本篇文章主要讲：怎么共享和发布对象，从而使他们能够安全地被多个线程同时访问。即：</p>
-<ol>
-<li>一方面，我们不仅希望防止某个线程被正在使用对象状态而另一个线程同时修改状态。</li>
-<li>另一方面，我们还希望当一个线程修改了对象状态后，其他线程能够看到发生状态的变化。如果没有同步，就无法实现。</li>
-</ol>
-<p>关键字synchronized不仅仅可以实现原子性或者确定”临界区”，同时也能够实现共享对象的<strong>内存可见性</strong>。</p>
-<blockquote>
-<p>加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或者写操作的线程都必须在同一个锁上同步。</p>
-</blockquote>
-<p>除了synchronized实现的同步可见性方案，Java语言还提供一种稍弱的同步机制，即volatile变量，用来确保变量的更新操作通知到其他线程。</p>
-<h1 id="1-可见性-volatile"><a href="#1-可见性-volatile" class="headerlink" title="1. 可见性(volatile)"></a>1. 可见性(volatile)</h1><p>由于重排序，程序的执行结果往往让人产生错觉。</p>
-<h2 id="volatile变量"><a href="#volatile变量" class="headerlink" title="volatile变量"></a>volatile变量</h2><p>当把变量声明为volatile类型后，编译器与运行时都会注意到这个变量是共享的，因此不会将变量上的操作与其他内存操作一起重排序。volatile变量不会被缓存在寄存器或者本地内存中，因此在读取volatile类型的变量时总会返回最新写入的值。</p>
-<p>在访问volatile变量时不会执行加锁操作，因此也就不会使线程阻塞，因此volatile变量是一种比sychronized关键字更轻量级的同步。不建议过度依赖volatile变量提供的可见性，如果在代码中依赖volatile变量来控制状态可见性，通常比使用锁的代码更脆弱，也更难以理解。</p>
-<blockquote>
-<p>仅当volatile变量能够简化代码的实现以及对同步策略的验证时，才应该使用它们。如果在验证正确性需要对可见性进行复杂判断，那么就不要使用volatile变量。volatile变量的正确使用方式包括：</p>
-<ol>
-<li>确保它们自身状态的可见性。</li>
-<li>确保它们所引用对象的状态的</li>
-<li>标识一些重要的程序生命周期事件的发生(例如，初始化或关闭)</li>
-</ol>
-</blockquote>
-<p><strong>volatile的典型用法</strong>：检查某个状态标记以判断是否退出循环。</p>
-<pre><code class="java">volatile boolean asleep;
-...
-  while(!asleep)
-    countSomeSheep();</code></pre>
-<p>虽然volatile变量很方便，但也存在一些局限性。volatile变量通常用作某个操作完成、发生中断或者状态的标志。例如上面的asleep标志。尽管volatile变量也可以用于表示其他的状态信息，但使用时要注意，比如volatile语义不能确保递增操作(count++)的原子性，除非确保只有一个线程对变量执行写操作。(原子变量提供了”读—改—写”的原子操作)，并且常常用做一种”更好的volatile变量”。</p>
-<blockquote>
-<p>加锁机制既可以确保可见性又可以确保原子性，而volatile变量只能确保可见性。</p>
-</blockquote>
-<h2 id="volatile使用场景"><a href="#volatile使用场景" class="headerlink" title="volatile使用场景"></a>volatile使用场景</h2><p><strong>当且仅当满足以下条件时，才应该使用volatile变量</strong>：</p>
-<ul>
-<li>对变量的写入操作不依赖变量的当前值，或者你能够确保当前只有单个线程更新变量的值。</li>
-<li>该变量不会与其他状态一起纳入不变性条件中。</li>
-<li>在访问变量时不需要加锁。</li>
-</ul>
-<h1 id="2-发布和逸出-封装"><a href="#2-发布和逸出-封装" class="headerlink" title="2. 发布和逸出(封装)"></a>2. 发布和逸出(封装)</h1><ul>
-<li><p><strong>“发布”</strong>对象的意思指，使对象能够在当前作用域之外的代码中使用。</p>
-<p>例如，将一个指向该对象的引用保存到其他代码可以访问的地方，</p>
-<p>或者在某一个非私有的方法中返回该引用，或者将引用传递到其他类的方法中。</p>
-<p><strong>我们要确保对象及其内部状态不被发布</strong></p>
-</li>
-<li><p><strong>“逸出”</strong>的意思指，当某个不应该发布的对象被发布时称为”逸出”。</p>
-</li>
-</ul>
-<p>当发布的对象逸出以后，必须假设有某个类或线程可能会误用该对象。</p>
-<p>因此应该尽量使用<strong>封装</strong>：封装能够使得对程序的正确性进行分析变可能，并使得无意中破坏设计约束条件变得更难。</p>
-<p>另外一种发布对象或其内部状态机制就是发布一个<strong>内部类的实例</strong>。</p>
-<p>另外一个要注意的地方：</p>
-<blockquote>
-<p>不要在构造过程中使this引用逸出</p>
-</blockquote>
-<h1 id="3-线程封闭-无状态、ThreadLocal"><a href="#3-线程封闭-无状态、ThreadLocal" class="headerlink" title="3. 线程封闭(无状态、ThreadLocal)"></a>3. 线程封闭(无状态、ThreadLocal)</h1><p>一种避免同步的方式就是不共享数据，不共享数据的无状态对象肯定是线程安全的。称为<strong>线程封闭</strong>。</p>
-<p>常见的例子如：</p>
-<ul>
-<li><p>Swing通过将可视化组件和数据模型封装到Swing的事件分发线程中来实现线程安全。</p>
-</li>
-<li><p>还有如JDBC的Connection对象，线程从连接池中获得一个Connection对象，并且用该对象来处理请求，使用完后再讲对象返回给连接池。由于大多数(Servlet请求或EJB调用等)都是由单个线程采用同样的方式来处理，并且在Connection对象返回之前，连接池不会再将它分配给其他线程，因此这种连接管理模式在处理隐含地将Connection对象封闭在线程中。</p>
-</li>
-</ul>
-<p>Java提供<strong>局部变量</strong>和<strong>ThreadLocal类</strong>来帮助维持线程封闭性。下面来讲下：</p>
-<h2 id="Ad-hoc线程封闭"><a href="#Ad-hoc线程封闭" class="headerlink" title="Ad-hoc线程封闭"></a>Ad-hoc线程封闭</h2><p>Ad-hoc实际就是指，维护线程封闭性的职责完全交给程序来实现。Ad-hoc线程封闭是非常脆弱的，因为没有任何一种语言特性，例如可见修饰符或局部变量，能将对象封闭到目标线程上。事实上，对线程封闭对象的引用通常保存在公有变量上。</p>
-<p>在volatile变量行上存在一种特殊的线程封闭。只要你能确保只有<strong>单个线程</strong>对共享的volatile变量执行写入操作，那么就可以安全地在这些共享的volatile变量上执行”读取-修改-写入”的操作。这种情况下，相当于将修改操作封闭在单个线程中以防止发生<strong>竞态条件</strong>，并且volatile变量的可见性还确保了其他线程能看到最新的值。</p>
-<p>由于Ad-hoc线程封闭技术的脆弱性，因此在程序中尽量少用，在可能的情况下应该使用更强的线程封闭技术(例如下面要将讲的，栈封闭和ThreadLocal类)。</p>
-<h2 id="栈封闭"><a href="#栈封闭" class="headerlink" title="栈封闭"></a>栈封闭</h2><p>栈封闭是线程封闭的一种特例，在栈封闭中，<strong>只能通过局部变量才能访问对象</strong>。栈封闭（也被称为线程内部使用或者线程局部使用，不要与核心类库中的ThreadLocal混淆）比Ad-hoc线程封闭更易于维护，也更加健壮。</p>
-<h2 id="ThreadLocal类"><a href="#ThreadLocal类" class="headerlink" title="ThreadLocal类"></a>ThreadLocal类</h2><ul>
-<li><p>线程封闭性的一种更规范方法是使用ThreadLocal，这个类能使线程中的某个值与保存值的对象关联起来。</p>
-</li>
-<li><p>ThreadLocal提供get与set等访问接口或方法，为每个使用该变量的线程都保存一份独立的副本，因此get总是返回当前执行线程在调用set时设置的最新值。</p>
-</li>
-<li><p>ThreadLocal对象通常用于防止对可变的单实例对象(Singleton)或全局变量进行共享。例如，通过将JDBC的连接保存到ThreadLocal对象中，每个线程就会拥有属于自己的连接。</p>
-</li>
-</ul>
-<h1 id="4-不变性final"><a href="#4-不变性final" class="headerlink" title="4.不变性final"></a>4.不变性final</h1><p>上面讲了，解决同步问题的方法，主要有</p>
-<ol>
-<li>共享变量的volatile的声明，即禁用JVM对该变量的重排序立即对其他线程可见，</li>
-<li>注意共享变量的发布、避免共享变量逸出。</li>
-<li>通过线程封闭手段避免避免对象状态在多线程之间共享(通过局部变量的栈封闭、以及ThreadLocal的线程副本隔离)。</li>
-</ol>
-<p>下面来讲下，解决同步的另外一种手段，即 <strong>不变性</strong>。</p>
-<p>满足同步需求的另一种方法是使用不可变对象。很多与原子性、可见性相关的问题，例如得到失效数据、丢失更新或者观察到某个对象处于不一致的状态等等，都与多线程试图同时访问同一个可变的状态相关。如果对象的状态不会改变，那么这些问题与复杂性也就自然消失了。</p>
-<blockquote>
-<p>不可变对象一定是线程安全的。</p>
-</blockquote>
-<p><strong>不可变性不等于将对象中所有的域都声明为final类型，即使对象中所有的域都是final类型的，这个对象也仍然是可变的，因为在final类型的域中可以保存对可变对象的引用。</strong></p>
-<p>因此需要满足以下条件，对象才是不可变的：</p>
-<blockquote>
-<ul>
-<li>对象创建以后其状态就不能修改。</li>
-<li>对象的所有域都是final类型。</li>
-<li>对象是正确创建的(在对象的创建期间，this引用没有逸出)。</li>
-</ul>
-</blockquote>
-<h1 id="5-安全发布"><a href="#5-安全发布" class="headerlink" title="5.安全发布"></a>5.安全发布</h1><p>先看下面这个例子</p>
-<pre><code class="java">public Holder holder;
-
-public void initialize() {
-        holder = new Holder(42);
-}</code></pre>
-<p>由于存在可见性问题，其他线程看到的Holder对象将处于不一致的状态，即便在该对象的构造函数中已经正确地构建了不变性条件。这种不正确的发布导致其他线程看到尚未创建完成的对象。这就是<strong>在没有足够同步的情况下发布对象</strong>，不要这样做。</p>
-<h2 id="不可变对象与初始化安全性"><a href="#不可变对象与初始化安全性" class="headerlink" title="不可变对象与初始化安全性"></a>不可变对象与初始化安全性</h2><p>Java内存模型为不可变对象的共享提供了一种特殊的初始化安全性保证。</p>
-<p>已经知道，即使某个对象的引用对于其他线程是可见的，也并不意味着对象状态对于使用该对象的线程来说一定是可见的。为了确保对象状态能呈现出一致的视图，就必须使用同步。</p>
-<p>另一方面，即使在发布不可变对象的引用时没有使用同步，也仍然可以安全地访问该对象。为了维持这种初始化安全性保证，必须满足不可变性的所有需求：</p>
-<p>状态不可修改，所有域都是final类型，以及正确的构造过程。</p>
-<blockquote>
-<p><strong>任何线程都可以在不需要额外同步的情况下安全地访问不可变对象，即使在发布这些对象时没有使用同步。</strong></p>
-</blockquote>
-<p>但是，如果final类型的域指向的是可变对象，那么在访问这些域所指向的对象的状态时仍然需要同步。</p>
-<h2 id="安全发布的常用模式"><a href="#安全发布的常用模式" class="headerlink" title="安全发布的常用模式"></a>安全发布的常用模式</h2><p>如何确保使用对象的线程能够看到该对象处于已发布的状态。</p>
-<blockquote>
-<p>要安全地发布一个对象，对象的引用以及对象的状态必须同步对其他线程可见。一个正确构造的对象可以通过以下来安全地发布：</p>
-<ul>
-<li>在静态初始化函数中初始化一个对象引用。</li>
-<li>将对象的引用保存到volatile类型的域或者AtomicReferance对象中。</li>
-<li>将对象的引用保存到某个正确构造对象的final类型域中。</li>
-<li>将对象的引用保存到一个由锁保护的域中。</li>
-</ul>
-</blockquote>
-<ul>
-<li><p>在线程安全容器内部的同步以为着，在将对象放到某个容器后，例如Vector或synchronizedList时，满足上面的”将对象的引用保存到一个由锁保护的域中”。即：</p>
-<p>线程A将对象X放入一个线程安全的容器，随后线程B读取这个对象，那么可以确保B看到A设置的X状态，即便在这段读/写X的应用程序代码中没有包含显式的同步。线程安全类包括：</p>
-<p>Hashtable、sychronizedMap或者ConcurrentHashMap</p>
-<p>Vector、CopyOnWriteArrayList、CopyOnWriteArrySet、synchronizedList或synchronizedSet</p>
-<p>BlockingQueue或ConcurrentLinkedQueue</p>
-<p>还有其他数据传递机制Future和Exchanger同样能实现安全发布。</p>
-</li>
-<li><p>静态初始化器由JVM在类的初始化阶段执行。由于在JVM内部存在着同步机制，因此通过这种方式初始化任何对象都可以被安全地发布。</p>
-</li>
-</ul>
-<h2 id="可变对象"><a href="#可变对象" class="headerlink" title="可变对象"></a>可变对象</h2><p>如果对象在构造后可以修改，那么安全发布只能确保”发布当时”状态的可见性。对于可变对象，不仅在发布对象时需要同步，而且在每次对象访问时同样需要同步来确保后续操作的可见性。要安全地共享可变对象，这些对象就必须被安全地发布，并且必须是线程安全的或者由某个锁保护起来。</p>
-<blockquote>
-<p>对象的发布需求取决于它的可变性：</p>
-<ul>
-<li>不可变对象可以通过任意机制来发布</li>
-<li>事实不可变对象必须通过安全方式来发布</li>
-<li>可变对象必须通过安全方式来发布，并且必须是线程安全的或者由某个锁保护起来</li>
-</ul>
-</blockquote>
-<h2 id="安全地共享对象"><a href="#安全地共享对象" class="headerlink" title="安全地共享对象"></a>安全地共享对象</h2><p>当获得对象的一个引用时，你需要知道这个引用上可以执行哪些操作。在使用它之前是否需要获得一个锁？是否可以修改它的状态或者只能读取它？许多并发错误都是由于没有理解共享对象的这些”既定规则”而导致的。当发布一个对象时，必须明确地说明对象的访问方式。</p>
-<blockquote>
-<p>在并发程序中使用和共享对象，可以使用一些实用的策略，包括：</p>
-<p><strong>线程封闭</strong>。线程封闭的对象只能由一个线程拥有，对象被封闭在该线程中，并且只能由这个线程修改。</p>
-<p><strong>只读共享</strong>。在没有额外同步的情况下，共享的只读对象可以由多个线程并发访问，但任何线程都不能修改它。共享的只读对象包括不可变对象和事实不可变对象。</p>
-<p><strong>线程安全共享</strong>。线层安全的对象在其内部实现同步，因此多个线程可以通过对象的公有接口来进行访问而不需要进一步的同步。</p>
-<p><strong>保护对象</strong>。被保护的对象只能通过持有特定的锁来访问。保护对象包括封装在其他线程安全对象中的对象，以及已发布的并且由某个特定锁保护的对象。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【基本概念篇】十一、Java线程的状态和生命周期</title>
     <url>/2019/05/15/2019-5-15-java-concurreny-java-thread-status/</url>
     <content><![CDATA[<p>Java线程本质上就是操作系统的线程，它们是一一对应的。</p>
@@ -5348,6 +5181,173 @@ public void initialize() {
         <tag>java</tag>
         <tag>并发</tag>
         <tag>生命周期</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【基本概念篇】十二、如何构建线程安全的对象——对象的共享</title>
+    <url>/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/</url>
+    <content><![CDATA[<p>当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。</p>
+<p>Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。</p>
+<p>可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的<strong>并发策略</strong>：</p>
+<ul>
+<li>不在线程之间共享该状态变量，也可以说<strong>无状态</strong>的对象的肯定是线程安全的</li>
+<li>将状态变量修改为<strong>不可变的变量</strong></li>
+<li>在访问状态变量时<strong>使用同步</strong></li>
+</ul>
+<p>之前总结了如何通过同步来避免多个线程同一时刻访问相同的数据。本篇文章主要讲：怎么共享和发布对象，从而使他们能够安全地被多个线程同时访问。即：</p>
+<ol>
+<li>一方面，我们不仅希望防止某个线程被正在使用对象状态而另一个线程同时修改状态。</li>
+<li>另一方面，我们还希望当一个线程修改了对象状态后，其他线程能够看到发生状态的变化。如果没有同步，就无法实现。</li>
+</ol>
+<p>关键字synchronized不仅仅可以实现原子性或者确定”临界区”，同时也能够实现共享对象的<strong>内存可见性</strong>。</p>
+<blockquote>
+<p>加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或者写操作的线程都必须在同一个锁上同步。</p>
+</blockquote>
+<p>除了synchronized实现的同步可见性方案，Java语言还提供一种稍弱的同步机制，即volatile变量，用来确保变量的更新操作通知到其他线程。</p>
+<h1 id="1-可见性-volatile"><a href="#1-可见性-volatile" class="headerlink" title="1. 可见性(volatile)"></a>1. 可见性(volatile)</h1><p>由于重排序，程序的执行结果往往让人产生错觉。</p>
+<h2 id="volatile变量"><a href="#volatile变量" class="headerlink" title="volatile变量"></a>volatile变量</h2><p>当把变量声明为volatile类型后，编译器与运行时都会注意到这个变量是共享的，因此不会将变量上的操作与其他内存操作一起重排序。volatile变量不会被缓存在寄存器或者本地内存中，因此在读取volatile类型的变量时总会返回最新写入的值。</p>
+<p>在访问volatile变量时不会执行加锁操作，因此也就不会使线程阻塞，因此volatile变量是一种比sychronized关键字更轻量级的同步。不建议过度依赖volatile变量提供的可见性，如果在代码中依赖volatile变量来控制状态可见性，通常比使用锁的代码更脆弱，也更难以理解。</p>
+<blockquote>
+<p>仅当volatile变量能够简化代码的实现以及对同步策略的验证时，才应该使用它们。如果在验证正确性需要对可见性进行复杂判断，那么就不要使用volatile变量。volatile变量的正确使用方式包括：</p>
+<ol>
+<li>确保它们自身状态的可见性。</li>
+<li>确保它们所引用对象的状态的</li>
+<li>标识一些重要的程序生命周期事件的发生(例如，初始化或关闭)</li>
+</ol>
+</blockquote>
+<p><strong>volatile的典型用法</strong>：检查某个状态标记以判断是否退出循环。</p>
+<pre><code class="java">volatile boolean asleep;
+...
+  while(!asleep)
+    countSomeSheep();</code></pre>
+<p>虽然volatile变量很方便，但也存在一些局限性。volatile变量通常用作某个操作完成、发生中断或者状态的标志。例如上面的asleep标志。尽管volatile变量也可以用于表示其他的状态信息，但使用时要注意，比如volatile语义不能确保递增操作(count++)的原子性，除非确保只有一个线程对变量执行写操作。(原子变量提供了”读—改—写”的原子操作)，并且常常用做一种”更好的volatile变量”。</p>
+<blockquote>
+<p>加锁机制既可以确保可见性又可以确保原子性，而volatile变量只能确保可见性。</p>
+</blockquote>
+<h2 id="volatile使用场景"><a href="#volatile使用场景" class="headerlink" title="volatile使用场景"></a>volatile使用场景</h2><p><strong>当且仅当满足以下条件时，才应该使用volatile变量</strong>：</p>
+<ul>
+<li>对变量的写入操作不依赖变量的当前值，或者你能够确保当前只有单个线程更新变量的值。</li>
+<li>该变量不会与其他状态一起纳入不变性条件中。</li>
+<li>在访问变量时不需要加锁。</li>
+</ul>
+<h1 id="2-发布和逸出-封装"><a href="#2-发布和逸出-封装" class="headerlink" title="2. 发布和逸出(封装)"></a>2. 发布和逸出(封装)</h1><ul>
+<li><p><strong>“发布”</strong>对象的意思指，使对象能够在当前作用域之外的代码中使用。</p>
+<p>例如，将一个指向该对象的引用保存到其他代码可以访问的地方，</p>
+<p>或者在某一个非私有的方法中返回该引用，或者将引用传递到其他类的方法中。</p>
+<p><strong>我们要确保对象及其内部状态不被发布</strong></p>
+</li>
+<li><p><strong>“逸出”</strong>的意思指，当某个不应该发布的对象被发布时称为”逸出”。</p>
+</li>
+</ul>
+<p>当发布的对象逸出以后，必须假设有某个类或线程可能会误用该对象。</p>
+<p>因此应该尽量使用<strong>封装</strong>：封装能够使得对程序的正确性进行分析变可能，并使得无意中破坏设计约束条件变得更难。</p>
+<p>另外一种发布对象或其内部状态机制就是发布一个<strong>内部类的实例</strong>。</p>
+<p>另外一个要注意的地方：</p>
+<blockquote>
+<p>不要在构造过程中使this引用逸出</p>
+</blockquote>
+<h1 id="3-线程封闭-无状态、ThreadLocal"><a href="#3-线程封闭-无状态、ThreadLocal" class="headerlink" title="3. 线程封闭(无状态、ThreadLocal)"></a>3. 线程封闭(无状态、ThreadLocal)</h1><p>一种避免同步的方式就是不共享数据，不共享数据的无状态对象肯定是线程安全的。称为<strong>线程封闭</strong>。</p>
+<p>常见的例子如：</p>
+<ul>
+<li><p>Swing通过将可视化组件和数据模型封装到Swing的事件分发线程中来实现线程安全。</p>
+</li>
+<li><p>还有如JDBC的Connection对象，线程从连接池中获得一个Connection对象，并且用该对象来处理请求，使用完后再讲对象返回给连接池。由于大多数(Servlet请求或EJB调用等)都是由单个线程采用同样的方式来处理，并且在Connection对象返回之前，连接池不会再将它分配给其他线程，因此这种连接管理模式在处理隐含地将Connection对象封闭在线程中。</p>
+</li>
+</ul>
+<p>Java提供<strong>局部变量</strong>和<strong>ThreadLocal类</strong>来帮助维持线程封闭性。下面来讲下：</p>
+<h2 id="Ad-hoc线程封闭"><a href="#Ad-hoc线程封闭" class="headerlink" title="Ad-hoc线程封闭"></a>Ad-hoc线程封闭</h2><p>Ad-hoc实际就是指，维护线程封闭性的职责完全交给程序来实现。Ad-hoc线程封闭是非常脆弱的，因为没有任何一种语言特性，例如可见修饰符或局部变量，能将对象封闭到目标线程上。事实上，对线程封闭对象的引用通常保存在公有变量上。</p>
+<p>在volatile变量行上存在一种特殊的线程封闭。只要你能确保只有<strong>单个线程</strong>对共享的volatile变量执行写入操作，那么就可以安全地在这些共享的volatile变量上执行”读取-修改-写入”的操作。这种情况下，相当于将修改操作封闭在单个线程中以防止发生<strong>竞态条件</strong>，并且volatile变量的可见性还确保了其他线程能看到最新的值。</p>
+<p>由于Ad-hoc线程封闭技术的脆弱性，因此在程序中尽量少用，在可能的情况下应该使用更强的线程封闭技术(例如下面要将讲的，栈封闭和ThreadLocal类)。</p>
+<h2 id="栈封闭"><a href="#栈封闭" class="headerlink" title="栈封闭"></a>栈封闭</h2><p>栈封闭是线程封闭的一种特例，在栈封闭中，<strong>只能通过局部变量才能访问对象</strong>。栈封闭（也被称为线程内部使用或者线程局部使用，不要与核心类库中的ThreadLocal混淆）比Ad-hoc线程封闭更易于维护，也更加健壮。</p>
+<h2 id="ThreadLocal类"><a href="#ThreadLocal类" class="headerlink" title="ThreadLocal类"></a>ThreadLocal类</h2><ul>
+<li><p>线程封闭性的一种更规范方法是使用ThreadLocal，这个类能使线程中的某个值与保存值的对象关联起来。</p>
+</li>
+<li><p>ThreadLocal提供get与set等访问接口或方法，为每个使用该变量的线程都保存一份独立的副本，因此get总是返回当前执行线程在调用set时设置的最新值。</p>
+</li>
+<li><p>ThreadLocal对象通常用于防止对可变的单实例对象(Singleton)或全局变量进行共享。例如，通过将JDBC的连接保存到ThreadLocal对象中，每个线程就会拥有属于自己的连接。</p>
+</li>
+</ul>
+<h1 id="4-不变性final"><a href="#4-不变性final" class="headerlink" title="4.不变性final"></a>4.不变性final</h1><p>上面讲了，解决同步问题的方法，主要有</p>
+<ol>
+<li>共享变量的volatile的声明，即禁用JVM对该变量的重排序立即对其他线程可见，</li>
+<li>注意共享变量的发布、避免共享变量逸出。</li>
+<li>通过线程封闭手段避免避免对象状态在多线程之间共享(通过局部变量的栈封闭、以及ThreadLocal的线程副本隔离)。</li>
+</ol>
+<p>下面来讲下，解决同步的另外一种手段，即 <strong>不变性</strong>。</p>
+<p>满足同步需求的另一种方法是使用不可变对象。很多与原子性、可见性相关的问题，例如得到失效数据、丢失更新或者观察到某个对象处于不一致的状态等等，都与多线程试图同时访问同一个可变的状态相关。如果对象的状态不会改变，那么这些问题与复杂性也就自然消失了。</p>
+<blockquote>
+<p>不可变对象一定是线程安全的。</p>
+</blockquote>
+<p><strong>不可变性不等于将对象中所有的域都声明为final类型，即使对象中所有的域都是final类型的，这个对象也仍然是可变的，因为在final类型的域中可以保存对可变对象的引用。</strong></p>
+<p>因此需要满足以下条件，对象才是不可变的：</p>
+<blockquote>
+<ul>
+<li>对象创建以后其状态就不能修改。</li>
+<li>对象的所有域都是final类型。</li>
+<li>对象是正确创建的(在对象的创建期间，this引用没有逸出)。</li>
+</ul>
+</blockquote>
+<h1 id="5-安全发布"><a href="#5-安全发布" class="headerlink" title="5.安全发布"></a>5.安全发布</h1><p>先看下面这个例子</p>
+<pre><code class="java">public Holder holder;
+
+public void initialize() {
+        holder = new Holder(42);
+}</code></pre>
+<p>由于存在可见性问题，其他线程看到的Holder对象将处于不一致的状态，即便在该对象的构造函数中已经正确地构建了不变性条件。这种不正确的发布导致其他线程看到尚未创建完成的对象。这就是<strong>在没有足够同步的情况下发布对象</strong>，不要这样做。</p>
+<h2 id="不可变对象与初始化安全性"><a href="#不可变对象与初始化安全性" class="headerlink" title="不可变对象与初始化安全性"></a>不可变对象与初始化安全性</h2><p>Java内存模型为不可变对象的共享提供了一种特殊的初始化安全性保证。</p>
+<p>已经知道，即使某个对象的引用对于其他线程是可见的，也并不意味着对象状态对于使用该对象的线程来说一定是可见的。为了确保对象状态能呈现出一致的视图，就必须使用同步。</p>
+<p>另一方面，即使在发布不可变对象的引用时没有使用同步，也仍然可以安全地访问该对象。为了维持这种初始化安全性保证，必须满足不可变性的所有需求：</p>
+<p>状态不可修改，所有域都是final类型，以及正确的构造过程。</p>
+<blockquote>
+<p><strong>任何线程都可以在不需要额外同步的情况下安全地访问不可变对象，即使在发布这些对象时没有使用同步。</strong></p>
+</blockquote>
+<p>但是，如果final类型的域指向的是可变对象，那么在访问这些域所指向的对象的状态时仍然需要同步。</p>
+<h2 id="安全发布的常用模式"><a href="#安全发布的常用模式" class="headerlink" title="安全发布的常用模式"></a>安全发布的常用模式</h2><p>如何确保使用对象的线程能够看到该对象处于已发布的状态。</p>
+<blockquote>
+<p>要安全地发布一个对象，对象的引用以及对象的状态必须同步对其他线程可见。一个正确构造的对象可以通过以下来安全地发布：</p>
+<ul>
+<li>在静态初始化函数中初始化一个对象引用。</li>
+<li>将对象的引用保存到volatile类型的域或者AtomicReferance对象中。</li>
+<li>将对象的引用保存到某个正确构造对象的final类型域中。</li>
+<li>将对象的引用保存到一个由锁保护的域中。</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>在线程安全容器内部的同步以为着，在将对象放到某个容器后，例如Vector或synchronizedList时，满足上面的”将对象的引用保存到一个由锁保护的域中”。即：</p>
+<p>线程A将对象X放入一个线程安全的容器，随后线程B读取这个对象，那么可以确保B看到A设置的X状态，即便在这段读/写X的应用程序代码中没有包含显式的同步。线程安全类包括：</p>
+<p>Hashtable、sychronizedMap或者ConcurrentHashMap</p>
+<p>Vector、CopyOnWriteArrayList、CopyOnWriteArrySet、synchronizedList或synchronizedSet</p>
+<p>BlockingQueue或ConcurrentLinkedQueue</p>
+<p>还有其他数据传递机制Future和Exchanger同样能实现安全发布。</p>
+</li>
+<li><p>静态初始化器由JVM在类的初始化阶段执行。由于在JVM内部存在着同步机制，因此通过这种方式初始化任何对象都可以被安全地发布。</p>
+</li>
+</ul>
+<h2 id="可变对象"><a href="#可变对象" class="headerlink" title="可变对象"></a>可变对象</h2><p>如果对象在构造后可以修改，那么安全发布只能确保”发布当时”状态的可见性。对于可变对象，不仅在发布对象时需要同步，而且在每次对象访问时同样需要同步来确保后续操作的可见性。要安全地共享可变对象，这些对象就必须被安全地发布，并且必须是线程安全的或者由某个锁保护起来。</p>
+<blockquote>
+<p>对象的发布需求取决于它的可变性：</p>
+<ul>
+<li>不可变对象可以通过任意机制来发布</li>
+<li>事实不可变对象必须通过安全方式来发布</li>
+<li>可变对象必须通过安全方式来发布，并且必须是线程安全的或者由某个锁保护起来</li>
+</ul>
+</blockquote>
+<h2 id="安全地共享对象"><a href="#安全地共享对象" class="headerlink" title="安全地共享对象"></a>安全地共享对象</h2><p>当获得对象的一个引用时，你需要知道这个引用上可以执行哪些操作。在使用它之前是否需要获得一个锁？是否可以修改它的状态或者只能读取它？许多并发错误都是由于没有理解共享对象的这些”既定规则”而导致的。当发布一个对象时，必须明确地说明对象的访问方式。</p>
+<blockquote>
+<p>在并发程序中使用和共享对象，可以使用一些实用的策略，包括：</p>
+<p><strong>线程封闭</strong>。线程封闭的对象只能由一个线程拥有，对象被封闭在该线程中，并且只能由这个线程修改。</p>
+<p><strong>只读共享</strong>。在没有额外同步的情况下，共享的只读对象可以由多个线程并发访问，但任何线程都不能修改它。共享的只读对象包括不可变对象和事实不可变对象。</p>
+<p><strong>线程安全共享</strong>。线层安全的对象在其内部实现同步，因此多个线程可以通过对象的公有接口来进行访问而不需要进一步的同步。</p>
+<p><strong>保护对象</strong>。被保护的对象只能通过持有特定的锁来访问。保护对象包括封装在其他线程安全对象中的对象，以及已发布的并且由某个特定锁保护的对象。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>并发</tag>
       </tags>
   </entry>
   <entry>
@@ -5753,129 +5753,6 @@ use 本管程外部定义、内部可调用的函数名表;
       </tags>
   </entry>
   <entry>
-    <title>【基本概念篇】八、安全性、活跃性、性能问题</title>
-    <url>/2019/04/21/2019-5-07-java-concurreny-safey-performence/</url>
-    <content><![CDATA[<h1 id="安全问题"><a href="#安全问题" class="headerlink" title="安全问题"></a>安全问题</h1><p>线程安全的本质就是正确性，而正确性的含义就是<strong>程序按照我们的期望执行</strong>。</p>
-<p><a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">《可见性、原子性和有序性：并发编程Bug的来源》</a>举例了很多诡异的Bug，都不是按照我们的<strong>期望</strong>来执行的。</p>
-<p>如何才能写出线程安全的程序呢？</p>
-<p>在<a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">第四篇中</a>中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。</p>
-<p>实际上，只有一种情况下：<strong>存在共享数据并且数据会变化，通俗讲就是多个线程会同时读写同一数据</strong>。反过来讲如果能做到不共享数据或者数据不发生变化，就能<strong>保证线程的安全性</strong>。基于这个理论的技术有：ThreadLocal、不变模式等（后面的博客会总结）。</p>
-<p>但是，现实中，<strong>必须共享且发生变化的数据</strong>的场景是很多的。</p>
-<h2 id="数据竞争"><a href="#数据竞争" class="headerlink" title="数据竞争"></a>数据竞争</h2><p>当多个线程同时访问同一数据，并且至少有一个线程会写这个数据的时候，如果不采取措施就会引发Bug，这种情况叫做<strong>数据竞争(Data Race)</strong>。比如下面的示例：</p>
-<pre><code class="java">public class Test {
-  private long count = 0;
-  void add10K() {
-    int idx = 0;
-    while(idx++ &lt; 10000) {
-      count += 1;
-    }
-  }
-}</code></pre>
-<p>是不是只要在访问数据的地方都加上锁就线程安全了？如：</p>
-<pre><code class="java">public class Test {
-  private long count = 0;
-  synchronized long get(){
-    return count；
-  }
-  synchronized void set(long v){
-    count = v;
-  } 
-  void add10K() {
-    int idx = 0;
-    while(idx++ &lt; 10000) {
-      set(get()+1)      
-    }
-  }
-}</code></pre>
-<p>然并卵，当两个线程同时执行get()方法时返回0，两个线程执行get()+1操作，结果都是1，之后两个线程把结果1写入内存。而实际期间是2，结果却是1。这种问题叫做：<strong>竞态条件(Race Condition)</strong>。</p>
-<p>所谓<strong>竞态条件，指的是程序的执行结果依赖线程执行的顺序</strong>。例如上面，如果两个线程完全同时执行，那么结果是1，如果先后执行那么结果是2。在并发环境里，线程的执行顺序是不确定的，而执行结果不确定就是个大Bug。</p>
-<h2 id="竞态条件"><a href="#竞态条件" class="headerlink" title="竞态条件"></a>竞态条件</h2><p>举上一篇讲到的存款转账的例子：</p>
-<pre><code class="java">class Account {
-  private int balance;
-  // 转账
-  void transfer(
-      Account target, int amt){
-    if (this.balance &gt; amt) {
-      this.balance -= amt;
-      target.balance += amt;
-    }
-  } 
-}
-</code></pre>
-<p>假设账户余额200，线程A和线程B都要转账150，同时执行到第6行，判断当前余额满足，就出现了超额转出的情况。</p>
-<p>所以可以这样理解<strong>竞态条件</strong>：</p>
-<pre><code class="java">if (状态变量 满足 执行条件) {
-  执行操作
-}</code></pre>
-<p>当某个线程发现状态条件满足执行条件后，开始执行操作；可是就在这个线程执行操作的时候，其他线程修改了状态变量，导致状态不满足执行条件了。当然在很多场景下，这个条件是并不是显式的，开发的时候不容易看出来，例如上麦呢的addeOne的例子，set(get()+1)这个复合操作，其实就是隐式依赖get()的结果。</p>
-<p>面对<strong>数据竞争</strong>和<strong>竞态条件</strong>问题，又改如何保证线程的安全性呢？</p>
-<p>这两类问题，最直接的方法是使用<strong>互斥</strong>，而实现互斥的方案有很多，CPU提供了相关的互斥指令，操作系统、编程语言也会提供相关的API。从逻辑上来说，可以统一归类为：<strong>锁</strong>。锁前面已经讲过了<a href="https://zhoulei17.github.io/2019/04/20/java-concurrency-lock/" target="_blank" rel="noopener">互斥锁</a>以及后面会讲的Lock锁。</p>
-<h1 id="活跃性问题"><a href="#活跃性问题" class="headerlink" title="活跃性问题"></a>活跃性问题</h1><p>在上篇已经讲过<a href="https://zhoulei17.github.io/2019/04/21/java-concurreny-deadlock/" target="_blank" rel="noopener">死锁</a>，除了<strong>死锁</strong>这种典型的活跃性问题，还有两种情况<strong>活锁</strong>和<strong>饥饿</strong>。</p>
-<p>前面讲了，死锁后线程会互相等待，并且会一直等待下去（阻塞）。</p>
-<h2 id="活锁"><a href="#活锁" class="headerlink" title="活锁"></a>活锁</h2><p>也有情况是<strong>虽然线程没有发生阻塞，但仍然会执行不下去的情况，就是“活锁”</strong>。就好比现实生活中，两个在一条比较窄的路上碰头，每个人都同时让出自己的左边给对方，这样仿佛切换两个都同时堵住了对方双方都过不去。</p>
-<p>解决<strong>活锁</strong>的方案很简单，谦让时，尝试等待一个随机的时间后，一方让出一边让对方先走过去，这样碰撞的概率就很低了。</p>
-<h2 id="饥饿"><a href="#饥饿" class="headerlink" title="饥饿"></a>饥饿</h2><p>所谓<strong>饥饿，指的是因线程无法访问所需资源而无法执行下去的情况</strong>。</p>
-<p>最经典的例子是，线程优先级分配“不均”，在CPU繁忙的情况下，优先级低的线程得到的执行机会很小，就可能发生线程“饥饿”；持有锁的线程，如果执行时间过长，也可能导致“饥饿”问题。</p>
-<p>解决“<strong>饥饿</strong>”问题的方案很简单，三种：1. 保证资源充足。2. 公平地分配资源。3. 就是避免持有锁的线程长时间执行。</p>
-<p>这三钟方案中，方案1和方案3适用场景比较有限，因为很多时候资源稀缺是没办法解决的，持有锁的线程执行时间也难以控制。方案2的实用场景相对多一些。</p>
-<p>如何公平低分配资源？在并发编程领域，主要是使用公平锁。所谓<strong>公平锁</strong>，是一种先来后到的方案，线程的等待是有序的，排在等待队列前面的线程会优先获得资源。</p>
-<h1 id="性能问题"><a href="#性能问题" class="headerlink" title="性能问题"></a>性能问题</h1><p>使用锁的时候要谨慎，如果使用过度会出现性能问题。锁的过度使用可能导致串行化的范围过大，这样就不能发挥多线程的优势了。</p>
-<h2 id="性能衡量方法"><a href="#性能衡量方法" class="headerlink" title="性能衡量方法"></a>性能衡量方法</h2><p>所以要尽量减少串行化，那串行化对性能的影响是怎么样的？假设串行百分比是5%，我们用多核多线程相比单核单线程提速多少？</p>
-<p>使用阿姆达尔(Amdahl)定律，代表了处理器并行运算之后效率的提升能力，具体公式如下：</p>
-<p><img data-src="/img/in-post/1557287822597.png" alt=""></p>
-<p>n：CPU的核数</p>
-<p>p：并行百分比</p>
-<p>1-p：串行百分比，也就是我们假设的5%</p>
-<p>假设n无穷大，那加速比S的极限就是20。也就是说，如果串行率是5%，那么无论采用什么技术，最高也就只能提高20倍的性能。</p>
-<h2 id="性能优化方案"><a href="#性能优化方案" class="headerlink" title="性能优化方案"></a>性能优化方案</h2><p>所以使用锁的时候一定要关注对性能的影响。那怎么才能避免锁带来的性能问题呢？</p>
-<p>问题比较复杂，<strong>Java SDK并发包里之所有有那么多东西，有很大一部分原因就是要提升在某个特定领域的性能</strong>。</p>
-<p>从方案层面，有如下方案可以解决这个问题：</p>
-<ul>
-<li><p>第一，既然锁会带来性能问题，最好的方案自然就是使用无锁的算法和数据结构了。</p>
-<p>相关的技术有：</p>
-<ul>
-<li><p>例如线程本地存储（ThreadLocal）</p>
-</li>
-<li><p>写入时复制（CopyOnWrite）、乐观锁等；</p>
-</li>
-<li><p>Java并发包里面的原子类也是一种数据结构；</p>
-</li>
-<li><p>Disruptor则是一个无锁的内存队列，性能都非常好。</p>
-</li>
-</ul>
-</li>
-<li><p>第二，减少锁持有的时间。互斥锁本质上是将并行的程序串行化，所以要增加并行度，一定要减少持有锁时间。</p>
-<p>这个方案的技术也很多，例如</p>
-<ul>
-<li>使用细粒度锁，一个典型的例子就是Java并发包里的ConcurrentHashMap，它使用了所谓的分段锁技术（后面ConcurrentHashMap源码分析会详细讲到）；</li>
-<li>使用读写锁，也就是读是无锁的，只有写的时候才会互斥。</li>
-</ul>
-</li>
-</ul>
-<h2 id="性能指标"><a href="#性能指标" class="headerlink" title="性能指标"></a>性能指标</h2><p> 性能方面的指标有很多，三个指标非常重要，就是：吞吐量、延迟和并发量。</p>
-<ol>
-<li>吞吐量：指的是单位时间内处理的请求数量。吞吐量越高，说明性能越好。</li>
-<li>延迟：指的是从发出请求到收到响应的时间。延迟越小，性能越好。</li>
-<li>并发量：指的是能同时处理的请求数量，一般来说随着并发量的增加、延迟也会增加。所以延迟整个指标，一般会基于并发量来说。例如并发量是1000的时候，延迟是500毫秒。</li>
-</ol>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>并发编程是一个复杂的技术领域，微观上来说涉及到原子性问题、可见性问题和有序性问题，宏观则表现为安全性、活跃性以及性能问题。</p>
-<p>在设计并发程序的时候，主要从宏观角度出发，就是关注它的安全性、活跃性以及性能。</p>
-<p>安全性方面要注意数据竞争和静态条件</p>
-<p>活跃性方面需要注意死锁、活锁、饥饿等问题</p>
-<p>性能方面介绍了两个方案，但是遇到具体问题要具体分析，根据忒定场景选择合适的算法和数据结构。</p>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>死锁</tag>
-        <tag>线程的风险</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【基本概念篇】七、死锁</title>
     <url>/2019/04/21/2019-4-21-java-concurreny-deadlock/</url>
     <content><![CDATA[<h1 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h1><p><strong>当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。</strong></p>
@@ -6146,6 +6023,129 @@ class Account {
         <tag>java</tag>
         <tag>并发</tag>
         <tag>死锁</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【基本概念篇】八、安全性、活跃性、性能问题</title>
+    <url>/2019/04/21/2019-5-07-java-concurreny-safey-performence/</url>
+    <content><![CDATA[<h1 id="安全问题"><a href="#安全问题" class="headerlink" title="安全问题"></a>安全问题</h1><p>线程安全的本质就是正确性，而正确性的含义就是<strong>程序按照我们的期望执行</strong>。</p>
+<p><a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">《可见性、原子性和有序性：并发编程Bug的来源》</a>举例了很多诡异的Bug，都不是按照我们的<strong>期望</strong>来执行的。</p>
+<p>如何才能写出线程安全的程序呢？</p>
+<p>在<a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">第四篇中</a>中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。</p>
+<p>实际上，只有一种情况下：<strong>存在共享数据并且数据会变化，通俗讲就是多个线程会同时读写同一数据</strong>。反过来讲如果能做到不共享数据或者数据不发生变化，就能<strong>保证线程的安全性</strong>。基于这个理论的技术有：ThreadLocal、不变模式等（后面的博客会总结）。</p>
+<p>但是，现实中，<strong>必须共享且发生变化的数据</strong>的场景是很多的。</p>
+<h2 id="数据竞争"><a href="#数据竞争" class="headerlink" title="数据竞争"></a>数据竞争</h2><p>当多个线程同时访问同一数据，并且至少有一个线程会写这个数据的时候，如果不采取措施就会引发Bug，这种情况叫做<strong>数据竞争(Data Race)</strong>。比如下面的示例：</p>
+<pre><code class="java">public class Test {
+  private long count = 0;
+  void add10K() {
+    int idx = 0;
+    while(idx++ &lt; 10000) {
+      count += 1;
+    }
+  }
+}</code></pre>
+<p>是不是只要在访问数据的地方都加上锁就线程安全了？如：</p>
+<pre><code class="java">public class Test {
+  private long count = 0;
+  synchronized long get(){
+    return count；
+  }
+  synchronized void set(long v){
+    count = v;
+  } 
+  void add10K() {
+    int idx = 0;
+    while(idx++ &lt; 10000) {
+      set(get()+1)      
+    }
+  }
+}</code></pre>
+<p>然并卵，当两个线程同时执行get()方法时返回0，两个线程执行get()+1操作，结果都是1，之后两个线程把结果1写入内存。而实际期间是2，结果却是1。这种问题叫做：<strong>竞态条件(Race Condition)</strong>。</p>
+<p>所谓<strong>竞态条件，指的是程序的执行结果依赖线程执行的顺序</strong>。例如上面，如果两个线程完全同时执行，那么结果是1，如果先后执行那么结果是2。在并发环境里，线程的执行顺序是不确定的，而执行结果不确定就是个大Bug。</p>
+<h2 id="竞态条件"><a href="#竞态条件" class="headerlink" title="竞态条件"></a>竞态条件</h2><p>举上一篇讲到的存款转账的例子：</p>
+<pre><code class="java">class Account {
+  private int balance;
+  // 转账
+  void transfer(
+      Account target, int amt){
+    if (this.balance &gt; amt) {
+      this.balance -= amt;
+      target.balance += amt;
+    }
+  } 
+}
+</code></pre>
+<p>假设账户余额200，线程A和线程B都要转账150，同时执行到第6行，判断当前余额满足，就出现了超额转出的情况。</p>
+<p>所以可以这样理解<strong>竞态条件</strong>：</p>
+<pre><code class="java">if (状态变量 满足 执行条件) {
+  执行操作
+}</code></pre>
+<p>当某个线程发现状态条件满足执行条件后，开始执行操作；可是就在这个线程执行操作的时候，其他线程修改了状态变量，导致状态不满足执行条件了。当然在很多场景下，这个条件是并不是显式的，开发的时候不容易看出来，例如上麦呢的addeOne的例子，set(get()+1)这个复合操作，其实就是隐式依赖get()的结果。</p>
+<p>面对<strong>数据竞争</strong>和<strong>竞态条件</strong>问题，又改如何保证线程的安全性呢？</p>
+<p>这两类问题，最直接的方法是使用<strong>互斥</strong>，而实现互斥的方案有很多，CPU提供了相关的互斥指令，操作系统、编程语言也会提供相关的API。从逻辑上来说，可以统一归类为：<strong>锁</strong>。锁前面已经讲过了<a href="https://zhoulei17.github.io/2019/04/20/java-concurrency-lock/" target="_blank" rel="noopener">互斥锁</a>以及后面会讲的Lock锁。</p>
+<h1 id="活跃性问题"><a href="#活跃性问题" class="headerlink" title="活跃性问题"></a>活跃性问题</h1><p>在上篇已经讲过<a href="https://zhoulei17.github.io/2019/04/21/java-concurreny-deadlock/" target="_blank" rel="noopener">死锁</a>，除了<strong>死锁</strong>这种典型的活跃性问题，还有两种情况<strong>活锁</strong>和<strong>饥饿</strong>。</p>
+<p>前面讲了，死锁后线程会互相等待，并且会一直等待下去（阻塞）。</p>
+<h2 id="活锁"><a href="#活锁" class="headerlink" title="活锁"></a>活锁</h2><p>也有情况是<strong>虽然线程没有发生阻塞，但仍然会执行不下去的情况，就是“活锁”</strong>。就好比现实生活中，两个在一条比较窄的路上碰头，每个人都同时让出自己的左边给对方，这样仿佛切换两个都同时堵住了对方双方都过不去。</p>
+<p>解决<strong>活锁</strong>的方案很简单，谦让时，尝试等待一个随机的时间后，一方让出一边让对方先走过去，这样碰撞的概率就很低了。</p>
+<h2 id="饥饿"><a href="#饥饿" class="headerlink" title="饥饿"></a>饥饿</h2><p>所谓<strong>饥饿，指的是因线程无法访问所需资源而无法执行下去的情况</strong>。</p>
+<p>最经典的例子是，线程优先级分配“不均”，在CPU繁忙的情况下，优先级低的线程得到的执行机会很小，就可能发生线程“饥饿”；持有锁的线程，如果执行时间过长，也可能导致“饥饿”问题。</p>
+<p>解决“<strong>饥饿</strong>”问题的方案很简单，三种：1. 保证资源充足。2. 公平地分配资源。3. 就是避免持有锁的线程长时间执行。</p>
+<p>这三钟方案中，方案1和方案3适用场景比较有限，因为很多时候资源稀缺是没办法解决的，持有锁的线程执行时间也难以控制。方案2的实用场景相对多一些。</p>
+<p>如何公平低分配资源？在并发编程领域，主要是使用公平锁。所谓<strong>公平锁</strong>，是一种先来后到的方案，线程的等待是有序的，排在等待队列前面的线程会优先获得资源。</p>
+<h1 id="性能问题"><a href="#性能问题" class="headerlink" title="性能问题"></a>性能问题</h1><p>使用锁的时候要谨慎，如果使用过度会出现性能问题。锁的过度使用可能导致串行化的范围过大，这样就不能发挥多线程的优势了。</p>
+<h2 id="性能衡量方法"><a href="#性能衡量方法" class="headerlink" title="性能衡量方法"></a>性能衡量方法</h2><p>所以要尽量减少串行化，那串行化对性能的影响是怎么样的？假设串行百分比是5%，我们用多核多线程相比单核单线程提速多少？</p>
+<p>使用阿姆达尔(Amdahl)定律，代表了处理器并行运算之后效率的提升能力，具体公式如下：</p>
+<p><img data-src="/img/in-post/1557287822597.png" alt=""></p>
+<p>n：CPU的核数</p>
+<p>p：并行百分比</p>
+<p>1-p：串行百分比，也就是我们假设的5%</p>
+<p>假设n无穷大，那加速比S的极限就是20。也就是说，如果串行率是5%，那么无论采用什么技术，最高也就只能提高20倍的性能。</p>
+<h2 id="性能优化方案"><a href="#性能优化方案" class="headerlink" title="性能优化方案"></a>性能优化方案</h2><p>所以使用锁的时候一定要关注对性能的影响。那怎么才能避免锁带来的性能问题呢？</p>
+<p>问题比较复杂，<strong>Java SDK并发包里之所有有那么多东西，有很大一部分原因就是要提升在某个特定领域的性能</strong>。</p>
+<p>从方案层面，有如下方案可以解决这个问题：</p>
+<ul>
+<li><p>第一，既然锁会带来性能问题，最好的方案自然就是使用无锁的算法和数据结构了。</p>
+<p>相关的技术有：</p>
+<ul>
+<li><p>例如线程本地存储（ThreadLocal）</p>
+</li>
+<li><p>写入时复制（CopyOnWrite）、乐观锁等；</p>
+</li>
+<li><p>Java并发包里面的原子类也是一种数据结构；</p>
+</li>
+<li><p>Disruptor则是一个无锁的内存队列，性能都非常好。</p>
+</li>
+</ul>
+</li>
+<li><p>第二，减少锁持有的时间。互斥锁本质上是将并行的程序串行化，所以要增加并行度，一定要减少持有锁时间。</p>
+<p>这个方案的技术也很多，例如</p>
+<ul>
+<li>使用细粒度锁，一个典型的例子就是Java并发包里的ConcurrentHashMap，它使用了所谓的分段锁技术（后面ConcurrentHashMap源码分析会详细讲到）；</li>
+<li>使用读写锁，也就是读是无锁的，只有写的时候才会互斥。</li>
+</ul>
+</li>
+</ul>
+<h2 id="性能指标"><a href="#性能指标" class="headerlink" title="性能指标"></a>性能指标</h2><p> 性能方面的指标有很多，三个指标非常重要，就是：吞吐量、延迟和并发量。</p>
+<ol>
+<li>吞吐量：指的是单位时间内处理的请求数量。吞吐量越高，说明性能越好。</li>
+<li>延迟：指的是从发出请求到收到响应的时间。延迟越小，性能越好。</li>
+<li>并发量：指的是能同时处理的请求数量，一般来说随着并发量的增加、延迟也会增加。所以延迟整个指标，一般会基于并发量来说。例如并发量是1000的时候，延迟是500毫秒。</li>
+</ol>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>并发编程是一个复杂的技术领域，微观上来说涉及到原子性问题、可见性问题和有序性问题，宏观则表现为安全性、活跃性以及性能问题。</p>
+<p>在设计并发程序的时候，主要从宏观角度出发，就是关注它的安全性、活跃性以及性能。</p>
+<p>安全性方面要注意数据竞争和静态条件</p>
+<p>活跃性方面需要注意死锁、活锁、饥饿等问题</p>
+<p>性能方面介绍了两个方案，但是遇到具体问题要具体分析，根据忒定场景选择合适的算法和数据结构。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>并发</tag>
+        <tag>死锁</tag>
+        <tag>线程的风险</tag>
       </tags>
   </entry>
   <entry>
@@ -8035,8 +8035,8 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>Collection</tag>
-        <tag>java红黑树</tag>
         <tag>算法</tag>
+        <tag>java红黑树</tag>
       </tags>
   </entry>
   <entry>

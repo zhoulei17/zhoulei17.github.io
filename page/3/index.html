@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta property="og:type" content="website">
@@ -1538,7 +1538,7 @@ class LiftOffRunner implements Runnable {
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/05/15/2019-5-15-java-concurreny-java-thread-status/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar2.png">
@@ -1552,7 +1552,7 @@ class LiftOffRunner implements Runnable {
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/" class="post-title-link" itemprop="url">【基本概念篇】十二、如何构建线程安全的对象——对象的共享</a>
+            <a href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" class="post-title-link" itemprop="url">【基本概念篇】十一、Java线程的状态和生命周期</a>
         </h2>
 
         <div class="post-meta">
@@ -1569,7 +1569,7 @@ class LiftOffRunner implements Runnable {
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:40" itemprop="dateModified" datetime="2020-03-22T18:10:40+08:00">2020-03-22</time>
+                <time title="修改时间：2020-03-22 18:10:41" itemprop="dateModified" datetime="2020-03-22T18:10:41+08:00">2020-03-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1586,7 +1586,7 @@ class LiftOffRunner implements Runnable {
             </span>
 
           
-            <span id="/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/" class="post-meta-item leancloud_visitors" data-flag-title="【基本概念篇】十二、如何构建线程安全的对象——对象的共享" title="阅读次数">
+            <span id="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" class="post-meta-item leancloud_visitors" data-flag-title="【基本概念篇】十一、Java线程的状态和生命周期" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -1601,8 +1601,8 @@ class LiftOffRunner implements Runnable {
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/" itemprop="commentCount"></span>
+    <a title="valine" href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -1612,14 +1612,14 @@ class LiftOffRunner implements Runnable {
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.1k</span>
+              <span>6.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>6 分钟</span>
             </span>
 
         </div>
@@ -1631,28 +1631,24 @@ class LiftOffRunner implements Runnable {
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。</p>
-<p>Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。</p>
-<p>可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的<strong>并发策略</strong>：</p>
-<ul>
-<li>不在线程之间共享该状态变量，也可以说<strong>无状态</strong>的对象的肯定是线程安全的</li>
-<li>将状态变量修改为<strong>不可变的变量</strong></li>
-<li>在访问状态变量时<strong>使用同步</strong></li>
-</ul>
-<p>之前总结了如何通过同步来避免多个线程同一时刻访问相同的数据。本篇文章主要讲：怎么共享和发布对象，从而使他们能够安全地被多个线程同时访问。即：</p>
+          <p>Java线程本质上就是操作系统的线程，它们是一一对应的。</p>
+<p>在操作系统层面，线程也有“生老病死”，专业的说法叫生命周期。对于有生命周期的事物，要学好它，思路非常简单，只要能搞懂<strong>生命周期中各个节点的状态转换机制</strong>就可以了。</p>
+<p>虽然不同的开发语言对于操作系统线程进行了不同的封装，但是对于线程的生命周期这部分，基本上是雷同的。所以，我们先来了解一下通用的线程生命周期模型，这部分内容也适用于很多其他编程语言；然后再针对性地学习一下Java中线程的生命周期。</p>
+<h1 id="通用的线程生命周期"><a href="#通用的线程生命周期" class="headerlink" title="通用的线程生命周期"></a>通用的线程生命周期</h1><p>通用的线程生命基本上可以用下图“五态模型”来描述。这五态分别是：<strong>初始状态、可运行状态、休眠状态和终止状态</strong>。</p>
+<p><img data-src="/img/in-post/1558418791341.png" alt></p>
 <ol>
-<li>一方面，我们不仅希望防止某个线程被正在使用对象状态而另一个线程同时修改状态。</li>
-<li>另一方面，我们还希望当一个线程修改了对象状态后，其他线程能够看到发生状态的变化。如果没有同步，就无法实现。</li>
+<li><strong>初始状态</strong>：指线程已经被创建，但是还不允许分配CPU执行。此状态属于编程语言特有，仅仅是在编程语言层面被创建（如果是Java开发，可以认为是Java内部状态），在操作系统层面真正的线程还没有被创建。</li>
+<li><strong>可运行状态</strong>：指的是线程可以分配CPU执行。在这种状态下，真正的操作系统线程已经被成功创建了，所以可以分配CPU执行。</li>
+<li><strong>运行状态</strong>：当有空闲CPU时，操作系统会将其分配给一个处于可运行状态的线程，被分配到CPU的线程的状态就转换成了运行状态。</li>
+<li><strong>休眠状态</strong>：运行状态的线程如果调用一个阻塞的API(例如已阻塞方式读文件)或者等待某个事件（例如条件变量），那么线程的状态就会转换到休眠状态，同时释放CPU使用权，休眠状态的线程永远没有机会获得CPU的使用权。当等待的时间出现了，线程就会从休眠状态转换为可运行状态。</li>
+<li><strong>终止状态</strong>：线程执行完或者出现异常就会进入终止状态，终止状态的线程不会切换到其他任何状态，进入终止状态也就意味着线程的生命周期结束了。</li>
 </ol>
-<p>关键字synchronized不仅仅可以实现原子性或者确定”临界区”，同时也能够实现共享对象的<strong>内存可见性</strong>。</p>
-<blockquote>
-<p>加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或者写操作的线程都必须在同一个锁上同步。</p>
-</blockquote>
-<p>除了synchronized实现的同步可见性方案，Java语言还提供一种稍弱的同步机制，即volatile变量，用来确保变量的更新操作通知到其他线程。</p>
-<h1 id="1-可见性-volatile"><a href="#1-可见性-volatile" class="headerlink" title="1. 可见性(volatile)"></a>1. 可见性(volatile)</h1>
+<p>这五种状态在不同的变成语言里面会有简化合并。例如，C语言的POSIX Thread规范，就把初始状态和可运行状态合并了；Java语言里则把可运行状态和运行状态合并了，这两个状态在操作系统调用层面有用，而JVM不关心这两个状态，因为JVM把线程调度交给操作系统处理了。</p>
+<p>除了简化合并，这五种状态也有可能被简化，比如，Java里就喜欢了休眠状态，下面来详细说。</p>
+<h1 id="Java中的线程生命周期"><a href="#Java中的线程生命周期" class="headerlink" title="Java中的线程生命周期"></a>Java中的线程生命周期</h1>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/#more" rel="contents">
+              <a class="btn" href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1872,7 +1868,7 @@ class LiftOffRunner implements Runnable {
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/pisces.js"></script>
+<script src="/js/schemes/muse.js"></script>
 
 
 <script src="/js/next-boot.js"></script>

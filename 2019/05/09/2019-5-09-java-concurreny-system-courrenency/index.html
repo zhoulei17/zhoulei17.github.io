@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。 在并发进程与并发线程一样如果不控制共享资源都会产生错误，这点暂不赘述。 先来看下进程之间的关系是怎么样的？ 进程间的关系 直接式与间接式制约 直接式制约：一程序段等待另一程序段的执行结果 间接式制约：并发程序段竞争同一资源  相交进程与无关进程：这个不用展开讲了，主要是逻辑上有无联系的区分。  进程的同步">
@@ -698,8 +698,8 @@ use 本管程外部定义、内部可调用的函数名表;
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/" rel="prev" title="【基本概念篇】八、安全性、活跃性、性能问题">
-      <i class="fa fa-chevron-left"></i> 【基本概念篇】八、安全性、活跃性、性能问题
+    <a href="/2019/04/21/2019-4-21-java-concurreny-deadlock/" rel="prev" title="【基本概念篇】七、死锁">
+      <i class="fa fa-chevron-left"></i> 【基本概念篇】七、死锁
     </a></div>
       <div class="post-nav-item">
     <a href="/2019/05/10/2019-5-10-java-concurreny-java-monitor/" rel="next" title="【基本概念篇】十、管程——并发编程的万能钥匙">
@@ -909,7 +909,7 @@ use 本管程外部定义、内部可调用的函数名表;
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/pisces.js"></script>
+<script src="/js/schemes/muse.js"></script>
 
 
 <script src="/js/next-boot.js"></script>

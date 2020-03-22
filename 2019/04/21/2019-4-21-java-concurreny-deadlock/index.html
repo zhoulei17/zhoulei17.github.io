@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="死锁问题当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。 在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。 死锁发生的场景顺序死锁public c">
@@ -610,12 +610,12 @@ class Account {
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/04/20/2019-4-20-java-concurrency-lock/" rel="prev" title="【基本概念篇】六、互斥锁：解决原子性问题">
-      <i class="fa fa-chevron-left"></i> 【基本概念篇】六、互斥锁：解决原子性问题
+    <a href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/" rel="prev" title="【基本概念篇】八、安全性、活跃性、性能问题">
+      <i class="fa fa-chevron-left"></i> 【基本概念篇】八、安全性、活跃性、性能问题
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/" rel="next" title="【基本概念篇】八、安全性、活跃性、性能问题">
-      【基本概念篇】八、安全性、活跃性、性能问题 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/" rel="next" title="【基本概念篇】九、从操作系统角度看并发">
+      【基本概念篇】九、从操作系统角度看并发 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -821,7 +821,7 @@ class Account {
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/pisces.js"></script>
+<script src="/js/schemes/muse.js"></script>
 
 
 <script src="/js/next-boot.js"></script>
