@@ -1,508 +1,1293 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 4.2.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
-<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
-
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
-  </script>
-
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Z.L&#39;s blog">
-<meta property="og:url" content="2tongtong.cn/archives/2020/01/index.html">
+  <meta charset="utf-8">
+  <title>Z.L&#39;s blog</title>
+  <meta name="keywords" content="">
+  <meta name="description" content="Z.L&#39;s blog">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="关于我前3年工作于华为苏州NCE公共开发部，Java软件工程师。微服务间的通信(Restful&#x2F;RPC)及编程框架是当时的工作关注点。能将产品传统的OSGI架构SOA项目服务化中心化并顺利上车很有成就感。现就职于一家创业公司并工作1年多，主攻Solr&#x2F;Lucene，给用户提供更爽的搜索体验。 热爱摄影、数码、追求新鲜的事物，关注生活中的美好，并喜欢用相机记录下来。 还有，学习是一个非常愉快的过程。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="about">
+<meta property="og:url" content="2tongtong.cn/about/index.html">
 <meta property="og:site_name" content="Z.L&#39;s blog">
+<meta property="og:description" content="关于我前3年工作于华为苏州NCE公共开发部，Java软件工程师。微服务间的通信(Restful&#x2F;RPC)及编程框架是当时的工作关注点。能将产品传统的OSGI架构SOA项目服务化中心化并顺利上车很有成就感。现就职于一家创业公司并工作1年多，主攻Solr&#x2F;Lucene，给用户提供更爽的搜索体验。 热爱摄影、数码、追求新鲜的事物，关注生活中的美好，并喜欢用相机记录下来。 还有，学习是一个非常愉快的过程。">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-21T07:43:06.000Z">
+<meta property="article:modified_time" content="2020-03-22T12:37:50.926Z">
 <meta property="article:author" content="Zhou Lei">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="2tongtong.cn/archives/2020/01/">
 
+<link rel="icon" href="/img/avatar.jpg">
 
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : false,
-    lang   : 'zh-CN'
-  };
+<link href="/css/style.css?v=1.0.1" rel="stylesheet">
+
+<link href="/css/hl_theme/darcula.css?v=1.0.1" rel="stylesheet">
+
+<link href="//cdn.bootcss.com/animate.css/3.5.2/animate.min.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="/js/jquery.autocomplete.min.js?v=1.0.1" ></script>
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
 </script>
 
-  <title>归档 | Z.L's blog</title>
-  
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.js"></script>
 
 
 
+<script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js" ></script>
 
+<script src="/js/iconfont.js?v=1.0.1" ></script>
 
-
-  <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
-
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="切换导航栏">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">Z.L's blog</h1>
-      <span class="logo-line-after"><i></i></span>
-    </a>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger">
-        <i class="fa fa-search fa-fw fa-lg"></i>
-    </div>
-  </div>
+<meta name="generator" content="Hexo 4.2.0"></head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="false">
+  <input class="theme_blog_path" value="">
 </div>
 
+<body>
+<aside class="nav mobile">
+    <div class="nav-left">
+        <a href="/" class="avatar_target">
+    <img class="avatar" src="/img/avatar.jpg" />
+</a>
+<div class="author">
+    <span>Zhou Lei</span>
+</div>
 
-
-
-<nav class="site-nav">
-  <ul id="menu" class="menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
-
-  </li>
-        <li class="menu-item menu-item-categories">
-
-    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">12</span></a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">53</span></a>
-
-  </li>
-        <li class="menu-item menu-item-tags">
-
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">58</span></a>
-
-  </li>
-        <li class="menu-item menu-item-about">
-
-    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
-
-  </li>
-      <li class="menu-item menu-item-search">
-        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+<div class="icon">
+    
+        
+        <a title="rss" href="/atom.xml" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-rss"></use>
+                </svg>
+            
         </a>
-      </li>
-  </ul>
-</nav>
-
-
-
-  <div class="search-pop-overlay">
-    <div class="popup search-popup">
-        <div class="search-header">
-  <span class="search-icon">
-    <i class="fa fa-search"></i>
-  </span>
-  <div class="search-input-container">
-    <input autocomplete="off" autocorrect="off" autocapitalize="off"
-           placeholder="搜索..." spellcheck="false"
-           type="search" class="search-input">
-  </div>
-  <span class="popup-btn-close">
-    <i class="fa fa-times-circle"></i>
-  </span>
+        
+    
+        
+        <a title="github" href="https://github.com/yelog" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-github"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="weibo" href="http://weibo.com/u/2307534817" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-weibo"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="jianshu" href="https://www.jianshu.com/u/ff56736de7cf" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-jianshu"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="zhihu" href="https://www.zhihu.com/people/jaytp/activities" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-zhihu"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+    
+        
+        <a title="email" href="mailto:tcals1@163.com" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-email"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="qq" href="http://wpa.qq.com/msgrd?v=3&uin=541732905&site=qq&menu=yes" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-qq"></use>
+                </svg>
+            
+        </a>
+        
+    
 </div>
-<div id="search-result">
-  <div id="no-result">
-    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
-  </div>
+
+
+
+
+<ul>
+    <li><div class="all active">全部文章</div></li>
+    
+        
+            
+            <li><div data-rel="Jetty">Jetty</div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="opendaylight">opendaylight</div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="HTTP">HTTP</div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="工具">工具</div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Java"><i class="fold iconfont icon-right"></i>Java</div>
+                
+                    <ul class="sub hide">
+                        
+                        <li><div data-rel="并发编程">并发编程</div>
+                            
+                        </li>
+                            
+                        <li><div data-rel="集合">集合</div>
+                            
+                        </li>
+                            
+                    </ul>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="职业生涯">职业生涯</div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="数据结构与算法">数据结构与算法</div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="NLP">NLP</div>
+                
+            </li>
+            
+        
+    
+        
+            
+        
+    
+        
+            
+        
+    
+        
+            
+            <li><div data-rel="Solr">Solr</div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Lucene">Lucene</div>
+                
+            </li>
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+    
+    
+    
+    
+    </div>
+    <div><a class="about  hasFriend  site_url"  href="/about">关于</a><a style="width: 50%"  class="friends">友链</a></div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="53">
+<input type="hidden" id="yelog_site_word_count" value="111.9k">
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
 </div>
 
     </div>
-  </div>
-
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        友情链接
+        <i class="back-title-list"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+            <li><a target="_blank" href="/fengqinglei.top">fengqinglei</a></li>
+            
+            <li><a target="_blank" href="https://imququ.com/post/archives.html">Jerry Qu</a></li>
+            
+            <li><a target="_blank" href="https://www.sczyh30.com/">浮生若梦</a></li>
+            
+        </ul>
+    </div>
 </div>
-    </header>
+        <div class="title-list">
+    <form onkeydown="if(event.keyCode === 13){return false;}">
+        <input id="local-search-input" class="search" type="text" placeholder="Search..." />
+        <i class="cross"></i>
+        <span>
+            <label for="tagswitch">Tags:</label>
+            <input id="tagswitch" type="checkbox" style="display: none" />
+            <i id="tagsWitchIcon"></i>
+        </span>
+    </form>
+    <div class="tags-list">
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Jetty</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">odl</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">rpc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">HTTP</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">HTTP2</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">Markdown</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">java</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">LinkedList</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Collection</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">集合</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">work summary</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">HashMap</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">数据结构</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">链表</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">LinkedHashMap</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">算法</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">排序</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">ArrayList</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color2">随机梯度下降</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">有监督</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">线性回归</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">并发框架</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">Executor</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">并发容器</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">ConcurrentHashMap</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">ForkJoin</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">ThreadPool</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">并发</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">java红黑树</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">操作系统</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">进程</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">线程</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color2">Search</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">Solr</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">死锁</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">线程的风险</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">互斥锁</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">管程</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">生命周期</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">线程协作</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">wait</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">阻塞队列</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">信号量</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">互斥</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">可见性</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">volatile</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color4">ReadWriteLock</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color3">synchronized</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Json Facet</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">lock</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">原子操作</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color2">Lucene</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">索引文件</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">Lucene工具类</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">DocValues</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">idea</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color5">Collector</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a class="color1">Lucene压缩算法</a>
+    </li>
+    
+    <div class="clearfix"></div>
+</div>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
-  <div class="reading-progress-bar"></div>
-
-
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-
-          <div class="content">
-            
-
-  
-  
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
+    <nav id="title-list-nav">
         
-        <span class="collection-header">不错! 目前共计 53 篇日志。 继续努力。</span>
-      </div>
-
-      
-    <div class="collection-year">
-      <span class="collection-header">2020</span>
-    </div>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-31T00:00:00+08:00"
-              content="2020-01-31">
-          01-31
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/01/31/lucene-indexfile-nvd-nvm/" itemprop="url">
-            <span itemprop="name">【索引文件】.nvd、.nvm文件</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-31T00:00:00+08:00"
-              content="2020-01-31">
-          01-31
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/01/31/lucene-indexfile-pos-pay/" itemprop="url">
-            <span itemprop="name">【索引文件】.pos、.pay文件</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-
-    </div>
-  </div>
-  
-  
-  
-
-  
-
-
-
-          </div>
-          
-
-<script>
-  window.addEventListener('tabs:register', () => {
-    let { activeClass } = CONFIG.comments;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
-    });
-  }
-</script>
-
-        </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
-  </div>
-
-  <aside class="sidebar">
-    <div class="sidebar-inner">
-
-      <ul class="sidebar-nav motion-element">
-        <li class="sidebar-nav-toc">
-          文章目录
-        </li>
-        <li class="sidebar-nav-overview">
-          站点概览
-        </li>
-      </ul>
-
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-      </div>
-      <!--/noindex-->
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="Zhou Lei"
-      src="/images/avatar2.png">
-  <p class="site-author-name" itemprop="name">Zhou Lei</p>
-  <div class="site-description" itemprop="description"></div>
-</div>
-<div class="site-state-wrap motion-element">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/archives/">
-        
-          <span class="site-state-item-count">53</span>
-          <span class="site-state-item-name">日志</span>
+        <a  class="Jetty "
+           href="/2015/11/05/jetty-source-connection/"
+           data-tag="Jetty"
+           data-author="" >
+            <span class="post-title" title="【Jetty源码阅读系列】二、连接管理">【Jetty源码阅读系列】二、连接管理</span>
+            <!--span class="post-date" title="2015-11-05 00:00:00">2015/11/05</span-->
         </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-            <a href="/categories/">
-          
-        <span class="site-state-item-count">12</span>
-        <span class="site-state-item-name">分类</span></a>
-      </div>
-      <div class="site-state-item site-state-tags">
-            <a href="/tags/">
-          
-        <span class="site-state-item-count">58</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
-  </nav>
+        
+        <a  class="opendaylight "
+           href="/2019/11/27/ODL-mdsal-codereview/"
+           data-tag="odl,rpc"
+           data-author="" >
+            <span class="post-title" title="【opendaylight】——MD-SAL服务总线RPC服务源码分析">【opendaylight】——MD-SAL服务总线RPC服务源码分析</span>
+            <!--span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span-->
+        </a>
+        
+        <a  class="opendaylight "
+           href="/2019/11/27/ODL-RPC-module/"
+           data-tag="odl,rpc"
+           data-author="" >
+            <span class="post-title" title="【opendaylight】——MD-SAL RPC源码概览">【opendaylight】——MD-SAL RPC源码概览</span>
+            <!--span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span-->
+        </a>
+        
+        <a  class="HTTP "
+           href="/2015/11/11/http2-features-introduce/"
+           data-tag="HTTP,HTTP2"
+           data-author="" >
+            <span class="post-title" title="HTTP/2特性总结">HTTP/2特性总结</span>
+            <!--span class="post-date" title="2015-11-11 00:00:00">2015/11/11</span-->
+        </a>
+        
+        <a  class="工具 "
+           href="/2015/11/04/2018-11-4-markdown-studying-knowledage/"
+           data-tag="Markdown"
+           data-author="" >
+            <span class="post-title" title="Markdown学习笔记">Markdown学习笔记</span>
+            <!--span class="post-date" title="2015-11-04 00:00:00">2015/11/04</span-->
+        </a>
+        
+        <a  class="Java 集合 "
+           href="/2019/01/16/2019-1-16-java-collection-LinkedList/"
+           data-tag="java,LinkedList,Collection,集合"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-LinkedList">【Java集合】-LinkedList</span>
+            <!--span class="post-date" title="2019-01-16 00:00:00">2019/01/16</span-->
+        </a>
+        
+        <a  class="职业生涯 "
+           href="/2018/10/12/2018-11-4-thinking-huawei-workreview/"
+           data-tag="work summary"
+           data-author="" >
+            <span class="post-title" title="【职业生涯】2016～2018工作总结">【职业生涯】2016～2018工作总结</span>
+            <!--span class="post-date" title="2018-10-12 00:00:00">2018/10/12</span-->
+        </a>
+        
+        <a  class="Java 集合 "
+           href="/2019/01/20/2019-1-20-java-collection-HashMap/"
+           data-tag="java,Collection,集合,HashMap"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-HashMap">【Java集合】-HashMap</span>
+            <!--span class="post-date" title="2019-01-20 00:00:00">2019/01/20</span-->
+        </a>
+        
+        <a  class="数据结构与算法 "
+           href="/2019/10/22/Algorithms_DS_DS_Link/"
+           data-tag="数据结构,链表"
+           data-author="" >
+            <span class="post-title" title="【数据结构与算法】-【数据结构篇】链表">【数据结构与算法】-【数据结构篇】链表</span>
+            <!--span class="post-date" title="2019-10-22 00:00:00">2019/10/22</span-->
+        </a>
+        
+        <a  class="Java 集合 "
+           href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/"
+           data-tag="java,Collection,集合,LinkedHashMap"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-LinkedHashMap">【Java集合】-LinkedHashMap</span>
+            <!--span class="post-date" title="2019-01-31 00:00:00">2019/01/31</span-->
+        </a>
+        
+        <a  class="数据结构与算法 "
+           href="/2019/10/30/Algorithms_AL_Sort/"
+           data-tag="算法,排序"
+           data-author="" >
+            <span class="post-title" title="【数据结构与算法】-【算法】排序">【数据结构与算法】-【算法】排序</span>
+            <!--span class="post-date" title="2019-10-30 00:00:00">2019/10/30</span-->
+        </a>
+        
+        <a  class="Java 集合 "
+           href="/2019/01/15/2019-1-15-java-collection-ArrayList/"
+           data-tag="java,Collection,集合,ArrayList"
+           data-author="" >
+            <span class="post-title" title="【Java集合】-ArrayList">【Java集合】-ArrayList</span>
+            <!--span class="post-date" title="2019-01-15 00:00:00">2019/01/15</span-->
+        </a>
+        
+        <a  class="NLP "
+           href="/2019/11/27/NLP-Gradient-Descent/"
+           data-tag="随机梯度下降,有监督,线性回归"
+           data-author="" >
+            <span class="post-title" title="【NLP】一、线性回归与随机梯度下降法">【NLP】一、线性回归与随机梯度下降法</span>
+            <!--span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/11/27/java-concurrency-container-Executor/"
+           data-tag="java,并发框架,Executor"
+           data-author="" >
+            <span class="post-title" title="【并发容器和框架】四、Executor框架">【并发容器和框架】四、Executor框架</span>
+            <!--span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/10/27/java-concurrency-container-ConcurrentHashMap/"
+           data-tag="java,并发容器,ConcurrentHashMap"
+           data-author="" >
+            <span class="post-title" title="【并发容器和框架】一、CocurrentHashMap的实现原理与使用">【并发容器和框架】一、CocurrentHashMap的实现原理与使用</span>
+            <!--span class="post-date" title="2019-10-27 00:00:00">2019/10/27</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/11/06/java-concurrency-container-ForkJoin/"
+           data-tag="java,并发框架,ForkJoin"
+           data-author="" >
+            <span class="post-title" title="【并发容器和框架】二、Fork/Join框架">【并发容器和框架】二、Fork/Join框架</span>
+            <!--span class="post-date" title="2019-11-06 00:00:00">2019/11/06</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/12/23/java-concurrency-container-ThreadPool/"
+           data-tag="java,并发框架,ThreadPool"
+           data-author="" >
+            <span class="post-title" title="【并发容器和框架】三、Java线程池的实现原理和使用">【并发容器和框架】三、Java线程池的实现原理和使用</span>
+            <!--span class="post-date" title="2019-12-23 00:00:00">2019/12/23</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/03/04/2019-3-04-java-concurrency-catalog/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【目录】">【目录】</span>
+            <!--span class="post-date" title="2019-03-04 00:00:00">2019/03/04</span-->
+        </a>
+        
+        <a  class="数据结构与算法 "
+           href="/2019/01/31/2019-2-1-java-collection-red-black-tree/"
+           data-tag="Collection,算法,java红黑树"
+           data-author="" >
+            <span class="post-title" title="【数据结构与算法】Java中Map用到的数据结构:红黑树">【数据结构与算法】Java中Map用到的数据结构:红黑树</span>
+            <!--span class="post-date" title="2019-01-31 00:00:00">2019/01/31</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/02/27/2019-2-27-java-concurrency-overview/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【开篇】-全景图">【开篇】-全景图</span>
+            <!--span class="post-date" title="2019-02-27 00:00:00">2019/02/27</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/03/04/2019-3-06-java-concurrency-system/"
+           data-tag="操作系统,进程,线程"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】一、认识进程与线程">【基本概念篇】一、认识进程与线程</span>
+            <!--span class="post-date" title="2019-03-04 00:00:00">2019/03/04</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/03/08/2019-3-08-java-concurreny-use-thread/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】二、线程基本使用">【基本概念篇】二、线程基本使用</span>
+            <!--span class="post-date" title="2019-03-08 00:00:00">2019/03/08</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/03/09/2019-3-09-java-concurreny-control-thread/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】三、控制线程">【基本概念篇】三、控制线程</span>
+            <!--span class="post-date" title="2019-03-09 00:00:00">2019/03/09</span-->
+        </a>
+        
+        <a  class=""
+           href="/2019/03/29/2019-3-29-search-engine-solrcloud/"
+           data-tag="Search,Solr"
+           data-author="" >
+            <span class="post-title" title="Solr-SolrCloud核心概念">Solr-SolrCloud核心概念</span>
+            <!--span class="post-date" title="2019-03-29 00:00:00">2019/03/29</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/04/11/2019-4-11-java-concurreny-concept-3Bug/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】四、并发编程的3个问题（可见性、原子性、有序性问题）">【基本概念篇】四、并发编程的3个问题（可见性、原子性、有序性问题）</span>
+            <!--span class="post-date" title="2019-04-11 00:00:00">2019/04/11</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/04/21/2019-4-21-java-concurreny-deadlock/"
+           data-tag="java,并发,死锁"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】七、死锁">【基本概念篇】七、死锁</span>
+            <!--span class="post-date" title="2019-04-21 00:00:00">2019/04/21</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/04/13/2019-4-13-java-concurreny-memory-model/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题">【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题</span>
+            <!--span class="post-date" title="2019-04-13 00:00:00">2019/04/13</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/04/21/2019-5-07-java-concurreny-safey-performence/"
+           data-tag="java,并发,死锁,线程的风险"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】八、安全性、活跃性、性能问题">【基本概念篇】八、安全性、活跃性、性能问题</span>
+            <!--span class="post-date" title="2019-04-21 00:00:00">2019/04/21</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/04/20/2019-4-20-java-concurrency-lock/"
+           data-tag="java,并发,互斥锁"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】六、互斥锁：解决原子性问题">【基本概念篇】六、互斥锁：解决原子性问题</span>
+            <!--span class="post-date" title="2019-04-20 00:00:00">2019/04/20</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/"
+           data-tag="并发,操作系统,管程"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】九、从操作系统角度看并发">【基本概念篇】九、从操作系统角度看并发</span>
+            <!--span class="post-date" title="2019-05-09 00:00:00">2019/05/09</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/"
+           data-tag="java,并发,生命周期"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】十一、Java线程的状态和生命周期">【基本概念篇】十一、Java线程的状态和生命周期</span>
+            <!--span class="post-date" title="2019-05-15 00:00:00">2019/05/15</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/"
+           data-tag="java,并发"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】十二、如何构建线程安全的对象——对象的共享">【基本概念篇】十二、如何构建线程安全的对象——对象的共享</span>
+            <!--span class="post-date" title="2019-05-15 00:00:00">2019/05/15</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/05/10/2019-5-10-java-concurreny-java-monitor/"
+           data-tag="java,并发,管程"
+           data-author="" >
+            <span class="post-title" title="【基本概念篇】十、管程——并发编程的万能钥匙">【基本概念篇】十、管程——并发编程的万能钥匙</span>
+            <!--span class="post-date" title="2019-05-10 00:00:00">2019/05/10</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/06/19/2019-6-19-java-concurrency-communication-wait-notify/"
+           data-tag="java,并发,线程协作,wait"
+           data-author="" >
+            <span class="post-title" title="【线程协作篇】一、wait、notify、notifyAll&amp;Lock、Condition">【线程协作篇】一、wait、notify、notifyAll&amp;Lock、Condition</span>
+            <!--span class="post-date" title="2019-06-19 00:00:00">2019/06/19</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/07/04/2019-7-04-java-concurrency-communication-queue/"
+           data-tag="java,并发,线程协作,阻塞队列"
+           data-author="" >
+            <span class="post-title" title="【线程协作篇】二、生产者与消费者与阻塞队列">【线程协作篇】二、生产者与消费者与阻塞队列</span>
+            <!--span class="post-date" title="2019-07-04 00:00:00">2019/07/04</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/07/06/2019-7-06-java-concurrency-communication-semphore/"
+           data-tag="java,并发,线程协作,信号量"
+           data-author="" >
+            <span class="post-title" title="【线程协作篇】三、信号量Semaphore-控制临界区资源的多线程访问">【线程协作篇】三、信号量Semaphore-控制临界区资源的多线程访问</span>
+            <!--span class="post-date" title="2019-07-06 00:00:00">2019/07/06</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/07/15/2019-7-15-java-concurrency-communication-CountDownLatch-CyclicBarrier/"
+           data-tag="java,并发,线程协作,信号量"
+           data-author="" >
+            <span class="post-title" title="【线程协作篇】四、CountDownLatch和CyclicBarrier：如何让多线程步调一致">【线程协作篇】四、CountDownLatch和CyclicBarrier：如何让多线程步调一致</span>
+            <!--span class="post-date" title="2019-07-15 00:00:00">2019/07/15</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/08/16/2019-8-16-java-concurrency-mutex-volatile/"
+           data-tag="java,并发,互斥,可见性,volatile"
+           data-author="" >
+            <span class="post-title" title="【线程互斥篇】四、无锁方案-volatile原理与内存语义">【线程互斥篇】四、无锁方案-volatile原理与内存语义</span>
+            <!--span class="post-date" title="2019-08-16 00:00:00">2019/08/16</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/"
+           data-tag="java,并发,互斥,ReadWriteLock"
+           data-author="" >
+            <span class="post-title" title="【线程互斥篇】二、有锁方案-读写锁ReadWriteLock——快速使用一个完备的缓存">【线程互斥篇】二、有锁方案-读写锁ReadWriteLock——快速使用一个完备的缓存</span>
+            <!--span class="post-date" title="2019-07-31 00:00:00">2019/07/31</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/"
+           data-tag="java,并发,互斥,synchronized"
+           data-author="" >
+            <span class="post-title" title="【线程互斥篇】三、有锁方案-synchronized的实现原理与应用">【线程互斥篇】三、有锁方案-synchronized的实现原理与应用</span>
+            <!--span class="post-date" title="2019-08-11 00:00:00">2019/08/11</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/08/23/2019-8-23-java-concurrency-mutex-final/"
+           data-tag="java,并发,互斥,可见性,volatile"
+           data-author="" >
+            <span class="post-title" title="【线程互斥篇】五、无锁方案-不可变性final与内存语义">【线程互斥篇】五、无锁方案-不可变性final与内存语义</span>
+            <!--span class="post-date" title="2019-08-23 00:00:00">2019/08/23</span-->
+        </a>
+        
+        <a  class="Solr "
+           href="/2019/11/27/Json%20Facet/"
+           data-tag="Solr,Json Facet"
+           data-author="" >
+            <span class="post-title" title="【Solr应用】——Json Facet使用总结">【Solr应用】——Json Facet使用总结</span>
+            <!--span class="post-date" title="2019-11-27 00:00:00">2019/11/27</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/07/29/2019-7-29-java-concurrency-Mutex-lock/"
+           data-tag="java,并发,互斥,lock"
+           data-author="" >
+            <span class="post-title" title="【线程互斥篇】一、有锁方案-锁Lock(并发包中的管程)">【线程互斥篇】一、有锁方案-锁Lock(并发包中的管程)</span>
+            <!--span class="post-date" title="2019-07-29 00:00:00">2019/07/29</span-->
+        </a>
+        
+        <a  class="Java 并发编程 "
+           href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/"
+           data-tag="java,并发,互斥,原子操作"
+           data-author="" >
+            <span class="post-title" title="【线程互斥篇】六、无锁方案-原子操作的实现原理">【线程互斥篇】六、无锁方案-原子操作的实现原理</span>
+            <!--span class="post-date" title="2019-09-01 00:00:00">2019/09/01</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/01/31/lucene-indexfile-pos-pay/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【索引文件】.pos、.pay文件">【索引文件】.pos、.pay文件</span>
+            <!--span class="post-date" title="2020-01-31 00:00:00">2020/01/31</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/02/lucene-indexfile-doc/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【索引文件】.doc文件">【索引文件】.doc文件</span>
+            <!--span class="post-date" title="2020-02-02 00:00:00">2020/02/02</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/01/lucene-indexfile-tim-tip/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【索引文件】.tim、.tip文件">【索引文件】.tim、.tip文件</span>
+            <!--span class="post-date" title="2020-02-01 00:00:00">2020/02/01</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/04/lucene-utils-fixedBitSet/"
+           data-tag="Search,Lucene,Lucene工具类"
+           data-author="" >
+            <span class="post-title" title="【工具类】FixedBitSet">【工具类】FixedBitSet</span>
+            <!--span class="post-date" title="2020-02-04 00:00:00">2020/02/04</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/01/31/lucene-indexfile-nvd-nvm/"
+           data-tag="Search,Lucene,索引文件"
+           data-author="" >
+            <span class="post-title" title="【索引文件】.nvd、.nvm文件">【索引文件】.nvd、.nvm文件</span>
+            <!--span class="post-date" title="2020-01-31 00:00:00">2020/01/31</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/07/lucene-dv-SortedDocValues/"
+           data-tag="Search,Lucene,DocValues"
+           data-author="" >
+            <span class="post-title" title="【DocValues】一、SortedDocValues">【DocValues】一、SortedDocValues</span>
+            <!--span class="post-date" title="2020-02-07 00:00:00">2020/02/07</span-->
+        </a>
+        
+        <a  class="工具 "
+           href="/2020/02/07/tools-idea-simple/"
+           data-tag="idea"
+           data-author="" >
+            <span class="post-title" title="【工具使用】IEDA使用分享">【工具使用】IEDA使用分享</span>
+            <!--span class="post-date" title="2020-02-07 00:00:00">2020/02/07</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/03/04/lucence-search-collector1/"
+           data-tag="Search,Lucene,Collector"
+           data-author="" >
+            <span class="post-title" title="【Search】一、Collector">【Search】一、Collector</span>
+            <!--span class="post-date" title="2020-03-04 00:00:00">2020/03/04</span-->
+        </a>
+        
+        <a  class="Lucene "
+           href="/2020/02/07/lucene-yasuocunchu-PackedInts/"
+           data-tag="Search,Lucene,Lucene压缩算法"
+           data-author="" >
+            <span class="post-title" title="【压缩存储&amp;算法】PackedInts">【压缩存储&amp;算法】PackedInts</span>
+            <!--span class="post-date" title="2020-02-07 00:00:00">2020/02/07</span-->
+        </a>
+        
+    </nav>
 </div>
-  <div class="links-of-author motion-element">
-      <span class="links-of-author-item">
-        <a href="https://github.com/zhoulei17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhoulei17" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="mailto:tcals1@163.com" title="E-Mail → mailto:tcals1@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
-      </span>
-  </div>
-
-
-  <div class="links-of-blogroll motion-element">
-    <div class="links-of-blogroll-title">
-      <i class="fa fa-fw fa-link"></i>
-      Links
     </div>
-    <ul class="links-of-blogroll-list">
-        <li class="links-of-blogroll-item">
-          <a href="https://2tongtong.cn/" title="https:&#x2F;&#x2F;2tongtong.cn">另一个域名</a>
-        </li>
-        <li class="links-of-blogroll-item">
-          <a href="https://imququ.com/post/archives.html" title="https:&#x2F;&#x2F;imququ.com&#x2F;post&#x2F;archives.html" rel="noopener" target="_blank">Jerry Qu</a>
-        </li>
-        <li class="links-of-blogroll-item">
-          <a href="https://www.cnblogs.com/forfuture1978/" title="https:&#x2F;&#x2F;www.cnblogs.com&#x2F;forfuture1978&#x2F;" rel="noopener" target="_blank">刘超觉先</a>
-        </li>
-    </ul>
-  </div>
+    <div class="hide-list">
+        <div class="semicircle">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div class="post index">
+    <div class="pjax">
+        <article class="index">
+            <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Why-Blog"><span class="toc-text">Why Blog</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#对博客的理解"><span class="toc-text">对博客的理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关于叶落阁"><span class="toc-text">关于叶落阁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#博客平台"><span class="toc-text">博客平台</span></a></li></ol></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+            <h1 id="Why-Blog"><a href="#Why-Blog" class="headerlink" title="Why Blog"></a>Why Blog</h1><h2 id="对博客的理解"><a href="#对博客的理解" class="headerlink" title="对博客的理解"></a>对博客的理解</h2><p>喜欢写Blog的人，会经历三个阶段。</p>
+<blockquote>
+<p>第一阶段，刚接触Blog，觉得很新鲜，试着选择一个免费空间来写。</p>
+</blockquote>
+<blockquote>
+<p>第二阶段，发现免费空间限制太多，就自己购买域名和空间，搭建独立博客。</p>
+</blockquote>
+<blockquote>
+<p>第三阶段，觉得独立博客的管理太麻烦，最好在保留控制权的前提下，让别人来管，自己只负责写文章。</p>
+</blockquote>
+<p>我们每个人的在网络上产生的数据越来越多，这些信息是我们在互联网上存在过的痕迹，值得我们认真对待。但是它们被分散分布在各个网站上。很多时候我们很难将它们聚合在一起，而且各个网站的信息排布方式也没有办法自由控制，所以我们需要一个可以由自己主宰的空间——博客。</p>
+<p>通过博客，我们可以记录自己的生活和成长的轨迹。它不像 Twitter 那样碎片化，也不像 Facebook 那样关系化，它是私人的空间。</p>
+<h2 id="关于叶落阁"><a href="#关于叶落阁" class="headerlink" title="关于叶落阁"></a>关于叶落阁</h2><p><strong>叶落阁</strong> 是阿杰（杨玉杰）的个人站。</p>
+<p>到目前为止已经写了<code class="article_number"></code>篇文章， 共<code class="site_word_count"></code>字。</p>
+<p>本站访问人数：<code class="site_uv"></code>人次 ， 访问量：<code class="site_pv"></code>次</p>
+<h2 id="博客平台"><a href="#博客平台" class="headerlink" title="博客平台"></a>博客平台</h2><p>这个博客通过 <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 生成，部署在 <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>，主题 <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank" rel="noopener">3-hexo</a> 已经在github上开源</p>
+<p>主要功能：</p>
+<ul>
+<li>搜索支持文章标题、标签(#标签)、作者(@作者)</li>
+<li>pad/手机等移动端适配</li>
+<li>页面全局快捷键 <a href='http://yelog.org/2017/03/24/3-hexo-shortcuts/' target="_blank" rel="noopener">3-hexo快捷键说明</a></li>
+</ul>
 
-      </div>
+        </article>
+        
+        <p>
+            <a  class="dashang" onclick="dashangToggle()">赏</a>
+        </p>
+        
+        
+    </div>
+    <div class="copyright">
+        <p class="footer-entry">©2016-2020 ZhouLei</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
 
     </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
+    <div class="full-toc">
+        <button class="full"><span class="min "></span></button>
+<button class="post-toc-menu"><span class="post-toc-menu-icons"></span></button>
+<div class="post-toc"><span class="post-toc-title">目录</span>
+    <div class="post-toc-content">
 
+    </div>
+</div>
+<a class="" id="rocket" ></a>
 
-      </div>
-    </main>
+    </div>
+</div>
+<div class="acParent"></div>
 
-    <footer class="footer">
-      <div class="footer-inner">
-        
-
-        
-
-<div class="copyright">
-  
-  &copy; 
-  <span itemprop="copyrightYear">2020</span>
-  <span class="with-love">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">Zhou Lei</span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item-icon">
-      <i class="fa fa-area-chart"></i>
-    </span>
-      <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">221k</span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item-icon">
-      <i class="fa fa-coffee"></i>
-    </span>
-      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:21</span>
+<div class="hide_box" onclick="dashangToggle()"></div>
+<div class="shang_box">
+    <a class="shang_close"  onclick="dashangToggle()">×</a>
+    <div class="shang_tit">
+        <p>喜欢就点赞,疼爱就打赏</p>
+    </div>
+    <div class="shang_payimg">
+        <div class="pay_img">
+            <img src="/img/alipay.jpg" class="alipay" title="扫码支持">
+            <img src="/img/weixin.jpg" class="weixin" title="扫码支持">
+        </div>
+    </div>
+    <div class="shang_payselect">
+        <span><label><input type="radio" name="pay" checked value="alipay">支付宝</label></span><span><label><input type="radio" name="pay" value="weixin">微信</label></span>
+    </div>
 </div>
 
-        
-<div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="总访客量">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="总访问量">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-
-
-
-
-
-
-
-
-      </div>
-    </footer>
-  </div>
-
-  
-  <script src="/lib/anime.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/lozad@1/dist/lozad.min.js"></script>
-  <script src="/lib/velocity/velocity.min.js"></script>
-  <script src="/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/js/utils.js"></script>
-
-<script src="/js/motion.js"></script>
-
-
-<script src="/js/schemes/pisces.js"></script>
-
-
-<script src="/js/next-boot.js"></script>
-
-
-
-
-  
-
-
-
-
-  
-<script src="/js/local-search.js"></script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-  
-
-
-<script>
-NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
-  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js', () => {
-    var GUEST = ['nick', 'mail', 'link'];
-    var guest = 'nick,mail,link';
-    guest = guest.split(',').filter(item => {
-      return GUEST.includes(item);
-    });
-    new Valine({
-      el         : '#valine-comments',
-      verify     : false,
-      notify     : true,
-      appId      : 'PD4my6GLKvwSHueH8wmCeOWa-gzGzoHsz',
-      appKey     : 'PT4OtHFKWSlmxe7JCkj9hezk',
-      placeholder: "欢迎提出建议或问题^_^",
-      avatar     : '',
-      meta       : guest,
-      pageSize   : '10' || 10,
-      visitor    : true,
-      lang       : 'zh-cn' || 'zh-cn',
-      path       : location.pathname,
-      recordIP   : false,
-      serverURLs : ''
-    });
-  }, window.Valine);
-});
-</script>
 
 </body>
+<script src="/js/jquery.pjax.js?v=1.0.1" ></script>
+
+<script src="/js/script.js?v=1.0.1" ></script>
+<script>
+    var img_resize = 'default';
+    /*作者、标签的自动补全*/
+    $(function () {
+        $('.search').AutoComplete({
+            'data': ['#Jetty','#odl','#rpc','#HTTP','#HTTP2','#Markdown','#java','#LinkedList','#Collection','#集合','#work summary','#HashMap','#数据结构','#链表','#LinkedHashMap','#算法','#排序','#ArrayList','#随机梯度下降','#有监督','#线性回归','#并发框架','#Executor','#并发容器','#ConcurrentHashMap','#ForkJoin','#ThreadPool','#并发','#java红黑树','#操作系统','#进程','#线程','#Search','#Solr','#死锁','#线程的风险','#互斥锁','#管程','#生命周期','#线程协作','#wait','#阻塞队列','#信号量','#互斥','#可见性','#volatile','#ReadWriteLock','#synchronized','#Json Facet','#lock','#原子操作','#Lucene','#索引文件','#Lucene工具类','#DocValues','#idea','#Collector','#Lucene压缩算法',],
+            'itemHeight': 20,
+            'width': 418
+        }).AutoComplete('show');
+    })
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $(".post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+        $("input[name=pay]").on("click", function () {
+            if($("input[name=pay]:checked").val()=="weixin"){
+                $(".shang_box .shang_payimg .pay_img").addClass("weixin_img");
+            } else {
+                $(".shang_box .shang_payimg .pay_img").removeClass("weixin_img");
+            }
+        })
+        
+
+        /*高亮代码块行号*/
+        
+        $('pre code').each(function(){
+            var lines = $(this).text().split('\n').length - 1, widther='';
+            if (lines>99) {
+                widther = 'widther'
+            }
+            var $numbering = $('<ul/>').addClass('pre-numbering ' + widther).attr("unselectable","on");
+            $(this).addClass('has-numbering ' + widther)
+                    .parent()
+                    .append($numbering);
+            for(var i=1;i<=lines;i++){
+                $numbering.append($('<li/>').text(i));
+            }
+        });
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
+        
+        
+    }
+
+    /*打赏页面隐藏与展示*/
+    
+    function dashangToggle() {
+        $(".shang_box").fadeToggle();
+        $(".hide_box").fadeToggle();
+    }
+    
+
+</script>
+
+<!--加入行号的高亮代码块样式-->
+
+<style>
+    pre{
+        position: relative;
+        margin-bottom: 24px;
+        border-radius: 10px;
+        border: 1px solid #e2dede;
+        background: #FFF;
+        overflow: hidden;
+    }
+    code.has-numbering{
+        margin-left: 30px;
+    }
+    code.has-numbering.widther{
+        margin-left: 35px;
+    }
+    .pre-numbering{
+        margin: 0px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        padding: 0.5em 3px 0.7em 5px;
+        border-right: 1px solid #C3CCD0;
+        text-align: right;
+        color: #AAA;
+        background-color: ;
+    }
+    .pre-numbering.widther {
+        width: 35px;
+    }
+</style>
+
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 702px;
+    }
+    .nav.fullscreen {
+        margin-left: -702px;
+    }
+    .nav-left {
+        width: 180px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 692px;
+        }
+        .nav.fullscreen {
+            margin-left: -692px;
+        }
+        .nav-left {
+            width: 200px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 692px;
+            margin-left: -692px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+        .nav .hide-list.fullscreen {
+            left: 592px
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+    .post .pjax article .article-entry>ol, .post .pjax article .article-entry>ul, .post .pjax article>ol, .post .pjax article>ul{
+        border: #e2dede solid 1px;
+        border-radius: 10px;
+        padding: 10px 32px 10px 56px;
+    }
+    .post .pjax article .article-entry li>ol, .post .pjax article .article-entry li>ul,.post .pjax article li>ol, .post .pjax article li>ul{
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .post .pjax article .article-entry>ol>li, .post .pjax article .article-entry>ul>li,.post .pjax article>ol>li, .post .pjax article>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    .post .pjax article .article-entry li>ol>li, .post .pjax article .article-entry li>ul>li,.post .pjax article li>ol>li, .post .pjax article li>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    
+
+    /* 背景图样式 */
+    
+    
+
+
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+    .nav-right:before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.3;
+        background: url("https://i.loli.net/2019/07/22/5d3521411f3f169375.png");
+        background-repeat: no-repeat;
+        background-position: 50% 0;
+        -ms-background-size: cover;
+        -o-background-size: cover;
+        -moz-background-size: cover;
+        -webkit-background-size: cover;
+        background-size: cover;
+    }
+    
+
+    
+    .post .pjax article :not(pre) > code {
+        color: #24292e;
+        font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
+        background-color: rgba(27,31,35,.05);
+        border-radius: 3px;
+        font-size: 85%;
+        margin: 0;
+        padding: .2em .4em;
+    }
+    
+</style>
+
+
+
+
+
+
+
 </html>
