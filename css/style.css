@@ -1813,6 +1813,9 @@ img.pswp__img {
 .mobile-menus .dynamic-menu:nth-child(1) {
   margin-top: 0;
 }
+.footer-number {
+  color: #b72626;
+}
 @media screen and (max-width: 1468px) {
   html,
   body {
