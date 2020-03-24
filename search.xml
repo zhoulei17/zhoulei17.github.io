@@ -4962,6 +4962,173 @@ class WaitPerson implements Runnable {
       </tags>
   </entry>
   <entry>
+    <title>【基本概念篇】十二、如何构建线程安全的对象——对象的共享</title>
+    <url>/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/</url>
+    <content><![CDATA[<p>当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。</p>
+<p>Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。</p>
+<p>可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的<strong>并发策略</strong>：</p>
+<ul>
+<li>不在线程之间共享该状态变量，也可以说<strong>无状态</strong>的对象的肯定是线程安全的</li>
+<li>将状态变量修改为<strong>不可变的变量</strong></li>
+<li>在访问状态变量时<strong>使用同步</strong></li>
+</ul>
+<p>之前总结了如何通过同步来避免多个线程同一时刻访问相同的数据。本篇文章主要讲：怎么共享和发布对象，从而使他们能够安全地被多个线程同时访问。即：</p>
+<ol>
+<li>一方面，我们不仅希望防止某个线程被正在使用对象状态而另一个线程同时修改状态。</li>
+<li>另一方面，我们还希望当一个线程修改了对象状态后，其他线程能够看到发生状态的变化。如果没有同步，就无法实现。</li>
+</ol>
+<p>关键字synchronized不仅仅可以实现原子性或者确定”临界区”，同时也能够实现共享对象的<strong>内存可见性</strong>。</p>
+<blockquote>
+<p>加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或者写操作的线程都必须在同一个锁上同步。</p>
+</blockquote>
+<p>除了synchronized实现的同步可见性方案，Java语言还提供一种稍弱的同步机制，即volatile变量，用来确保变量的更新操作通知到其他线程。</p>
+<h1 id="1-可见性-volatile"><a href="#1-可见性-volatile" class="headerlink" title="1. 可见性(volatile)"></a>1. 可见性(volatile)</h1><p>由于重排序，程序的执行结果往往让人产生错觉。</p>
+<h2 id="volatile变量"><a href="#volatile变量" class="headerlink" title="volatile变量"></a>volatile变量</h2><p>当把变量声明为volatile类型后，编译器与运行时都会注意到这个变量是共享的，因此不会将变量上的操作与其他内存操作一起重排序。volatile变量不会被缓存在寄存器或者本地内存中，因此在读取volatile类型的变量时总会返回最新写入的值。</p>
+<p>在访问volatile变量时不会执行加锁操作，因此也就不会使线程阻塞，因此volatile变量是一种比sychronized关键字更轻量级的同步。不建议过度依赖volatile变量提供的可见性，如果在代码中依赖volatile变量来控制状态可见性，通常比使用锁的代码更脆弱，也更难以理解。</p>
+<blockquote>
+<p>仅当volatile变量能够简化代码的实现以及对同步策略的验证时，才应该使用它们。如果在验证正确性需要对可见性进行复杂判断，那么就不要使用volatile变量。volatile变量的正确使用方式包括：</p>
+<ol>
+<li>确保它们自身状态的可见性。</li>
+<li>确保它们所引用对象的状态的</li>
+<li>标识一些重要的程序生命周期事件的发生(例如，初始化或关闭)</li>
+</ol>
+</blockquote>
+<p><strong>volatile的典型用法</strong>：检查某个状态标记以判断是否退出循环。</p>
+<pre><code class="java">volatile boolean asleep;
+...
+  while(!asleep)
+    countSomeSheep();</code></pre>
+<p>虽然volatile变量很方便，但也存在一些局限性。volatile变量通常用作某个操作完成、发生中断或者状态的标志。例如上面的asleep标志。尽管volatile变量也可以用于表示其他的状态信息，但使用时要注意，比如volatile语义不能确保递增操作(count++)的原子性，除非确保只有一个线程对变量执行写操作。(原子变量提供了”读—改—写”的原子操作)，并且常常用做一种”更好的volatile变量”。</p>
+<blockquote>
+<p>加锁机制既可以确保可见性又可以确保原子性，而volatile变量只能确保可见性。</p>
+</blockquote>
+<h2 id="volatile使用场景"><a href="#volatile使用场景" class="headerlink" title="volatile使用场景"></a>volatile使用场景</h2><p><strong>当且仅当满足以下条件时，才应该使用volatile变量</strong>：</p>
+<ul>
+<li>对变量的写入操作不依赖变量的当前值，或者你能够确保当前只有单个线程更新变量的值。</li>
+<li>该变量不会与其他状态一起纳入不变性条件中。</li>
+<li>在访问变量时不需要加锁。</li>
+</ul>
+<h1 id="2-发布和逸出-封装"><a href="#2-发布和逸出-封装" class="headerlink" title="2. 发布和逸出(封装)"></a>2. 发布和逸出(封装)</h1><ul>
+<li><p><strong>“发布”</strong>对象的意思指，使对象能够在当前作用域之外的代码中使用。</p>
+<p>例如，将一个指向该对象的引用保存到其他代码可以访问的地方，</p>
+<p>或者在某一个非私有的方法中返回该引用，或者将引用传递到其他类的方法中。</p>
+<p><strong>我们要确保对象及其内部状态不被发布</strong></p>
+</li>
+<li><p><strong>“逸出”</strong>的意思指，当某个不应该发布的对象被发布时称为”逸出”。</p>
+</li>
+</ul>
+<p>当发布的对象逸出以后，必须假设有某个类或线程可能会误用该对象。</p>
+<p>因此应该尽量使用<strong>封装</strong>：封装能够使得对程序的正确性进行分析变可能，并使得无意中破坏设计约束条件变得更难。</p>
+<p>另外一种发布对象或其内部状态机制就是发布一个<strong>内部类的实例</strong>。</p>
+<p>另外一个要注意的地方：</p>
+<blockquote>
+<p>不要在构造过程中使this引用逸出</p>
+</blockquote>
+<h1 id="3-线程封闭-无状态、ThreadLocal"><a href="#3-线程封闭-无状态、ThreadLocal" class="headerlink" title="3. 线程封闭(无状态、ThreadLocal)"></a>3. 线程封闭(无状态、ThreadLocal)</h1><p>一种避免同步的方式就是不共享数据，不共享数据的无状态对象肯定是线程安全的。称为<strong>线程封闭</strong>。</p>
+<p>常见的例子如：</p>
+<ul>
+<li><p>Swing通过将可视化组件和数据模型封装到Swing的事件分发线程中来实现线程安全。</p>
+</li>
+<li><p>还有如JDBC的Connection对象，线程从连接池中获得一个Connection对象，并且用该对象来处理请求，使用完后再讲对象返回给连接池。由于大多数(Servlet请求或EJB调用等)都是由单个线程采用同样的方式来处理，并且在Connection对象返回之前，连接池不会再将它分配给其他线程，因此这种连接管理模式在处理隐含地将Connection对象封闭在线程中。</p>
+</li>
+</ul>
+<p>Java提供<strong>局部变量</strong>和<strong>ThreadLocal类</strong>来帮助维持线程封闭性。下面来讲下：</p>
+<h2 id="Ad-hoc线程封闭"><a href="#Ad-hoc线程封闭" class="headerlink" title="Ad-hoc线程封闭"></a>Ad-hoc线程封闭</h2><p>Ad-hoc实际就是指，维护线程封闭性的职责完全交给程序来实现。Ad-hoc线程封闭是非常脆弱的，因为没有任何一种语言特性，例如可见修饰符或局部变量，能将对象封闭到目标线程上。事实上，对线程封闭对象的引用通常保存在公有变量上。</p>
+<p>在volatile变量行上存在一种特殊的线程封闭。只要你能确保只有<strong>单个线程</strong>对共享的volatile变量执行写入操作，那么就可以安全地在这些共享的volatile变量上执行”读取-修改-写入”的操作。这种情况下，相当于将修改操作封闭在单个线程中以防止发生<strong>竞态条件</strong>，并且volatile变量的可见性还确保了其他线程能看到最新的值。</p>
+<p>由于Ad-hoc线程封闭技术的脆弱性，因此在程序中尽量少用，在可能的情况下应该使用更强的线程封闭技术(例如下面要将讲的，栈封闭和ThreadLocal类)。</p>
+<h2 id="栈封闭"><a href="#栈封闭" class="headerlink" title="栈封闭"></a>栈封闭</h2><p>栈封闭是线程封闭的一种特例，在栈封闭中，<strong>只能通过局部变量才能访问对象</strong>。栈封闭（也被称为线程内部使用或者线程局部使用，不要与核心类库中的ThreadLocal混淆）比Ad-hoc线程封闭更易于维护，也更加健壮。</p>
+<h2 id="ThreadLocal类"><a href="#ThreadLocal类" class="headerlink" title="ThreadLocal类"></a>ThreadLocal类</h2><ul>
+<li><p>线程封闭性的一种更规范方法是使用ThreadLocal，这个类能使线程中的某个值与保存值的对象关联起来。</p>
+</li>
+<li><p>ThreadLocal提供get与set等访问接口或方法，为每个使用该变量的线程都保存一份独立的副本，因此get总是返回当前执行线程在调用set时设置的最新值。</p>
+</li>
+<li><p>ThreadLocal对象通常用于防止对可变的单实例对象(Singleton)或全局变量进行共享。例如，通过将JDBC的连接保存到ThreadLocal对象中，每个线程就会拥有属于自己的连接。</p>
+</li>
+</ul>
+<h1 id="4-不变性final"><a href="#4-不变性final" class="headerlink" title="4.不变性final"></a>4.不变性final</h1><p>上面讲了，解决同步问题的方法，主要有</p>
+<ol>
+<li>共享变量的volatile的声明，即禁用JVM对该变量的重排序立即对其他线程可见，</li>
+<li>注意共享变量的发布、避免共享变量逸出。</li>
+<li>通过线程封闭手段避免避免对象状态在多线程之间共享(通过局部变量的栈封闭、以及ThreadLocal的线程副本隔离)。</li>
+</ol>
+<p>下面来讲下，解决同步的另外一种手段，即 <strong>不变性</strong>。</p>
+<p>满足同步需求的另一种方法是使用不可变对象。很多与原子性、可见性相关的问题，例如得到失效数据、丢失更新或者观察到某个对象处于不一致的状态等等，都与多线程试图同时访问同一个可变的状态相关。如果对象的状态不会改变，那么这些问题与复杂性也就自然消失了。</p>
+<blockquote>
+<p>不可变对象一定是线程安全的。</p>
+</blockquote>
+<p><strong>不可变性不等于将对象中所有的域都声明为final类型，即使对象中所有的域都是final类型的，这个对象也仍然是可变的，因为在final类型的域中可以保存对可变对象的引用。</strong></p>
+<p>因此需要满足以下条件，对象才是不可变的：</p>
+<blockquote>
+<ul>
+<li>对象创建以后其状态就不能修改。</li>
+<li>对象的所有域都是final类型。</li>
+<li>对象是正确创建的(在对象的创建期间，this引用没有逸出)。</li>
+</ul>
+</blockquote>
+<h1 id="5-安全发布"><a href="#5-安全发布" class="headerlink" title="5.安全发布"></a>5.安全发布</h1><p>先看下面这个例子</p>
+<pre><code class="java">public Holder holder;
+
+public void initialize() {
+        holder = new Holder(42);
+}</code></pre>
+<p>由于存在可见性问题，其他线程看到的Holder对象将处于不一致的状态，即便在该对象的构造函数中已经正确地构建了不变性条件。这种不正确的发布导致其他线程看到尚未创建完成的对象。这就是<strong>在没有足够同步的情况下发布对象</strong>，不要这样做。</p>
+<h2 id="不可变对象与初始化安全性"><a href="#不可变对象与初始化安全性" class="headerlink" title="不可变对象与初始化安全性"></a>不可变对象与初始化安全性</h2><p>Java内存模型为不可变对象的共享提供了一种特殊的初始化安全性保证。</p>
+<p>已经知道，即使某个对象的引用对于其他线程是可见的，也并不意味着对象状态对于使用该对象的线程来说一定是可见的。为了确保对象状态能呈现出一致的视图，就必须使用同步。</p>
+<p>另一方面，即使在发布不可变对象的引用时没有使用同步，也仍然可以安全地访问该对象。为了维持这种初始化安全性保证，必须满足不可变性的所有需求：</p>
+<p>状态不可修改，所有域都是final类型，以及正确的构造过程。</p>
+<blockquote>
+<p><strong>任何线程都可以在不需要额外同步的情况下安全地访问不可变对象，即使在发布这些对象时没有使用同步。</strong></p>
+</blockquote>
+<p>但是，如果final类型的域指向的是可变对象，那么在访问这些域所指向的对象的状态时仍然需要同步。</p>
+<h2 id="安全发布的常用模式"><a href="#安全发布的常用模式" class="headerlink" title="安全发布的常用模式"></a>安全发布的常用模式</h2><p>如何确保使用对象的线程能够看到该对象处于已发布的状态。</p>
+<blockquote>
+<p>要安全地发布一个对象，对象的引用以及对象的状态必须同步对其他线程可见。一个正确构造的对象可以通过以下来安全地发布：</p>
+<ul>
+<li>在静态初始化函数中初始化一个对象引用。</li>
+<li>将对象的引用保存到volatile类型的域或者AtomicReferance对象中。</li>
+<li>将对象的引用保存到某个正确构造对象的final类型域中。</li>
+<li>将对象的引用保存到一个由锁保护的域中。</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>在线程安全容器内部的同步以为着，在将对象放到某个容器后，例如Vector或synchronizedList时，满足上面的”将对象的引用保存到一个由锁保护的域中”。即：</p>
+<p>线程A将对象X放入一个线程安全的容器，随后线程B读取这个对象，那么可以确保B看到A设置的X状态，即便在这段读/写X的应用程序代码中没有包含显式的同步。线程安全类包括：</p>
+<p>Hashtable、sychronizedMap或者ConcurrentHashMap</p>
+<p>Vector、CopyOnWriteArrayList、CopyOnWriteArrySet、synchronizedList或synchronizedSet</p>
+<p>BlockingQueue或ConcurrentLinkedQueue</p>
+<p>还有其他数据传递机制Future和Exchanger同样能实现安全发布。</p>
+</li>
+<li><p>静态初始化器由JVM在类的初始化阶段执行。由于在JVM内部存在着同步机制，因此通过这种方式初始化任何对象都可以被安全地发布。</p>
+</li>
+</ul>
+<h2 id="可变对象"><a href="#可变对象" class="headerlink" title="可变对象"></a>可变对象</h2><p>如果对象在构造后可以修改，那么安全发布只能确保”发布当时”状态的可见性。对于可变对象，不仅在发布对象时需要同步，而且在每次对象访问时同样需要同步来确保后续操作的可见性。要安全地共享可变对象，这些对象就必须被安全地发布，并且必须是线程安全的或者由某个锁保护起来。</p>
+<blockquote>
+<p>对象的发布需求取决于它的可变性：</p>
+<ul>
+<li>不可变对象可以通过任意机制来发布</li>
+<li>事实不可变对象必须通过安全方式来发布</li>
+<li>可变对象必须通过安全方式来发布，并且必须是线程安全的或者由某个锁保护起来</li>
+</ul>
+</blockquote>
+<h2 id="安全地共享对象"><a href="#安全地共享对象" class="headerlink" title="安全地共享对象"></a>安全地共享对象</h2><p>当获得对象的一个引用时，你需要知道这个引用上可以执行哪些操作。在使用它之前是否需要获得一个锁？是否可以修改它的状态或者只能读取它？许多并发错误都是由于没有理解共享对象的这些”既定规则”而导致的。当发布一个对象时，必须明确地说明对象的访问方式。</p>
+<blockquote>
+<p>在并发程序中使用和共享对象，可以使用一些实用的策略，包括：</p>
+<p><strong>线程封闭</strong>。线程封闭的对象只能由一个线程拥有，对象被封闭在该线程中，并且只能由这个线程修改。</p>
+<p><strong>只读共享</strong>。在没有额外同步的情况下，共享的只读对象可以由多个线程并发访问，但任何线程都不能修改它。共享的只读对象包括不可变对象和事实不可变对象。</p>
+<p><strong>线程安全共享</strong>。线层安全的对象在其内部实现同步，因此多个线程可以通过对象的公有接口来进行访问而不需要进一步的同步。</p>
+<p><strong>保护对象</strong>。被保护的对象只能通过持有特定的锁来访问。保护对象包括封装在其他线程安全对象中的对象，以及已发布的并且由某个特定锁保护的对象。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>并发</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【基本概念篇】十一、Java线程的状态和生命周期</title>
     <url>/2019/05/15/2019-5-15-java-concurreny-java-thread-status/</url>
     <content><![CDATA[<p>Java线程本质上就是操作系统的线程，它们是一一对应的。</p>
@@ -5181,173 +5348,6 @@ class WaitPerson implements Runnable {
         <tag>java</tag>
         <tag>并发</tag>
         <tag>生命周期</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【基本概念篇】十二、如何构建线程安全的对象——对象的共享</title>
-    <url>/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/</url>
-    <content><![CDATA[<p>当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。</p>
-<p>Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。</p>
-<p>可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的<strong>并发策略</strong>：</p>
-<ul>
-<li>不在线程之间共享该状态变量，也可以说<strong>无状态</strong>的对象的肯定是线程安全的</li>
-<li>将状态变量修改为<strong>不可变的变量</strong></li>
-<li>在访问状态变量时<strong>使用同步</strong></li>
-</ul>
-<p>之前总结了如何通过同步来避免多个线程同一时刻访问相同的数据。本篇文章主要讲：怎么共享和发布对象，从而使他们能够安全地被多个线程同时访问。即：</p>
-<ol>
-<li>一方面，我们不仅希望防止某个线程被正在使用对象状态而另一个线程同时修改状态。</li>
-<li>另一方面，我们还希望当一个线程修改了对象状态后，其他线程能够看到发生状态的变化。如果没有同步，就无法实现。</li>
-</ol>
-<p>关键字synchronized不仅仅可以实现原子性或者确定”临界区”，同时也能够实现共享对象的<strong>内存可见性</strong>。</p>
-<blockquote>
-<p>加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或者写操作的线程都必须在同一个锁上同步。</p>
-</blockquote>
-<p>除了synchronized实现的同步可见性方案，Java语言还提供一种稍弱的同步机制，即volatile变量，用来确保变量的更新操作通知到其他线程。</p>
-<h1 id="1-可见性-volatile"><a href="#1-可见性-volatile" class="headerlink" title="1. 可见性(volatile)"></a>1. 可见性(volatile)</h1><p>由于重排序，程序的执行结果往往让人产生错觉。</p>
-<h2 id="volatile变量"><a href="#volatile变量" class="headerlink" title="volatile变量"></a>volatile变量</h2><p>当把变量声明为volatile类型后，编译器与运行时都会注意到这个变量是共享的，因此不会将变量上的操作与其他内存操作一起重排序。volatile变量不会被缓存在寄存器或者本地内存中，因此在读取volatile类型的变量时总会返回最新写入的值。</p>
-<p>在访问volatile变量时不会执行加锁操作，因此也就不会使线程阻塞，因此volatile变量是一种比sychronized关键字更轻量级的同步。不建议过度依赖volatile变量提供的可见性，如果在代码中依赖volatile变量来控制状态可见性，通常比使用锁的代码更脆弱，也更难以理解。</p>
-<blockquote>
-<p>仅当volatile变量能够简化代码的实现以及对同步策略的验证时，才应该使用它们。如果在验证正确性需要对可见性进行复杂判断，那么就不要使用volatile变量。volatile变量的正确使用方式包括：</p>
-<ol>
-<li>确保它们自身状态的可见性。</li>
-<li>确保它们所引用对象的状态的</li>
-<li>标识一些重要的程序生命周期事件的发生(例如，初始化或关闭)</li>
-</ol>
-</blockquote>
-<p><strong>volatile的典型用法</strong>：检查某个状态标记以判断是否退出循环。</p>
-<pre><code class="java">volatile boolean asleep;
-...
-  while(!asleep)
-    countSomeSheep();</code></pre>
-<p>虽然volatile变量很方便，但也存在一些局限性。volatile变量通常用作某个操作完成、发生中断或者状态的标志。例如上面的asleep标志。尽管volatile变量也可以用于表示其他的状态信息，但使用时要注意，比如volatile语义不能确保递增操作(count++)的原子性，除非确保只有一个线程对变量执行写操作。(原子变量提供了”读—改—写”的原子操作)，并且常常用做一种”更好的volatile变量”。</p>
-<blockquote>
-<p>加锁机制既可以确保可见性又可以确保原子性，而volatile变量只能确保可见性。</p>
-</blockquote>
-<h2 id="volatile使用场景"><a href="#volatile使用场景" class="headerlink" title="volatile使用场景"></a>volatile使用场景</h2><p><strong>当且仅当满足以下条件时，才应该使用volatile变量</strong>：</p>
-<ul>
-<li>对变量的写入操作不依赖变量的当前值，或者你能够确保当前只有单个线程更新变量的值。</li>
-<li>该变量不会与其他状态一起纳入不变性条件中。</li>
-<li>在访问变量时不需要加锁。</li>
-</ul>
-<h1 id="2-发布和逸出-封装"><a href="#2-发布和逸出-封装" class="headerlink" title="2. 发布和逸出(封装)"></a>2. 发布和逸出(封装)</h1><ul>
-<li><p><strong>“发布”</strong>对象的意思指，使对象能够在当前作用域之外的代码中使用。</p>
-<p>例如，将一个指向该对象的引用保存到其他代码可以访问的地方，</p>
-<p>或者在某一个非私有的方法中返回该引用，或者将引用传递到其他类的方法中。</p>
-<p><strong>我们要确保对象及其内部状态不被发布</strong></p>
-</li>
-<li><p><strong>“逸出”</strong>的意思指，当某个不应该发布的对象被发布时称为”逸出”。</p>
-</li>
-</ul>
-<p>当发布的对象逸出以后，必须假设有某个类或线程可能会误用该对象。</p>
-<p>因此应该尽量使用<strong>封装</strong>：封装能够使得对程序的正确性进行分析变可能，并使得无意中破坏设计约束条件变得更难。</p>
-<p>另外一种发布对象或其内部状态机制就是发布一个<strong>内部类的实例</strong>。</p>
-<p>另外一个要注意的地方：</p>
-<blockquote>
-<p>不要在构造过程中使this引用逸出</p>
-</blockquote>
-<h1 id="3-线程封闭-无状态、ThreadLocal"><a href="#3-线程封闭-无状态、ThreadLocal" class="headerlink" title="3. 线程封闭(无状态、ThreadLocal)"></a>3. 线程封闭(无状态、ThreadLocal)</h1><p>一种避免同步的方式就是不共享数据，不共享数据的无状态对象肯定是线程安全的。称为<strong>线程封闭</strong>。</p>
-<p>常见的例子如：</p>
-<ul>
-<li><p>Swing通过将可视化组件和数据模型封装到Swing的事件分发线程中来实现线程安全。</p>
-</li>
-<li><p>还有如JDBC的Connection对象，线程从连接池中获得一个Connection对象，并且用该对象来处理请求，使用完后再讲对象返回给连接池。由于大多数(Servlet请求或EJB调用等)都是由单个线程采用同样的方式来处理，并且在Connection对象返回之前，连接池不会再将它分配给其他线程，因此这种连接管理模式在处理隐含地将Connection对象封闭在线程中。</p>
-</li>
-</ul>
-<p>Java提供<strong>局部变量</strong>和<strong>ThreadLocal类</strong>来帮助维持线程封闭性。下面来讲下：</p>
-<h2 id="Ad-hoc线程封闭"><a href="#Ad-hoc线程封闭" class="headerlink" title="Ad-hoc线程封闭"></a>Ad-hoc线程封闭</h2><p>Ad-hoc实际就是指，维护线程封闭性的职责完全交给程序来实现。Ad-hoc线程封闭是非常脆弱的，因为没有任何一种语言特性，例如可见修饰符或局部变量，能将对象封闭到目标线程上。事实上，对线程封闭对象的引用通常保存在公有变量上。</p>
-<p>在volatile变量行上存在一种特殊的线程封闭。只要你能确保只有<strong>单个线程</strong>对共享的volatile变量执行写入操作，那么就可以安全地在这些共享的volatile变量上执行”读取-修改-写入”的操作。这种情况下，相当于将修改操作封闭在单个线程中以防止发生<strong>竞态条件</strong>，并且volatile变量的可见性还确保了其他线程能看到最新的值。</p>
-<p>由于Ad-hoc线程封闭技术的脆弱性，因此在程序中尽量少用，在可能的情况下应该使用更强的线程封闭技术(例如下面要将讲的，栈封闭和ThreadLocal类)。</p>
-<h2 id="栈封闭"><a href="#栈封闭" class="headerlink" title="栈封闭"></a>栈封闭</h2><p>栈封闭是线程封闭的一种特例，在栈封闭中，<strong>只能通过局部变量才能访问对象</strong>。栈封闭（也被称为线程内部使用或者线程局部使用，不要与核心类库中的ThreadLocal混淆）比Ad-hoc线程封闭更易于维护，也更加健壮。</p>
-<h2 id="ThreadLocal类"><a href="#ThreadLocal类" class="headerlink" title="ThreadLocal类"></a>ThreadLocal类</h2><ul>
-<li><p>线程封闭性的一种更规范方法是使用ThreadLocal，这个类能使线程中的某个值与保存值的对象关联起来。</p>
-</li>
-<li><p>ThreadLocal提供get与set等访问接口或方法，为每个使用该变量的线程都保存一份独立的副本，因此get总是返回当前执行线程在调用set时设置的最新值。</p>
-</li>
-<li><p>ThreadLocal对象通常用于防止对可变的单实例对象(Singleton)或全局变量进行共享。例如，通过将JDBC的连接保存到ThreadLocal对象中，每个线程就会拥有属于自己的连接。</p>
-</li>
-</ul>
-<h1 id="4-不变性final"><a href="#4-不变性final" class="headerlink" title="4.不变性final"></a>4.不变性final</h1><p>上面讲了，解决同步问题的方法，主要有</p>
-<ol>
-<li>共享变量的volatile的声明，即禁用JVM对该变量的重排序立即对其他线程可见，</li>
-<li>注意共享变量的发布、避免共享变量逸出。</li>
-<li>通过线程封闭手段避免避免对象状态在多线程之间共享(通过局部变量的栈封闭、以及ThreadLocal的线程副本隔离)。</li>
-</ol>
-<p>下面来讲下，解决同步的另外一种手段，即 <strong>不变性</strong>。</p>
-<p>满足同步需求的另一种方法是使用不可变对象。很多与原子性、可见性相关的问题，例如得到失效数据、丢失更新或者观察到某个对象处于不一致的状态等等，都与多线程试图同时访问同一个可变的状态相关。如果对象的状态不会改变，那么这些问题与复杂性也就自然消失了。</p>
-<blockquote>
-<p>不可变对象一定是线程安全的。</p>
-</blockquote>
-<p><strong>不可变性不等于将对象中所有的域都声明为final类型，即使对象中所有的域都是final类型的，这个对象也仍然是可变的，因为在final类型的域中可以保存对可变对象的引用。</strong></p>
-<p>因此需要满足以下条件，对象才是不可变的：</p>
-<blockquote>
-<ul>
-<li>对象创建以后其状态就不能修改。</li>
-<li>对象的所有域都是final类型。</li>
-<li>对象是正确创建的(在对象的创建期间，this引用没有逸出)。</li>
-</ul>
-</blockquote>
-<h1 id="5-安全发布"><a href="#5-安全发布" class="headerlink" title="5.安全发布"></a>5.安全发布</h1><p>先看下面这个例子</p>
-<pre><code class="java">public Holder holder;
-
-public void initialize() {
-        holder = new Holder(42);
-}</code></pre>
-<p>由于存在可见性问题，其他线程看到的Holder对象将处于不一致的状态，即便在该对象的构造函数中已经正确地构建了不变性条件。这种不正确的发布导致其他线程看到尚未创建完成的对象。这就是<strong>在没有足够同步的情况下发布对象</strong>，不要这样做。</p>
-<h2 id="不可变对象与初始化安全性"><a href="#不可变对象与初始化安全性" class="headerlink" title="不可变对象与初始化安全性"></a>不可变对象与初始化安全性</h2><p>Java内存模型为不可变对象的共享提供了一种特殊的初始化安全性保证。</p>
-<p>已经知道，即使某个对象的引用对于其他线程是可见的，也并不意味着对象状态对于使用该对象的线程来说一定是可见的。为了确保对象状态能呈现出一致的视图，就必须使用同步。</p>
-<p>另一方面，即使在发布不可变对象的引用时没有使用同步，也仍然可以安全地访问该对象。为了维持这种初始化安全性保证，必须满足不可变性的所有需求：</p>
-<p>状态不可修改，所有域都是final类型，以及正确的构造过程。</p>
-<blockquote>
-<p><strong>任何线程都可以在不需要额外同步的情况下安全地访问不可变对象，即使在发布这些对象时没有使用同步。</strong></p>
-</blockquote>
-<p>但是，如果final类型的域指向的是可变对象，那么在访问这些域所指向的对象的状态时仍然需要同步。</p>
-<h2 id="安全发布的常用模式"><a href="#安全发布的常用模式" class="headerlink" title="安全发布的常用模式"></a>安全发布的常用模式</h2><p>如何确保使用对象的线程能够看到该对象处于已发布的状态。</p>
-<blockquote>
-<p>要安全地发布一个对象，对象的引用以及对象的状态必须同步对其他线程可见。一个正确构造的对象可以通过以下来安全地发布：</p>
-<ul>
-<li>在静态初始化函数中初始化一个对象引用。</li>
-<li>将对象的引用保存到volatile类型的域或者AtomicReferance对象中。</li>
-<li>将对象的引用保存到某个正确构造对象的final类型域中。</li>
-<li>将对象的引用保存到一个由锁保护的域中。</li>
-</ul>
-</blockquote>
-<ul>
-<li><p>在线程安全容器内部的同步以为着，在将对象放到某个容器后，例如Vector或synchronizedList时，满足上面的”将对象的引用保存到一个由锁保护的域中”。即：</p>
-<p>线程A将对象X放入一个线程安全的容器，随后线程B读取这个对象，那么可以确保B看到A设置的X状态，即便在这段读/写X的应用程序代码中没有包含显式的同步。线程安全类包括：</p>
-<p>Hashtable、sychronizedMap或者ConcurrentHashMap</p>
-<p>Vector、CopyOnWriteArrayList、CopyOnWriteArrySet、synchronizedList或synchronizedSet</p>
-<p>BlockingQueue或ConcurrentLinkedQueue</p>
-<p>还有其他数据传递机制Future和Exchanger同样能实现安全发布。</p>
-</li>
-<li><p>静态初始化器由JVM在类的初始化阶段执行。由于在JVM内部存在着同步机制，因此通过这种方式初始化任何对象都可以被安全地发布。</p>
-</li>
-</ul>
-<h2 id="可变对象"><a href="#可变对象" class="headerlink" title="可变对象"></a>可变对象</h2><p>如果对象在构造后可以修改，那么安全发布只能确保”发布当时”状态的可见性。对于可变对象，不仅在发布对象时需要同步，而且在每次对象访问时同样需要同步来确保后续操作的可见性。要安全地共享可变对象，这些对象就必须被安全地发布，并且必须是线程安全的或者由某个锁保护起来。</p>
-<blockquote>
-<p>对象的发布需求取决于它的可变性：</p>
-<ul>
-<li>不可变对象可以通过任意机制来发布</li>
-<li>事实不可变对象必须通过安全方式来发布</li>
-<li>可变对象必须通过安全方式来发布，并且必须是线程安全的或者由某个锁保护起来</li>
-</ul>
-</blockquote>
-<h2 id="安全地共享对象"><a href="#安全地共享对象" class="headerlink" title="安全地共享对象"></a>安全地共享对象</h2><p>当获得对象的一个引用时，你需要知道这个引用上可以执行哪些操作。在使用它之前是否需要获得一个锁？是否可以修改它的状态或者只能读取它？许多并发错误都是由于没有理解共享对象的这些”既定规则”而导致的。当发布一个对象时，必须明确地说明对象的访问方式。</p>
-<blockquote>
-<p>在并发程序中使用和共享对象，可以使用一些实用的策略，包括：</p>
-<p><strong>线程封闭</strong>。线程封闭的对象只能由一个线程拥有，对象被封闭在该线程中，并且只能由这个线程修改。</p>
-<p><strong>只读共享</strong>。在没有额外同步的情况下，共享的只读对象可以由多个线程并发访问，但任何线程都不能修改它。共享的只读对象包括不可变对象和事实不可变对象。</p>
-<p><strong>线程安全共享</strong>。线层安全的对象在其内部实现同步，因此多个线程可以通过对象的公有接口来进行访问而不需要进一步的同步。</p>
-<p><strong>保护对象</strong>。被保护的对象只能通过持有特定的锁来访问。保护对象包括封装在其他线程安全对象中的对象，以及已发布的并且由某个特定锁保护的对象。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
       </tags>
   </entry>
   <entry>
