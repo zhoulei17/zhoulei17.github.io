@@ -3,7 +3,7 @@
   <entry>
     <title>【Lucene】-【Search】一文读懂Lucene PhraseQuery</title>
     <url>/2020/03/04/lucene-search-phrasequery/</url>
-    <content><![CDATA[<p>本文介绍PhraseQuery的基本用法，为简单起见，只介绍slop=0的场景下的源码，旨在介绍主要查询流程以及Luene的优化点和词频统计的算法。slop等于非0部分的算法后续再补充。</p>
+    <content><![CDATA[<p>本文介绍PhraseQuery的基本用法，为简单起见，只介绍slop=0的场景下的源码，主要是我了说明Luene的优化点和词频统计的算法。slop等于非0部分的算法后续再补充。也因为这是【search系列】的第一篇介绍query的文章，因此本文会把查询的流程和各个类初始化的过程也写了下来，方便其他query总结时参照。</p>
 <h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><p>直接给出笔者调试源码的demo：</p>
 <pre><code class="java">  private void doDemo() {
     PhraseQuery.Builder builder = new PhraseQuery.Builder();
@@ -436,7 +436,7 @@
     return false;
   }</code></pre>
 <p>每次调用match方法先进行reset()重置当前倒排表对应postion以及词频的信息，然后调用nextMatch判断是否匹配：</p>
-<p>这个算法初看使用了断掉跳转，不容易理解。实际很简单，下面取一个本文开头的例子：</p>
+<p>这个算法初看使用了编程规范中的断点跳转，不容易理解。看上去写法不规范，实际是为了算法简单，下面取一个本文开头的例子：</p>
 <ul>
 <li>倒排表数据：</li>
 </ul>
@@ -499,37 +499,6 @@
         <tag>Search</tag>
         <tag>Lucene</tag>
         <tag>PhraseQuery</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【DocValues】一、SortedDocValues</title>
-    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
-    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
-<ul>
-<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
-<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
-</ul>
-<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
-<blockquote>
-<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
-<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
-<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
-</blockquote>
-<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
-<li>NumericDocValues</li>
-<li>SortedNumericDocValues</li>
-<li>SortedDocValues</li>
-<li>SortedSetDocValues</li>
-<li>BinaryDocValues</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>DocValues</tag>
       </tags>
   </entry>
   <entry>
@@ -845,6 +814,37 @@
       </categories>
       <tags>
         <tag>idea</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【DocValues】一、SortedDocValues</title>
+    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
+    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
+<ul>
+<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
+<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
+</ul>
+<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
+<blockquote>
+<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
+<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
+<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
+</blockquote>
+<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
+<li>NumericDocValues</li>
+<li>SortedNumericDocValues</li>
+<li>SortedDocValues</li>
+<li>SortedSetDocValues</li>
+<li>BinaryDocValues</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>DocValues</tag>
       </tags>
   </entry>
   <entry>
@@ -1894,6 +1894,62 @@
       </tags>
   </entry>
   <entry>
+    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
+    <url>/2019/11/27/ODL-mdsal-codereview/</url>
+    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
+<p>说明：</p>
+<ul>
+<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
+<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
+</ul>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
+</ul>
+<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
+<ul>
+<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
+</ul>
+<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
+<ul>
+<li><p>说明：</p>
+<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
+<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
+<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
+<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
+<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
+<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
+<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
+</li>
+</ul>
+<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
+</ul>
+<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
+<ul>
+<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>opendaylight</category>
+      </categories>
+      <tags>
+        <tag>odl</tag>
+        <tag>rpc</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【opendaylight】——MD-SAL RPC源码概览</title>
     <url>/2019/11/27/ODL-RPC-module/</url>
     <content><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
@@ -1960,62 +2016,6 @@
 <p>因此改造了RPC的调用，增加了异步调用机制，大致方案是通过定制的类似ODL ProviderContext的Activator在注册异步服务时为异步服务创建并关联一个独立的akka Routor，定制ODL RPC的框架代码，在存在关联的akka Routor时将请求发送给该Routor处理从而实现同步的服务实现转异步。调用流程如下：</p>
 <p><img data-src="/img/in-post/1578029343307.png" alt=""></p>
 <h2 id="2-路由增量同步"><a href="#2-路由增量同步" class="headerlink" title="2.路由增量同步"></a>2.路由增量同步</h2><p>MD-SAL RPC框架通过Gossip实现各节点服务信息的最终一致性，原生ODL的Gossip机制先广播各个节点服务信息的version，如果某个节点发现它缓存的其中一个节点的服务信息version较低时再发送请求获取该节点的全量服务信息进行同步。具体路由增量同步的详细优化见下一篇博客。</p>
-]]></content>
-      <categories>
-        <category>opendaylight</category>
-      </categories>
-      <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
-    <url>/2019/11/27/ODL-mdsal-codereview/</url>
-    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
-<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
-<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
-<p>说明：</p>
-<ul>
-<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
-<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
-</ul>
-<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
-</ul>
-<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
-<ul>
-<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
-</ul>
-<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
-<ul>
-<li><p>说明：</p>
-<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
-<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
-<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
-<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
-<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
-<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
-<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
-</li>
-</ul>
-<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
-</ul>
-<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
-<ul>
-<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
-</ul>
 ]]></content>
       <categories>
         <category>opendaylight</category>
@@ -9252,9 +9252,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
-        <tag>LinkedList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
+        <tag>LinkedList</tag>
       </tags>
   </entry>
   <entry>
@@ -9615,9 +9615,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
+        <tag>ArrayList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
-        <tag>ArrayList</tag>
       </tags>
   </entry>
   <entry>
