@@ -3,7 +3,9 @@
   <entry>
     <title>【Lucene】-【Search】一文读懂Lucene PhraseQuery</title>
     <url>/2020/03/04/lucene-search-phrasequery/</url>
-    <content><![CDATA[<h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><pre><code class="java">  private void doDemo() {
+    <content><![CDATA[<p>本文介绍PhraseQuery的基本用法，为简单起见，只介绍slop=0的场景下的源码，旨在介绍主要查询流程以及Luene的优化点和词频统计的算法。slop等于非0部分的算法后续再补充。</p>
+<h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><p>直接给出笔者调试源码的demo：</p>
+<pre><code class="java">  private void doDemo() {
     PhraseQuery.Builder builder = new PhraseQuery.Builder();
     builder.add(new Term(&quot;content&quot;, &quot;quick&quot;), 1);
     builder.add(new Term(&quot;content&quot;, &quot;fox&quot;), 2);
@@ -31,10 +33,11 @@
       System.out.println(&quot;result&quot;+i+&quot;: 文档&quot;+scoreDoc.doc+&quot;&quot;);
     }
   }</code></pre>
-<h1 id="代码流程"><a href="#代码流程" class="headerlink" title="代码流程"></a>代码流程</h1><p><img data-src="/img/in-post/image-20200325224838395.png" alt="image-20200325224838395"></p>
+<h1 id="代码流程"><a href="#代码流程" class="headerlink" title="代码流程"></a>代码流程</h1><p>给出从输入到文档收集的总体流程，如果图片太小，请打开查看清晰大图。</p>
+<p><img data-src="/img/in-post/image-20200325224838395.png" alt="image-20200325224838395"></p>
 <p>总体流程：</p>
 <ol>
-<li><p>如果使用Solr的REST API请求，根据输入String解析由Solr的Parser类解析并构建出PhraseQuery。如果直接调用Lucene API，就直接构造PhraseQuery并初始化，其中输入position如果position[0]不等于0，就统一把position[]处理为以postion[0]=0为起始的poistion[]。</p>
+<li><p>如果使用Solr的REST API请求，根据输入String解析由Solr的Parser类解析并构建出PhraseQuery。如果直接调用Lucene API，就直接构造PhraseQuery并初始化，其中输入position如果position[0]不等于0，就统一把position[]处理为以postion[0]=0为起始的poistion[]数组。</p>
 </li>
 <li><p>初始化PhraseWeight，目的主要是要初始化好BM25Similarity（当然也可以是其他Similarity）相关类为后续打分类做准备，以及在PhraseWeight内部构建好输入Phrase对应的每个Term对象对应的TermContext。</p>
 </li>
@@ -44,34 +47,451 @@
 </li>
 <li><p>以及打分中会用到的PhraseMatcher对象，PhraseMatcher对象用于在打分之前计算Phrase的词频。</p>
 </li>
-<li><p>对每个Term对应倒排表文档进行合并处理生成ConjuntionDISI对象（同时这也是一个DocIdIterator迭代器，保存了满足所有Term出现在当前字段的文档列表）并封装到TwoPhraseIterator中，这样在后续收集文档时就会在这个文档里面中迭代TwoPhraseIterator，收集文档号。</p>
+<li><p>对每个Term对应倒排表文档进行合并处理生成ConjuntionDISI对象（同时这也是一个DocIdIterator迭代器，保存了满足所有Term出现在当前字段的文档列表）并封装到TwoPhraseIterator中，这样在后续收集文档时就会在这个文档里面中迭代TwoPhraseIterator中的文档号。</p>
 </li>
 </ol>
 </li>
 <li><p>在步骤3中生成文档列表TwoPhraseIterator进行迭代文档号，通过PhraseMatcher子类，判断当前文档对应的字段对应的一批Term是否满足PhraseQuery中的Position要求，如果满足要求就统计词频。</p>
-<p>统计词频后，使用步骤3中的PhraseScorer进行打分，并使用LeafCollector封装的文档队列进行TOP排序或者其他处理，收集好文档返回。</p>
+<p>统计词频后，使用步骤3中的PhraseScorer进行打分，并使用LeafCollector封装的文档队列进行TOP排序或者其他类似collector类型的收集处理，收集好文档返回。</p>
 </li>
 </ol>
 <p>​      </p>
-<h1 id="核心算法"><a href="#核心算法" class="headerlink" title="核心算法"></a>核心算法</h1><h2 id="预备：倒排索引数据结构"><a href="#预备：倒排索引数据结构" class="headerlink" title="预备：倒排索引数据结构"></a>预备：倒排索引数据结构</h2><ul>
-<li>索引数据：</li>
+<h1 id="核心算法"><a href="#核心算法" class="headerlink" title="核心算法"></a>核心算法</h1><p>如果你对初始化这些准备工作都已经很熟悉了，那直接跳到<code>Phrase匹配以及词频统计算法</code>。</p>
+<h2 id="PhraseQuery初始化"><a href="#PhraseQuery初始化" class="headerlink" title="PhraseQuery初始化"></a>PhraseQuery初始化</h2><p>成员变量：</p>
+<pre><code class="java">    private int slop;
+    private final List&lt;Term&gt; terms;
+    private final List&lt;Integer&gt; positions;</code></pre>
+<p>主要通过add方法添加term和对应的position，并通过Builder模式构建出PhraseQuery，</p>
+<pre><code class="java">    public PhraseQuery build() {
+      Term[] terms = this.terms.toArray(new Term[this.terms.size()]);
+      int[] positions = new int[this.positions.size()];
+      for (int i = 0; i &lt; positions.length; ++i) {
+        positions[i] = this.positions.get(i);
+      }
+      return new PhraseQuery(slop, terms, positions);
+    }
+  }</code></pre>
+<p>初始化slop、terms、positions。slop默认是0，slop是指，允许两个term之间移动的位数范围，如果slop=0，表示严格按照position指定的term的相对位置查找。</p>
+<h2 id="PhraseQuery-rewrite"><a href="#PhraseQuery-rewrite" class="headerlink" title="PhraseQuery rewrite"></a>PhraseQuery rewrite</h2><p>我们知道所有Query都会在IndexSearcher中走到rewrite。并且每个Query都会进行rewrite。</p>
+<pre><code class="java">public void search(Query query, Collector results)
+  throws IOException {
+  query = rewrite(query);
+  search(leafContexts, createWeight(query, results.needsScores(), 1), results);
+}</code></pre>
+<p>PhraseQuery的rewrite方法为：</p>
+<pre><code class="java">  public Query rewrite(IndexReader reader) throws IOException {
+    if (terms.length == 0) {
+      return new MatchNoDocsQuery(&quot;empty PhraseQuery&quot;);
+    } else if (terms.length == 1) {
+      return new TermQuery(terms[0]);
+    } else if (positions[0] != 0) {
+      int[] newPositions = new int[positions.length];
+      for (int i = 0; i &lt; positions.length; ++i) {//input of term position of phrase query will normalize to 0 starting
+        newPositions[i] = positions[i] - positions[0];
+      }
+      return new PhraseQuery(slop, terms, newPositions);
+    } else {
+      return super.rewrite(reader);
+    }
+  }</code></pre>
+<ol>
+<li><p>可以看到如果输入的term只有一个，会rewrite为TermQuery。</p>
+</li>
+<li><p>如果输入的term有多个且positions[0] != 0，则会把所有position转换，比如输入的postion 为 1，3，5，rewrite之后postion变为0，2，4。</p>
+</li>
+<li><p>如果position[0]=0，则直接返回当前对象。</p>
+</li>
+</ol>
+<h2 id="PhraseWeight初始化"><a href="#PhraseWeight初始化" class="headerlink" title="PhraseWeight初始化"></a>PhraseWeight初始化</h2><p>在search之前需要计算Weight，初始化与打分相关的对象。</p>
+<p>我们来看下PhraseQuery类的createWeight()方法：</p>
+<pre><code class="java">public Weight createWeight(IndexSearcher searcher, boolean needsScores, float boost) throws IOException {
+    return new PhraseWeight(this, field, searcher, needsScores) {
+
+      private transient TermContext states[];
+
+      @Override
+      protected Similarity.SimWeight getStats(IndexSearcher searcher) throws IOException {
+        final int[] positions = PhraseQuery.this.getPositions();
+        if (positions.length &lt; 2) {
+          throw new IllegalStateException(&quot;PhraseWeight does not support less than 2 terms, call rewrite first&quot;);
+        } else if (positions[0] != 0) {
+          throw new IllegalStateException(&quot;PhraseWeight requires that the first position is 0, call rewrite first&quot;);
+        }
+        final IndexReaderContext context = searcher.getTopReaderContext();
+        states = new TermContext[terms.length];
+        TermStatistics termStats[] = new TermStatistics[terms.length];
+        int termUpTo = 0;
+        for (int i = 0; i &lt; terms.length; i++) {
+          final Term term = terms[i];
+          states[i] = TermContext.build(context, term);
+          if (needsScores) {
+            TermStatistics termStatistics = searcher.termStatistics(term, states[i]);
+            if (termStatistics != null) {
+              termStats[termUpTo++] = termStatistics;
+            }
+          }
+        }
+        if (termUpTo &gt; 0) {
+          return similarity.computeWeight(boost, searcher.collectionStatistics(field), ArrayUtil.copyOfSubArray(termStats, 0, termUpTo));
+        } else {
+          return null; // no terms at all, we won&#39;t use similarity
+        }
+      }
+
+      @Override
+      protected PhraseMatcher getPhraseMatcher(LeafReaderContext context, boolean exposeOffsets) throws IOException {
+        assert terms.length &gt; 0;
+        final LeafReader reader = context.reader();
+        PostingsAndFreq[] postingsFreqs = new PostingsAndFreq[terms.length];
+
+        final Terms fieldTerms = reader.terms(field);
+        if (fieldTerms == null) {
+          return null;
+        }
+
+        if (fieldTerms.hasPositions() == false) {
+          throw new IllegalStateException(&quot;field \&quot;&quot; + field + &quot;\&quot; was indexed without position data; cannot run PhraseQuery (phrase=&quot; + getQuery() + &quot;)&quot;);
+        }
+
+        // Reuse single TermsEnum below:
+        final TermsEnum te = fieldTerms.iterator();
+        float totalMatchCost = 0;
+
+        for (int i = 0; i &lt; terms.length; i++) {
+          final Term t = terms[i];
+          final TermState state = states[i].get(context.ord);
+          if (state == null) { /* term doesnt exist in this segment */
+            assert termNotInReader(reader, t): &quot;no termstate found but term exists in reader&quot;;
+            return null;
+          }
+          te.seekExact(t.bytes(), state);
+          PostingsEnum postingsEnum = te.postings(null, exposeOffsets ? PostingsEnum.ALL : PostingsEnum.POSITIONS);
+          postingsFreqs[i] = new PostingsAndFreq(postingsEnum, positions[i], t);
+          totalMatchCost += termPositionsCost(te);
+        }
+
+        // sort by increasing docFreq order
+        if (slop == 0) {
+          ArrayUtil.timSort(postingsFreqs);
+          return new ExactPhraseMatcher(postingsFreqs, totalMatchCost);
+        }
+        else {
+          return new SloppyPhraseMatcher(postingsFreqs, slop, totalMatchCost, exposeOffsets);
+        }
+      }
+
+      @Override
+      public void extractTerms(Set&lt;Term&gt; queryTerms) {
+        Collections.addAll(queryTerms, terms);
+      }
+    };
+  }</code></pre>
+<p>这里创建了PhraseWeight对象，并自己实现了getStats与getPhraseMatcher两个特有的方法。</p>
+<p>再看下PhraseWeight的构造方法：</p>
+<pre><code class="java">abstract class PhraseWeight extends Weight {
+
+  final boolean needsScores;
+  final Similarity.SimWeight stats;
+  final Similarity similarity;
+  final String field;
+
+  protected PhraseWeight(Query query, String field, IndexSearcher searcher, boolean needsScores) throws IOException {
+    super(query);
+    this.needsScores = needsScores;
+    this.field = field;
+    this.similarity = searcher.getSimilarity(needsScores);
+    this.stats = getStats(searcher);
+  }
+
+  ....
+}</code></pre>
+<p>主要初始化了打分相关的类。并且在getStats方法中准备好了每个term对应的TermContext[]对象。</p>
+<h2 id="PhraseScorer初始化"><a href="#PhraseScorer初始化" class="headerlink" title="PhraseScorer初始化"></a>PhraseScorer初始化</h2><p>当weight都准备好了以后，继续在IndexReader中开始对每个LeafReaderContext进行打分收集文档，这里LeafReaderContext对应一个Segment，未优化过的数据如果有3个Segment，就有3个LeafReaderContext对象。看下IndexReader代码：</p>
+<pre><code class="java">  protected void search(List&lt;LeafReaderContext&gt; leaves, Weight weight, Collector collector)
+      throws IOException {
+
+    // TODO: should we make this
+    // threaded...?  the Collector could be sync&#39;d?
+    // always use single thread:
+    for (LeafReaderContext ctx : leaves) { // search each subreader
+      final LeafCollector leafCollector;
+      try {
+        leafCollector = collector.getLeafCollector(ctx);
+      } catch (CollectionTerminatedException e) {
+        // there is no doc of interest in this reader context
+        // continue with the following leaf
+        continue;
+      }
+      BulkScorer scorer = weight.bulkScorer(ctx);
+      if (scorer != null) {
+        try {
+          scorer.score(leafCollector, ctx.reader().getLiveDocs());
+        } catch (CollectionTerminatedException e) {
+          // collection was terminated prematurely
+          // continue with the following leaf
+        }
+      }
+    }
+  }</code></pre>
+<p>这里的打分对象会封装在BulkScorer中，因为比如BoolenQuery中会封装多个Weight以及多个对应的Scorer对象，在打分时会综合所有的Scorer对象结果按照对应的算法进行计算。这里PhraseWeight创建的BulkScorer中只封装了PhraseScorer对象。</p>
+<p>在Weight抽象类中定义了bulkScorer方法：</p>
+<pre><code class="java">  public BulkScorer bulkScorer(LeafReaderContext context) throws IOException {
+
+    Scorer scorer = scorer(context);
+    if (scorer == null) {
+      // No docs match
+      return null;
+    }
+
+    // This impl always scores docs in order, so we can
+    // ignore scoreDocsInOrder:
+    return new DefaultBulkScorer(scorer);
+  }</code></pre>
+<p>这里PhraseWeight对应的BulkScorer的实现类是DefaultBulkScorer：</p>
+<pre><code class="java">    public DefaultBulkScorer(Scorer scorer) {
+      if (scorer == null) {
+        throw new NullPointerException();
+      }
+      this.scorer = scorer;
+      this.iterator = scorer.iterator();
+      this.twoPhase = scorer.twoPhaseIterator();
+    }</code></pre>
+<p>这里的初始化得到的文档迭代器是PhraseScorer中的twoPhaseIterator()，再看下PhraseScorer中的twoPhaseIterator方法：</p>
+<pre><code class="java">  PhraseScorer(Weight weight, PhraseMatcher matcher, boolean needsScores, Similarity.SimScorer simScorer) {
+    super(weight);
+    this.matcher = matcher;
+    this.needsScores = needsScores;
+    this.simScorer = simScorer;
+    this.matchCost = matcher.getMatchCost();
+  }
+
+  @Override
+  public TwoPhaseIterator twoPhaseIterator() {
+    return new TwoPhaseIterator(matcher.approximation) {
+      @Override
+      public boolean matches() throws IOException {
+        matcher.reset();
+        freq = 0;
+        return matcher.nextMatch();
+      }
+
+      @Override
+      public float matchCost() {
+        return matchCost;
+      }
+    };
+  }</code></pre>
+<p>可以看到这里的TwoPhraseIterator实际封装的是matcher的approximation变量。</p>
+<p>那DefaultBulkScorer中封装的PhraseScorer是如何初始化的：</p>
+<pre><code class="java">abstract class PhraseWeight extends Weight {
+    public Scorer scorer(LeafReaderContext context) throws IOException {
+    PhraseMatcher matcher = getPhraseMatcher(context, false);
+    if (matcher == null)
+      return null;
+    Similarity.SimScorer simScorer = similarity.simScorer(stats, context);
+    return new PhraseScorer(this, matcher, needsScores, simScorer);
+  }
+  ...
+}</code></pre>
+<p>下面看下这个matcher对象以及对应的matcher中的approximation是如何来的。</p>
+<h3 id="准备PhraseMatcher"><a href="#准备PhraseMatcher" class="headerlink" title="准备PhraseMatcher"></a>准备PhraseMatcher</h3><ul>
+<li>准备term的倒排表</li>
 </ul>
-<pre><code class="java">    Document doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;quick cat fox quick fox dog quick fox cat quick fox dog quick fox&quot;, Field.Store.YES));
-    doc.add(new TextField(&quot;author&quot;, &quot;author32&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);</code></pre>
+<p>在调用PhraseWeight的scorer方法准备PhraseScorer时，matcher对象通过调用PhraseWeight的匿名实现类获取，匿名类定义在PhraseQuery createWeight方法中，上面PhraseQuery creatWegith源码中已给出。</p>
+<p>再给出</p>
+<pre><code class="java">      protected PhraseMatcher getPhraseMatcher(LeafReaderContext context, boolean exposeOffsets) throws IOException {
+        assert terms.length &gt; 0;
+        final LeafReader reader = context.reader();
+        PostingsAndFreq[] postingsFreqs = new PostingsAndFreq[terms.length];
+
+        final Terms fieldTerms = reader.terms(field);
+        if (fieldTerms == null) {
+          return null;
+        }
+
+        if (fieldTerms.hasPositions() == false) {
+          throw new IllegalStateException(&quot;field \&quot;&quot; + field + &quot;\&quot; was indexed without position data; cannot run PhraseQuery (phrase=&quot; + getQuery() + &quot;)&quot;);
+        }
+
+        // Reuse single TermsEnum below:
+        final TermsEnum te = fieldTerms.iterator();
+        float totalMatchCost = 0;
+
+        for (int i = 0; i &lt; terms.length; i++) {
+          final Term t = terms[i];
+          final TermState state = states[i].get(context.ord);
+          if (state == null) { /* term doesnt exist in this segment */
+            assert termNotInReader(reader, t): &quot;no termstate found but term exists in reader&quot;;
+            return null;
+          }
+          te.seekExact(t.bytes(), state);
+          PostingsEnum postingsEnum = te.postings(null, exposeOffsets ? PostingsEnum.ALL : PostingsEnum.POSITIONS);
+          postingsFreqs[i] = new PostingsAndFreq(postingsEnum, positions[i], t);
+          totalMatchCost += termPositionsCost(te);
+        }
+
+        // sort by increasing docFreq order
+        if (slop == 0) {
+          ArrayUtil.timSort(postingsFreqs);
+          return new ExactPhraseMatcher(postingsFreqs, totalMatchCost);
+        }
+        else {
+          return new SloppyPhraseMatcher(postingsFreqs, slop, totalMatchCost, exposeOffsets);
+        }
+      }</code></pre>
+<p>这里</p>
+<pre><code class="java">          te.seekExact(t.bytes(), state);
+          PostingsEnum postingsEnum = te.postings(null, exposeOffsets ? PostingsEnum.ALL : PostingsEnum.POSITIONS);</code></pre>
+<p>用来获取term对应的倒排表，并将输入的position[] 封装到PostingsAndFreq中。</p>
+<p>然后根据slop是否是0，来决定使用哪种matcher算法，这里只介绍ExactPhraseMatcher，下面看下ExactPhraseMatcher的初始化：</p>
+<pre><code class="java">  ExactPhraseMatcher(PhraseQuery.PostingsAndFreq[] postings, float matchCost) {
+    super(approximation(postings), matchCost);
+    List&lt;PostingsAndPosition&gt; postingsAndPositions = new ArrayList&lt;&gt;();
+    for(PhraseQuery.PostingsAndFreq posting : postings) {
+      postingsAndPositions.add(new PostingsAndPosition(posting.postings, posting.position));
+    }
+    this.postings = postingsAndPositions.toArray(new PostingsAndPosition[postingsAndPositions.size()]);
+  }
+
+  private static DocIdSetIterator approximation(PhraseQuery.PostingsAndFreq[] postings) {
+    List&lt;DocIdSetIterator&gt; iterators = new ArrayList&lt;&gt;();
+    for (PhraseQuery.PostingsAndFreq posting : postings) {
+      iterators.add(posting.postings);
+    }
+    return ConjunctionDISI.intersectIterators(iterators);
+  }</code></pre>
+<p>这里就是把各个term对应的倒排表调用<code>ConjunctionDISI.intersectIterators(iterators);</code>进行文档合并，返回的是一个ConjunctionDISI对象，看下这个类结构：</p>
+<p><code>public final class ConjunctionDISI extends DocIdSetIterator</code>。</p>
+<h2 id="Phrase匹配以及词频统计算法"><a href="#Phrase匹配以及词频统计算法" class="headerlink" title="Phrase匹配以及词频统计算法"></a>Phrase匹配以及词频统计算法</h2><p>下面看下本文的重点，使用ExactPhraseMatcher的approximation合并的倒排表中文档部分进行文档迭代并判断当前文档是否满足输入的position。迭代的代码如下：</p>
+<pre><code class="java">    static void scoreAll(LeafCollector collector, DocIdSetIterator iterator, TwoPhaseIterator twoPhase, Bits acceptDocs) throws IOException {
+      if (twoPhase == null) {
+        for (int doc = iterator.nextDoc(); doc != DocIdSetIterator.NO_MORE_DOCS; doc = iterator.nextDoc()) {
+          if (acceptDocs == null || acceptDocs.get(doc)) {
+            collector.collect(doc);
+          }
+        }
+      } else {
+        // The scorer has an approximation, so run the approximation first, then check acceptDocs, then confirm
+        final DocIdSetIterator approximation = twoPhase.approximation();
+        for (int doc = approximation.nextDoc(); doc != DocIdSetIterator.NO_MORE_DOCS; doc = approximation.nextDoc()) {
+          if ((acceptDocs == null || acceptDocs.get(doc)) &amp;&amp; twoPhase.matches()) {//为什么要在这里match(match一次freq就已经初始化成了1)，而在socer打分中再计算词phrase的freq
+            collector.collect(doc);//这是为了提高效率，比如有些文档都包含了phrase中的词当时顺序不对，这样就可以先把这些文档过滤掉不用再参与打分排序了。
+          }
+        }
+      }</code></pre>
+<h3 id="Phrase按照position匹配"><a href="#Phrase按照position匹配" class="headerlink" title="Phrase按照position匹配"></a>Phrase按照position匹配</h3><p>先看下代码：</p>
+<pre><code class="java">private static boolean advancePosition(PostingsAndPosition posting, int target) throws IOException {
+    while (posting.pos &lt; target) {
+      if (posting.upTo == posting.freq) {
+        return false;
+      } else {
+        posting.pos = posting.postings.nextPosition();
+        posting.upTo += 1;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public void reset() throws IOException {
+    for (PostingsAndPosition posting : postings) {
+      posting.freq = posting.postings.freq();
+      posting.pos = -1;
+      posting.upTo = 0;
+    }
+  }
+
+  @Override
+  public boolean nextMatch() throws IOException {
+    final PostingsAndPosition lead = postings[0];
+    if (lead.upTo &lt; lead.freq) {
+      lead.pos = lead.postings.nextPosition();
+      lead.upTo += 1;
+    }
+    else {
+      return false;
+    }
+    advanceHead:
+    while (true) {
+      final int phrasePos = lead.pos - lead.offset;
+      for (int j = 1; j &lt; postings.length; ++j) {
+        final PostingsAndPosition posting = postings[j];
+        final int expectedPos = phrasePos + posting.offset;
+
+        // advance up to the same position as the lead
+        if (advancePosition(posting, expectedPos) == false) {
+          break advanceHead;
+        }
+
+        if (posting.pos != expectedPos) { // we advanced too far
+          if (advancePosition(lead, posting.pos - posting.offset + lead.offset)) {
+            continue advanceHead;//例：查quick fox dog，有数据：quick cat fox,定位到fox时发现发现位置时2，不是预期的1，
+          } else {//所有重新计算，预期位置时pos - offset + lead.offset=2-1+0 为预期lead的位置，来判断当前fox的前方是不是(quick)lead。
+            break advanceHead;
+          }
+        }
+      }
+      return true;
+    }
+    return false;
+  }</code></pre>
+<p>每次调用match方法先进行reset()重置当前倒排表对应postion以及词频的信息，然后调用nextMatch判断是否匹配：</p>
+<p>这个算法初看使用了断掉跳转，不容易理解。实际很简单，下面取一个本文开头的例子：</p>
 <ul>
-<li>倒排表数据结构：</li>
+<li>倒排表数据：</li>
 </ul>
-<p>简单起见，使用<code>Analyzer analyzer = new WhitespaceAnalyzer();</code>采用空格分词，空格把一句话分词为一个个Term，如下：</p>
+<p>输入的postion信息quick=1, fox=2 dog=3。</p>
+<p>简单起见，使用<code>Analyzer analyzer = new WhitespaceAnalyzer();</code>进行简单的空格分词，空格把一句话分词为一个个Term，如下：</p>
 <p><img data-src="/img/in-post/image-20200325233758673.png" alt="image-20200325233758673"></p>
-<p>映射到倒排表中每个term对应的倒排表信息中存储的position信息可以理解为如下：</p>
+<p>映射到倒排表中，每个term对应的倒排表信息中存储的position信息如下：</p>
 <p><img data-src="/img/in-post/image-20200325234719671.png" alt="image-20200325234719671"></p>
 <p>可知对应的词频为：</p>
-<p>freq(quick)=5</p>
-<p>freq(fox)=5</p>
-<p>freq(dog)=2</p>
-<h2 id="PhraseQuery初始化"><a href="#PhraseQuery初始化" class="headerlink" title="PhraseQuery初始化"></a>PhraseQuery初始化</h2><h2 id="PhraseWeight初始化"><a href="#PhraseWeight初始化" class="headerlink" title="PhraseWeight初始化"></a>PhraseWeight初始化</h2><h2 id="PhraseScorer初始化"><a href="#PhraseScorer初始化" class="headerlink" title="PhraseScorer初始化"></a>PhraseScorer初始化</h2><h3 id="准备PhraseMatcher"><a href="#准备PhraseMatcher" class="headerlink" title="准备PhraseMatcher"></a>准备PhraseMatcher</h3><h2 id="Phrase词频统计"><a href="#Phrase词频统计" class="headerlink" title="Phrase词频统计"></a>Phrase词频统计</h2><h2 id="打分"><a href="#打分" class="headerlink" title="打分"></a>打分</h2><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1>]]></content>
+<p>freq(quick)=5、freq(fox)=5、freq(dog)=2。</p>
+<p>quick 、 fox 、dog分别对应posting[0] posting[2] posting[2]</p>
+<ul>
+<li><p>reset()初始化</p>
+<p>posting[0].freq=5、posting[1]=5、posting[2]=2</p>
+</li>
+<li><ol>
+<li>第一次循环：</li>
+</ol>
+<p>选出一个lead作为参考，即posting[0]。</p>
+<p>如上图，这里lead.pos=0,upTo=1,upTo表示当前字段对应的posting迭代次数。注意：因为一个term对应的倒排表在内存中是连续的，<strong>因此迭代次数是不能超过词频的，否则就迭代到后续term对应的下一篇文档中了。</strong></p>
+<p>下面进入while(true)</p>
+<p>phrasePos =lead.pos - lead.offset，这里offset实际是输入的position位置，phrasePos表示lead的位置也是0。</p>
+<p>并进入for循环，for循环最多循环3次，因为这里是3个term的phrase查找。</p>
+<p>j=1，expectedPos= 0+ posting[1].offset = 0+1，即第二个term应该出现在1的位置上。下面进入<code>advancePosition(posting, expectedPos)</code>,判断预期的位置与posting[1]的实际位置是否一致，如果不一致就直接跳出循环，表示当前文档的这3个term的position不匹配。</p>
+<p>如果满足，就在for内开始第二次循环：</p>
+</li>
+<li><ol start="2">
+<li>第二次循环：</li>
+</ol>
+<p>Posting[2]的预期位置expected=0+2=2，然后继续进入<code>advancePosition</code>判断，如果返回true满足当前3个term的位置关系，就返回true。</p>
+</li>
+<li><ol start="3">
+<li>重复循环lead的advancePosition，在freq范围内这3个term的位置关系都判断一遍</li>
+</ol>
+<p>这里在adavenPosition返回时true时，for的每一步循环都会判断(posting.pos != expectedPos)，这是因为有这个场景，假如有：quick cat fox，当准备查找第二个term fox的posting时，查到其位置信息是2，超过了预期的1时，这时候计算：posting.pos - posting.offset + lead.offset 得到fox倒推的lead是不是真正的lead（quick），这里fox的前一位是cat不是quick，而进入advancePosition找到了下一个的quick的位置是3，表示又找了新的lead，进行下一次的3次term的位置比较。以此类推，直到找到一次满足这3个term的position组合，就返回true，<strong>表示当前文档的字段满足查询要求，即将加入打分收集文档阶段</strong>。这里是一个优化，因为打分也需要计算词频，因此在进行文档过滤时就已经进行了第一次的词频计算，如果找到了词频freq就等于=1。</p>
+</li>
+</ul>
+<h3 id="phrase词频计算"><a href="#phrase词频计算" class="headerlink" title="phrase词频计算"></a>phrase词频计算</h3><pre><code class="java">for (int doc = approximation.nextDoc(); doc != DocIdSetIterator.NO_MORE_DOCS; doc = approximation.nextDoc()) {
+            if ((acceptDocs == null || acceptDocs.get(doc)) &amp;&amp; twoPhase.matches()) {//为什么要在这里match(match一次freq就已经初始化成了1)，而在socer打分中再计算词phrase的freq
+            collector.collect(doc);//这是为了提高效率，比如有些文档都包含了phrase中的词当时顺序不对，这样就可以先把这些文档过滤掉不用再参与打分排序了。
+            }
+        }</code></pre>
+<p>  当在DefaultBulkScorer中迭代TwoPhraseIterator时，如果match会进入collector.collect(doc)收集文档阶段，该阶段会进行打分，下面看下PhraseScorer的打分方法：</p>
+<pre><code class="java">    public float score() throws IOException {
+      if (freq == 0) {
+        freq = matcher.sloppyWeight(simScorer);
+        while (matcher.nextMatch()) {
+          freq += matcher.sloppyWeight(simScorer);
+        }
+      }
+      return simScorer.score(docID(), freq);
+    }</code></pre>
+<p>  可以看到如果这时候freq=0时freq=matcher.sloppyWeight(simScorer);因为之前已经match，说明这时候freq至少等于1，然后再次进入nextMatch开始找下一对满足这3个term位置关系的组合，直到在词频范围内全部找完。至此freq累加计算完毕，开始进入BM25打分。BM25打分介绍在本人博客search系列的其他文章中给出，敬请期待。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>phrase查询的核心算法就是文档合并+term的postion匹配算法计算词频。为确保计算满足输入的term的postion组合，查找时不溢出到其他的文档字段中，循环时都会计算lead的upTo这个迭代次数不允许大于lead的词频，因为如果连lead都大于词频数了，那么当前文档的这个字段的term为起始的组合就已经找完了，非常巧妙吧。</p>
+]]></content>
       <categories>
         <category>Lucene</category>
       </categories>
@@ -8832,9 +9252,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
+        <tag>LinkedList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
-        <tag>LinkedList</tag>
       </tags>
   </entry>
   <entry>
@@ -9195,9 +9615,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
-        <tag>ArrayList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
+        <tag>ArrayList</tag>
       </tags>
   </entry>
   <entry>
