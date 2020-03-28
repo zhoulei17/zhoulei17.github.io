@@ -502,37 +502,6 @@
       </tags>
   </entry>
   <entry>
-    <title>【DocValues】一、SortedDocValues</title>
-    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
-    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
-<ul>
-<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
-<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
-</ul>
-<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
-<blockquote>
-<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
-<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
-<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
-</blockquote>
-<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
-<li>NumericDocValues</li>
-<li>SortedNumericDocValues</li>
-<li>SortedDocValues</li>
-<li>SortedSetDocValues</li>
-<li>BinaryDocValues</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>DocValues</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【工具使用】IEDA使用分享</title>
     <url>/2020/02/07/tools-idea-simple/</url>
     <content><![CDATA[<h1 id="IDEA-MAC下原生快捷键"><a href="#IDEA-MAC下原生快捷键" class="headerlink" title="IDEA MAC下原生快捷键"></a>IDEA MAC下原生快捷键</h1><p>之前一直在window平台使用eclipse后来切换成linux开发环境使用idea更加高效，快捷键一直沿用的eclipse，后来又切换成mac下办公，发现沿用eclipse的快捷键总不能习惯，于是索性完全去使用idea原生快捷键。本总结是本人最常用的一些快捷键。</p>
@@ -845,6 +814,37 @@
       </categories>
       <tags>
         <tag>idea</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【DocValues】一、SortedDocValues</title>
+    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
+    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
+<ul>
+<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
+<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
+</ul>
+<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
+<blockquote>
+<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
+<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
+<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
+</blockquote>
+<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
+<li>NumericDocValues</li>
+<li>SortedNumericDocValues</li>
+<li>SortedDocValues</li>
+<li>SortedSetDocValues</li>
+<li>BinaryDocValues</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>DocValues</tag>
       </tags>
   </entry>
   <entry>
@@ -1894,62 +1894,6 @@
       </tags>
   </entry>
   <entry>
-    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
-    <url>/2019/11/27/ODL-mdsal-codereview/</url>
-    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
-<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
-<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
-<p>说明：</p>
-<ul>
-<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
-<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
-</ul>
-<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
-</ul>
-<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
-<ul>
-<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
-</ul>
-<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
-<ul>
-<li><p>说明：</p>
-<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
-<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
-<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
-<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
-<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
-<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
-<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
-</li>
-</ul>
-<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
-</ul>
-<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
-<ul>
-<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>opendaylight</category>
-      </categories>
-      <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【opendaylight】——MD-SAL RPC源码概览</title>
     <url>/2019/11/27/ODL-RPC-module/</url>
     <content><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
@@ -2016,6 +1960,62 @@
 <p>因此改造了RPC的调用，增加了异步调用机制，大致方案是通过定制的类似ODL ProviderContext的Activator在注册异步服务时为异步服务创建并关联一个独立的akka Routor，定制ODL RPC的框架代码，在存在关联的akka Routor时将请求发送给该Routor处理从而实现同步的服务实现转异步。调用流程如下：</p>
 <p><img data-src="/img/in-post/1578029343307.png" alt=""></p>
 <h2 id="2-路由增量同步"><a href="#2-路由增量同步" class="headerlink" title="2.路由增量同步"></a>2.路由增量同步</h2><p>MD-SAL RPC框架通过Gossip实现各节点服务信息的最终一致性，原生ODL的Gossip机制先广播各个节点服务信息的version，如果某个节点发现它缓存的其中一个节点的服务信息version较低时再发送请求获取该节点的全量服务信息进行同步。具体路由增量同步的详细优化见下一篇博客。</p>
+]]></content>
+      <categories>
+        <category>opendaylight</category>
+      </categories>
+      <tags>
+        <tag>odl</tag>
+        <tag>rpc</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
+    <url>/2019/11/27/ODL-mdsal-codereview/</url>
+    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
+<p>说明：</p>
+<ul>
+<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
+<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
+</ul>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
+</ul>
+<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
+<ul>
+<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
+</ul>
+<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
+<ul>
+<li><p>说明：</p>
+<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
+<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
+<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
+<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
+<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
+<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
+<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
+</li>
+</ul>
+<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
+</ul>
+<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
+<ul>
+<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
+</ul>
 ]]></content>
       <categories>
         <category>opendaylight</category>
@@ -6147,6 +6147,129 @@ use 本管程外部定义、内部可调用的函数名表;
       </tags>
   </entry>
   <entry>
+    <title>【基本概念篇】八、安全性、活跃性、性能问题</title>
+    <url>/2019/04/21/2019-5-07-java-concurreny-safey-performence/</url>
+    <content><![CDATA[<h1 id="安全问题"><a href="#安全问题" class="headerlink" title="安全问题"></a>安全问题</h1><p>线程安全的本质就是正确性，而正确性的含义就是<strong>程序按照我们的期望执行</strong>。</p>
+<p><a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">《可见性、原子性和有序性：并发编程Bug的来源》</a>举例了很多诡异的Bug，都不是按照我们的<strong>期望</strong>来执行的。</p>
+<p>如何才能写出线程安全的程序呢？</p>
+<p>在<a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">第四篇中</a>中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。</p>
+<p>实际上，只有一种情况下：<strong>存在共享数据并且数据会变化，通俗讲就是多个线程会同时读写同一数据</strong>。反过来讲如果能做到不共享数据或者数据不发生变化，就能<strong>保证线程的安全性</strong>。基于这个理论的技术有：ThreadLocal、不变模式等（后面的博客会总结）。</p>
+<p>但是，现实中，<strong>必须共享且发生变化的数据</strong>的场景是很多的。</p>
+<h2 id="数据竞争"><a href="#数据竞争" class="headerlink" title="数据竞争"></a>数据竞争</h2><p>当多个线程同时访问同一数据，并且至少有一个线程会写这个数据的时候，如果不采取措施就会引发Bug，这种情况叫做<strong>数据竞争(Data Race)</strong>。比如下面的示例：</p>
+<pre><code class="java">public class Test {
+  private long count = 0;
+  void add10K() {
+    int idx = 0;
+    while(idx++ &lt; 10000) {
+      count += 1;
+    }
+  }
+}</code></pre>
+<p>是不是只要在访问数据的地方都加上锁就线程安全了？如：</p>
+<pre><code class="java">public class Test {
+  private long count = 0;
+  synchronized long get(){
+    return count；
+  }
+  synchronized void set(long v){
+    count = v;
+  } 
+  void add10K() {
+    int idx = 0;
+    while(idx++ &lt; 10000) {
+      set(get()+1)      
+    }
+  }
+}</code></pre>
+<p>然并卵，当两个线程同时执行get()方法时返回0，两个线程执行get()+1操作，结果都是1，之后两个线程把结果1写入内存。而实际期间是2，结果却是1。这种问题叫做：<strong>竞态条件(Race Condition)</strong>。</p>
+<p>所谓<strong>竞态条件，指的是程序的执行结果依赖线程执行的顺序</strong>。例如上面，如果两个线程完全同时执行，那么结果是1，如果先后执行那么结果是2。在并发环境里，线程的执行顺序是不确定的，而执行结果不确定就是个大Bug。</p>
+<h2 id="竞态条件"><a href="#竞态条件" class="headerlink" title="竞态条件"></a>竞态条件</h2><p>举上一篇讲到的存款转账的例子：</p>
+<pre><code class="java">class Account {
+  private int balance;
+  // 转账
+  void transfer(
+      Account target, int amt){
+    if (this.balance &gt; amt) {
+      this.balance -= amt;
+      target.balance += amt;
+    }
+  } 
+}
+</code></pre>
+<p>假设账户余额200，线程A和线程B都要转账150，同时执行到第6行，判断当前余额满足，就出现了超额转出的情况。</p>
+<p>所以可以这样理解<strong>竞态条件</strong>：</p>
+<pre><code class="java">if (状态变量 满足 执行条件) {
+  执行操作
+}</code></pre>
+<p>当某个线程发现状态条件满足执行条件后，开始执行操作；可是就在这个线程执行操作的时候，其他线程修改了状态变量，导致状态不满足执行条件了。当然在很多场景下，这个条件是并不是显式的，开发的时候不容易看出来，例如上麦呢的addeOne的例子，set(get()+1)这个复合操作，其实就是隐式依赖get()的结果。</p>
+<p>面对<strong>数据竞争</strong>和<strong>竞态条件</strong>问题，又改如何保证线程的安全性呢？</p>
+<p>这两类问题，最直接的方法是使用<strong>互斥</strong>，而实现互斥的方案有很多，CPU提供了相关的互斥指令，操作系统、编程语言也会提供相关的API。从逻辑上来说，可以统一归类为：<strong>锁</strong>。锁前面已经讲过了<a href="https://zhoulei17.github.io/2019/04/20/java-concurrency-lock/" target="_blank" rel="noopener">互斥锁</a>以及后面会讲的Lock锁。</p>
+<h1 id="活跃性问题"><a href="#活跃性问题" class="headerlink" title="活跃性问题"></a>活跃性问题</h1><p>在上篇已经讲过<a href="https://zhoulei17.github.io/2019/04/21/java-concurreny-deadlock/" target="_blank" rel="noopener">死锁</a>，除了<strong>死锁</strong>这种典型的活跃性问题，还有两种情况<strong>活锁</strong>和<strong>饥饿</strong>。</p>
+<p>前面讲了，死锁后线程会互相等待，并且会一直等待下去（阻塞）。</p>
+<h2 id="活锁"><a href="#活锁" class="headerlink" title="活锁"></a>活锁</h2><p>也有情况是<strong>虽然线程没有发生阻塞，但仍然会执行不下去的情况，就是“活锁”</strong>。就好比现实生活中，两个在一条比较窄的路上碰头，每个人都同时让出自己的左边给对方，这样仿佛切换两个都同时堵住了对方双方都过不去。</p>
+<p>解决<strong>活锁</strong>的方案很简单，谦让时，尝试等待一个随机的时间后，一方让出一边让对方先走过去，这样碰撞的概率就很低了。</p>
+<h2 id="饥饿"><a href="#饥饿" class="headerlink" title="饥饿"></a>饥饿</h2><p>所谓<strong>饥饿，指的是因线程无法访问所需资源而无法执行下去的情况</strong>。</p>
+<p>最经典的例子是，线程优先级分配“不均”，在CPU繁忙的情况下，优先级低的线程得到的执行机会很小，就可能发生线程“饥饿”；持有锁的线程，如果执行时间过长，也可能导致“饥饿”问题。</p>
+<p>解决“<strong>饥饿</strong>”问题的方案很简单，三种：1. 保证资源充足。2. 公平地分配资源。3. 就是避免持有锁的线程长时间执行。</p>
+<p>这三钟方案中，方案1和方案3适用场景比较有限，因为很多时候资源稀缺是没办法解决的，持有锁的线程执行时间也难以控制。方案2的实用场景相对多一些。</p>
+<p>如何公平低分配资源？在并发编程领域，主要是使用公平锁。所谓<strong>公平锁</strong>，是一种先来后到的方案，线程的等待是有序的，排在等待队列前面的线程会优先获得资源。</p>
+<h1 id="性能问题"><a href="#性能问题" class="headerlink" title="性能问题"></a>性能问题</h1><p>使用锁的时候要谨慎，如果使用过度会出现性能问题。锁的过度使用可能导致串行化的范围过大，这样就不能发挥多线程的优势了。</p>
+<h2 id="性能衡量方法"><a href="#性能衡量方法" class="headerlink" title="性能衡量方法"></a>性能衡量方法</h2><p>所以要尽量减少串行化，那串行化对性能的影响是怎么样的？假设串行百分比是5%，我们用多核多线程相比单核单线程提速多少？</p>
+<p>使用阿姆达尔(Amdahl)定律，代表了处理器并行运算之后效率的提升能力，具体公式如下：</p>
+<p><img data-src="/img/in-post/1557287822597.png" alt=""></p>
+<p>n：CPU的核数</p>
+<p>p：并行百分比</p>
+<p>1-p：串行百分比，也就是我们假设的5%</p>
+<p>假设n无穷大，那加速比S的极限就是20。也就是说，如果串行率是5%，那么无论采用什么技术，最高也就只能提高20倍的性能。</p>
+<h2 id="性能优化方案"><a href="#性能优化方案" class="headerlink" title="性能优化方案"></a>性能优化方案</h2><p>所以使用锁的时候一定要关注对性能的影响。那怎么才能避免锁带来的性能问题呢？</p>
+<p>问题比较复杂，<strong>Java SDK并发包里之所有有那么多东西，有很大一部分原因就是要提升在某个特定领域的性能</strong>。</p>
+<p>从方案层面，有如下方案可以解决这个问题：</p>
+<ul>
+<li><p>第一，既然锁会带来性能问题，最好的方案自然就是使用无锁的算法和数据结构了。</p>
+<p>相关的技术有：</p>
+<ul>
+<li><p>例如线程本地存储（ThreadLocal）</p>
+</li>
+<li><p>写入时复制（CopyOnWrite）、乐观锁等；</p>
+</li>
+<li><p>Java并发包里面的原子类也是一种数据结构；</p>
+</li>
+<li><p>Disruptor则是一个无锁的内存队列，性能都非常好。</p>
+</li>
+</ul>
+</li>
+<li><p>第二，减少锁持有的时间。互斥锁本质上是将并行的程序串行化，所以要增加并行度，一定要减少持有锁时间。</p>
+<p>这个方案的技术也很多，例如</p>
+<ul>
+<li>使用细粒度锁，一个典型的例子就是Java并发包里的ConcurrentHashMap，它使用了所谓的分段锁技术（后面ConcurrentHashMap源码分析会详细讲到）；</li>
+<li>使用读写锁，也就是读是无锁的，只有写的时候才会互斥。</li>
+</ul>
+</li>
+</ul>
+<h2 id="性能指标"><a href="#性能指标" class="headerlink" title="性能指标"></a>性能指标</h2><p> 性能方面的指标有很多，三个指标非常重要，就是：吞吐量、延迟和并发量。</p>
+<ol>
+<li>吞吐量：指的是单位时间内处理的请求数量。吞吐量越高，说明性能越好。</li>
+<li>延迟：指的是从发出请求到收到响应的时间。延迟越小，性能越好。</li>
+<li>并发量：指的是能同时处理的请求数量，一般来说随着并发量的增加、延迟也会增加。所以延迟整个指标，一般会基于并发量来说。例如并发量是1000的时候，延迟是500毫秒。</li>
+</ol>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>并发编程是一个复杂的技术领域，微观上来说涉及到原子性问题、可见性问题和有序性问题，宏观则表现为安全性、活跃性以及性能问题。</p>
+<p>在设计并发程序的时候，主要从宏观角度出发，就是关注它的安全性、活跃性以及性能。</p>
+<p>安全性方面要注意数据竞争和静态条件</p>
+<p>活跃性方面需要注意死锁、活锁、饥饿等问题</p>
+<p>性能方面介绍了两个方案，但是遇到具体问题要具体分析，根据忒定场景选择合适的算法和数据结构。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>并发</tag>
+        <tag>死锁</tag>
+        <tag>线程的风险</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【基本概念篇】七、死锁</title>
     <url>/2019/04/21/2019-4-21-java-concurreny-deadlock/</url>
     <content><![CDATA[<h1 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h1><p><strong>当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。</strong></p>
@@ -6417,129 +6540,6 @@ class Account {
         <tag>java</tag>
         <tag>并发</tag>
         <tag>死锁</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【基本概念篇】八、安全性、活跃性、性能问题</title>
-    <url>/2019/04/21/2019-5-07-java-concurreny-safey-performence/</url>
-    <content><![CDATA[<h1 id="安全问题"><a href="#安全问题" class="headerlink" title="安全问题"></a>安全问题</h1><p>线程安全的本质就是正确性，而正确性的含义就是<strong>程序按照我们的期望执行</strong>。</p>
-<p><a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">《可见性、原子性和有序性：并发编程Bug的来源》</a>举例了很多诡异的Bug，都不是按照我们的<strong>期望</strong>来执行的。</p>
-<p>如何才能写出线程安全的程序呢？</p>
-<p>在<a href="https://zhoulei17.github.io/2019/04/11/java-concurreny-concept-3Bug/" target="_blank" rel="noopener">第四篇中</a>中讲到了3个并发的主要来源：原子性、可见性和有序性问题。也就是说，理论上的线程安全问题，是不能出现原子性、可见性和有序性问题。</p>
-<p>实际上，只有一种情况下：<strong>存在共享数据并且数据会变化，通俗讲就是多个线程会同时读写同一数据</strong>。反过来讲如果能做到不共享数据或者数据不发生变化，就能<strong>保证线程的安全性</strong>。基于这个理论的技术有：ThreadLocal、不变模式等（后面的博客会总结）。</p>
-<p>但是，现实中，<strong>必须共享且发生变化的数据</strong>的场景是很多的。</p>
-<h2 id="数据竞争"><a href="#数据竞争" class="headerlink" title="数据竞争"></a>数据竞争</h2><p>当多个线程同时访问同一数据，并且至少有一个线程会写这个数据的时候，如果不采取措施就会引发Bug，这种情况叫做<strong>数据竞争(Data Race)</strong>。比如下面的示例：</p>
-<pre><code class="java">public class Test {
-  private long count = 0;
-  void add10K() {
-    int idx = 0;
-    while(idx++ &lt; 10000) {
-      count += 1;
-    }
-  }
-}</code></pre>
-<p>是不是只要在访问数据的地方都加上锁就线程安全了？如：</p>
-<pre><code class="java">public class Test {
-  private long count = 0;
-  synchronized long get(){
-    return count；
-  }
-  synchronized void set(long v){
-    count = v;
-  } 
-  void add10K() {
-    int idx = 0;
-    while(idx++ &lt; 10000) {
-      set(get()+1)      
-    }
-  }
-}</code></pre>
-<p>然并卵，当两个线程同时执行get()方法时返回0，两个线程执行get()+1操作，结果都是1，之后两个线程把结果1写入内存。而实际期间是2，结果却是1。这种问题叫做：<strong>竞态条件(Race Condition)</strong>。</p>
-<p>所谓<strong>竞态条件，指的是程序的执行结果依赖线程执行的顺序</strong>。例如上面，如果两个线程完全同时执行，那么结果是1，如果先后执行那么结果是2。在并发环境里，线程的执行顺序是不确定的，而执行结果不确定就是个大Bug。</p>
-<h2 id="竞态条件"><a href="#竞态条件" class="headerlink" title="竞态条件"></a>竞态条件</h2><p>举上一篇讲到的存款转账的例子：</p>
-<pre><code class="java">class Account {
-  private int balance;
-  // 转账
-  void transfer(
-      Account target, int amt){
-    if (this.balance &gt; amt) {
-      this.balance -= amt;
-      target.balance += amt;
-    }
-  } 
-}
-</code></pre>
-<p>假设账户余额200，线程A和线程B都要转账150，同时执行到第6行，判断当前余额满足，就出现了超额转出的情况。</p>
-<p>所以可以这样理解<strong>竞态条件</strong>：</p>
-<pre><code class="java">if (状态变量 满足 执行条件) {
-  执行操作
-}</code></pre>
-<p>当某个线程发现状态条件满足执行条件后，开始执行操作；可是就在这个线程执行操作的时候，其他线程修改了状态变量，导致状态不满足执行条件了。当然在很多场景下，这个条件是并不是显式的，开发的时候不容易看出来，例如上麦呢的addeOne的例子，set(get()+1)这个复合操作，其实就是隐式依赖get()的结果。</p>
-<p>面对<strong>数据竞争</strong>和<strong>竞态条件</strong>问题，又改如何保证线程的安全性呢？</p>
-<p>这两类问题，最直接的方法是使用<strong>互斥</strong>，而实现互斥的方案有很多，CPU提供了相关的互斥指令，操作系统、编程语言也会提供相关的API。从逻辑上来说，可以统一归类为：<strong>锁</strong>。锁前面已经讲过了<a href="https://zhoulei17.github.io/2019/04/20/java-concurrency-lock/" target="_blank" rel="noopener">互斥锁</a>以及后面会讲的Lock锁。</p>
-<h1 id="活跃性问题"><a href="#活跃性问题" class="headerlink" title="活跃性问题"></a>活跃性问题</h1><p>在上篇已经讲过<a href="https://zhoulei17.github.io/2019/04/21/java-concurreny-deadlock/" target="_blank" rel="noopener">死锁</a>，除了<strong>死锁</strong>这种典型的活跃性问题，还有两种情况<strong>活锁</strong>和<strong>饥饿</strong>。</p>
-<p>前面讲了，死锁后线程会互相等待，并且会一直等待下去（阻塞）。</p>
-<h2 id="活锁"><a href="#活锁" class="headerlink" title="活锁"></a>活锁</h2><p>也有情况是<strong>虽然线程没有发生阻塞，但仍然会执行不下去的情况，就是“活锁”</strong>。就好比现实生活中，两个在一条比较窄的路上碰头，每个人都同时让出自己的左边给对方，这样仿佛切换两个都同时堵住了对方双方都过不去。</p>
-<p>解决<strong>活锁</strong>的方案很简单，谦让时，尝试等待一个随机的时间后，一方让出一边让对方先走过去，这样碰撞的概率就很低了。</p>
-<h2 id="饥饿"><a href="#饥饿" class="headerlink" title="饥饿"></a>饥饿</h2><p>所谓<strong>饥饿，指的是因线程无法访问所需资源而无法执行下去的情况</strong>。</p>
-<p>最经典的例子是，线程优先级分配“不均”，在CPU繁忙的情况下，优先级低的线程得到的执行机会很小，就可能发生线程“饥饿”；持有锁的线程，如果执行时间过长，也可能导致“饥饿”问题。</p>
-<p>解决“<strong>饥饿</strong>”问题的方案很简单，三种：1. 保证资源充足。2. 公平地分配资源。3. 就是避免持有锁的线程长时间执行。</p>
-<p>这三钟方案中，方案1和方案3适用场景比较有限，因为很多时候资源稀缺是没办法解决的，持有锁的线程执行时间也难以控制。方案2的实用场景相对多一些。</p>
-<p>如何公平低分配资源？在并发编程领域，主要是使用公平锁。所谓<strong>公平锁</strong>，是一种先来后到的方案，线程的等待是有序的，排在等待队列前面的线程会优先获得资源。</p>
-<h1 id="性能问题"><a href="#性能问题" class="headerlink" title="性能问题"></a>性能问题</h1><p>使用锁的时候要谨慎，如果使用过度会出现性能问题。锁的过度使用可能导致串行化的范围过大，这样就不能发挥多线程的优势了。</p>
-<h2 id="性能衡量方法"><a href="#性能衡量方法" class="headerlink" title="性能衡量方法"></a>性能衡量方法</h2><p>所以要尽量减少串行化，那串行化对性能的影响是怎么样的？假设串行百分比是5%，我们用多核多线程相比单核单线程提速多少？</p>
-<p>使用阿姆达尔(Amdahl)定律，代表了处理器并行运算之后效率的提升能力，具体公式如下：</p>
-<p><img data-src="/img/in-post/1557287822597.png" alt=""></p>
-<p>n：CPU的核数</p>
-<p>p：并行百分比</p>
-<p>1-p：串行百分比，也就是我们假设的5%</p>
-<p>假设n无穷大，那加速比S的极限就是20。也就是说，如果串行率是5%，那么无论采用什么技术，最高也就只能提高20倍的性能。</p>
-<h2 id="性能优化方案"><a href="#性能优化方案" class="headerlink" title="性能优化方案"></a>性能优化方案</h2><p>所以使用锁的时候一定要关注对性能的影响。那怎么才能避免锁带来的性能问题呢？</p>
-<p>问题比较复杂，<strong>Java SDK并发包里之所有有那么多东西，有很大一部分原因就是要提升在某个特定领域的性能</strong>。</p>
-<p>从方案层面，有如下方案可以解决这个问题：</p>
-<ul>
-<li><p>第一，既然锁会带来性能问题，最好的方案自然就是使用无锁的算法和数据结构了。</p>
-<p>相关的技术有：</p>
-<ul>
-<li><p>例如线程本地存储（ThreadLocal）</p>
-</li>
-<li><p>写入时复制（CopyOnWrite）、乐观锁等；</p>
-</li>
-<li><p>Java并发包里面的原子类也是一种数据结构；</p>
-</li>
-<li><p>Disruptor则是一个无锁的内存队列，性能都非常好。</p>
-</li>
-</ul>
-</li>
-<li><p>第二，减少锁持有的时间。互斥锁本质上是将并行的程序串行化，所以要增加并行度，一定要减少持有锁时间。</p>
-<p>这个方案的技术也很多，例如</p>
-<ul>
-<li>使用细粒度锁，一个典型的例子就是Java并发包里的ConcurrentHashMap，它使用了所谓的分段锁技术（后面ConcurrentHashMap源码分析会详细讲到）；</li>
-<li>使用读写锁，也就是读是无锁的，只有写的时候才会互斥。</li>
-</ul>
-</li>
-</ul>
-<h2 id="性能指标"><a href="#性能指标" class="headerlink" title="性能指标"></a>性能指标</h2><p> 性能方面的指标有很多，三个指标非常重要，就是：吞吐量、延迟和并发量。</p>
-<ol>
-<li>吞吐量：指的是单位时间内处理的请求数量。吞吐量越高，说明性能越好。</li>
-<li>延迟：指的是从发出请求到收到响应的时间。延迟越小，性能越好。</li>
-<li>并发量：指的是能同时处理的请求数量，一般来说随着并发量的增加、延迟也会增加。所以延迟整个指标，一般会基于并发量来说。例如并发量是1000的时候，延迟是500毫秒。</li>
-</ol>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>并发编程是一个复杂的技术领域，微观上来说涉及到原子性问题、可见性问题和有序性问题，宏观则表现为安全性、活跃性以及性能问题。</p>
-<p>在设计并发程序的时候，主要从宏观角度出发，就是关注它的安全性、活跃性以及性能。</p>
-<p>安全性方面要注意数据竞争和静态条件</p>
-<p>活跃性方面需要注意死锁、活锁、饥饿等问题</p>
-<p>性能方面介绍了两个方案，但是遇到具体问题要具体分析，根据忒定场景选择合适的算法和数据结构。</p>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>死锁</tag>
-        <tag>线程的风险</tag>
       </tags>
   </entry>
   <entry>
@@ -7740,99 +7740,6 @@ Exiting via while() test</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>【目录】</title>
-    <url>/2019/03/04/2019-3-04-java-concurrency-catalog/</url>
-    <content><![CDATA[<h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><p>Java并发编程的博客主要分为一下五大主题：</p>
-<h2 id="基本概念篇"><a href="#基本概念篇" class="headerlink" title="基本概念篇"></a>基本概念篇</h2><p>3.6 认识线程：讲下线程定义、优势，线程基本使用（创建、启动、执行）。</p>
-<p>3.7 控制线程：操控线程的基本方法。</p>
-<p>并发概念：这篇要分为好多个小专题来讲，主要会讲下</p>
-<ul>
-<li>3.8 线程的3个特征</li>
-<li>3.9 内存模型  </li>
-<li>3.10 互斥锁</li>
-<li>3.11 线程的生命周期、线程数计算、执行原理</li>
-<li>3.12 安全性</li>
-<li>3.13 活跃性问题</li>
-<li>3.14 性能问题</li>
-<li>3.15 管程</li>
-</ul>
-<h2 id="线程之间的协作"><a href="#线程之间的协作" class="headerlink" title="线程之间的协作"></a>线程之间的协作</h2><ul>
-<li>3.16 wait，notify、notifyAll</li>
-<li>3.17 阻塞队列控制协作</li>
-<li>3.18 管程Mointor（Lock&amp;Condition、synchronized）</li>
-<li>3.19 信号量Semaphore</li>
-<li>3.20 CountdownLatch</li>
-<li>3.21 CyclicBarrier</li>
-<li>3.22 Phaser</li>
-<li>3.23 Exchanger</li>
-<li>3.24 死锁</li>
-</ul>
-<h2 id="线程之间的互斥"><a href="#线程之间的互斥" class="headerlink" title="线程之间的互斥"></a>线程之间的互斥</h2><p>互斥主要是为了保证线程执行的正确性或者叫做安全性，一般采用有锁和无锁的方案。</p>
-<ul>
-<li>有锁：讲下synchronized、Lock、读写锁<ul>
-<li>3.25 synchronzied</li>
-<li>3.26 Lock，读写锁</li>
-</ul>
-</li>
-<li>无锁：不变模式、可见保证volatile、原子保证Atomic相关。<ul>
-<li>3.27 final模式</li>
-<li>3.28 可见性volatile</li>
-<li>3.29 原子Atomic</li>
-</ul>
-</li>
-</ul>
-<h2 id="线程之间的分工问题"><a href="#线程之间的分工问题" class="headerlink" title="线程之间的分工问题"></a>线程之间的分工问题</h2><p>主要会讲下并发线程中的并发设计模式。</p>
-<ul>
-<li>Executor与线程池</li>
-<li>Fork/Join</li>
-<li>Future</li>
-<li>Guarded Susepension模式</li>
-<li>Thread-Per-Message模式</li>
-<li>生产者-消费者模式</li>
-<li>Worker-Thread模式</li>
-<li>两阶段终止模式</li>
-</ul>
-<h2 id="并发线程工具类"><a href="#并发线程工具类" class="headerlink" title="并发线程工具类"></a>并发线程工具类</h2><p>这个主题主要继续深入讲解各个并发工具的使用和原理，并会有锁侧重的分析这些并发工具类的源码。</p>
-<ul>
-<li><p>3.30 Lock</p>
-</li>
-<li><p>3.31 Semaphore</p>
-</li>
-<li><p>4.1 ReadWriteLock</p>
-</li>
-<li><p>4.2 原子类</p>
-</li>
-<li><p>4.3 Executor与线程池、阻塞队列</p>
-</li>
-<li><p>4.4 Future</p>
-</li>
-<li><p>4.5 Fork/Join</p>
-</li>
-<li><p>4.6 并发容器</p>
-</li>
-<li><p>4.7 CountDownLatch&amp;CyclicBarrier</p>
-</li>
-<li><p>4.8 CountDownLatch</p>
-</li>
-<li><p>4.9 StampedLock</p>
-</li>
-<li><p>4.10 CompletableFuture</p>
-</li>
-<li><p>4.11 CompletionService</p>
-<p>等。</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【基本概念篇】一、认识进程与线程</title>
     <url>/2019/03/04/2019-3-06-java-concurrency-system/</url>
     <content><![CDATA[<p>总结Java线程基本概念之前，首先先来了解下操作系统层面的进程与线程的相关知识</p>
@@ -8130,6 +8037,99 @@ Exiting via while() test</code></pre>
         <tag>操作系统</tag>
         <tag>进程</tag>
         <tag>线程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【目录】</title>
+    <url>/2019/03/04/2019-3-04-java-concurrency-catalog/</url>
+    <content><![CDATA[<h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><p>Java并发编程的博客主要分为一下五大主题：</p>
+<h2 id="基本概念篇"><a href="#基本概念篇" class="headerlink" title="基本概念篇"></a>基本概念篇</h2><p>3.6 认识线程：讲下线程定义、优势，线程基本使用（创建、启动、执行）。</p>
+<p>3.7 控制线程：操控线程的基本方法。</p>
+<p>并发概念：这篇要分为好多个小专题来讲，主要会讲下</p>
+<ul>
+<li>3.8 线程的3个特征</li>
+<li>3.9 内存模型  </li>
+<li>3.10 互斥锁</li>
+<li>3.11 线程的生命周期、线程数计算、执行原理</li>
+<li>3.12 安全性</li>
+<li>3.13 活跃性问题</li>
+<li>3.14 性能问题</li>
+<li>3.15 管程</li>
+</ul>
+<h2 id="线程之间的协作"><a href="#线程之间的协作" class="headerlink" title="线程之间的协作"></a>线程之间的协作</h2><ul>
+<li>3.16 wait，notify、notifyAll</li>
+<li>3.17 阻塞队列控制协作</li>
+<li>3.18 管程Mointor（Lock&amp;Condition、synchronized）</li>
+<li>3.19 信号量Semaphore</li>
+<li>3.20 CountdownLatch</li>
+<li>3.21 CyclicBarrier</li>
+<li>3.22 Phaser</li>
+<li>3.23 Exchanger</li>
+<li>3.24 死锁</li>
+</ul>
+<h2 id="线程之间的互斥"><a href="#线程之间的互斥" class="headerlink" title="线程之间的互斥"></a>线程之间的互斥</h2><p>互斥主要是为了保证线程执行的正确性或者叫做安全性，一般采用有锁和无锁的方案。</p>
+<ul>
+<li>有锁：讲下synchronized、Lock、读写锁<ul>
+<li>3.25 synchronzied</li>
+<li>3.26 Lock，读写锁</li>
+</ul>
+</li>
+<li>无锁：不变模式、可见保证volatile、原子保证Atomic相关。<ul>
+<li>3.27 final模式</li>
+<li>3.28 可见性volatile</li>
+<li>3.29 原子Atomic</li>
+</ul>
+</li>
+</ul>
+<h2 id="线程之间的分工问题"><a href="#线程之间的分工问题" class="headerlink" title="线程之间的分工问题"></a>线程之间的分工问题</h2><p>主要会讲下并发线程中的并发设计模式。</p>
+<ul>
+<li>Executor与线程池</li>
+<li>Fork/Join</li>
+<li>Future</li>
+<li>Guarded Susepension模式</li>
+<li>Thread-Per-Message模式</li>
+<li>生产者-消费者模式</li>
+<li>Worker-Thread模式</li>
+<li>两阶段终止模式</li>
+</ul>
+<h2 id="并发线程工具类"><a href="#并发线程工具类" class="headerlink" title="并发线程工具类"></a>并发线程工具类</h2><p>这个主题主要继续深入讲解各个并发工具的使用和原理，并会有锁侧重的分析这些并发工具类的源码。</p>
+<ul>
+<li><p>3.30 Lock</p>
+</li>
+<li><p>3.31 Semaphore</p>
+</li>
+<li><p>4.1 ReadWriteLock</p>
+</li>
+<li><p>4.2 原子类</p>
+</li>
+<li><p>4.3 Executor与线程池、阻塞队列</p>
+</li>
+<li><p>4.4 Future</p>
+</li>
+<li><p>4.5 Fork/Join</p>
+</li>
+<li><p>4.6 并发容器</p>
+</li>
+<li><p>4.7 CountDownLatch&amp;CyclicBarrier</p>
+</li>
+<li><p>4.8 CountDownLatch</p>
+</li>
+<li><p>4.9 StampedLock</p>
+</li>
+<li><p>4.10 CompletableFuture</p>
+</li>
+<li><p>4.11 CompletionService</p>
+<p>等。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>并发</tag>
       </tags>
   </entry>
   <entry>
