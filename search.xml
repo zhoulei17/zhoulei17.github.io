@@ -32,7 +32,9 @@
       }
     }
   }</code></pre>
-<p><img data-src="/img/in-post/image-20200329170043980.png" alt="image-20200329170043980" style="zoom:50%;" /><img data-src="/img/in-post/image-20200329190317010.png" alt="image-20200329190317010"></p>
+<p>处理总体流程图：</p>
+<img data-src="/img/in-post/image-20200329170043980.png" alt="image-20200329170043980" style="zoom:50%;" />
+
 <h1 id="获得LeafCollector"><a href="#获得LeafCollector" class="headerlink" title="获得LeafCollector"></a>获得LeafCollector</h1><img data-src="/img/in-post/image-20200329183203594.png" alt="image-20200329183203594" style="zoom:50%;" />      
 
 <p>当索引目录中存在多个段时，需要从每个段中分别找出满足查询条件的文档，LeafReaderContext即用来描述某一个段的信息，并且通过它能获得一个LeafCollector对象，在后面介绍IndexReader的文章中会展开。</p>
@@ -94,14 +96,6 @@
 <h2 id="接口方法needScores"><a href="#接口方法needScores" class="headerlink" title="接口方法needScores"></a>接口方法needScores</h2><p>设置该方法用来告诉Lucene在搜索阶段，当找到一篇文档时，是否对齐进行打分。如果用户期望的查询结果不依赖打分，那么可以设置false来提高查询性能。</p>
 <h1 id="处理一篇文档"><a href="#处理一篇文档" class="headerlink" title="处理一篇文档"></a>处理一篇文档</h1><p><img data-src="/img/in-post/image-20200329190317010.png" alt="image-20200329190317010"></p>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>collector</tag>
-      </tags>
   </entry>
   <entry>
     <title>【Lucene】-【Search】一文读懂Lucene PhraseQuery</title>
@@ -595,14 +589,6 @@
 <p>  可以看到如果这时候freq=0时freq=matcher.sloppyWeight(simScorer);因为之前已经match，说明这时候freq至少等于1，然后再次进入nextMatch开始找下一对满足这3个term位置关系的组合，直到在词频范围内全部找完。至此freq累加计算完毕，开始进入BM25打分。BM25打分介绍在本人博客search系列的其他文章中给出，敬请期待。</p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>phrase查询的核心算法就是文档合并+term的postion匹配算法计算词频。为确保计算满足输入的term的postion组合，查找时不溢出到其他的文档字段中，每次进入nextMatch都会计算lead的upTo这个迭代次数不允许大于lead的词频或者在advancePosition时迭代不可以超过了当前查找此的词频次数，因为如果连lead或者lead后面的term都大于词频数了，那么当前文档的这个字段的term为起始的组合或者后续的这个term就已经找完了，非常巧妙吧。</p>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>PhraseQuery</tag>
-      </tags>
   </entry>
   <entry>
     <title>【DocValues】一、SortedDocValues</title>
@@ -626,14 +612,6 @@
 <li>BinaryDocValues</li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>DocValues</tag>
-      </tags>
   </entry>
   <entry>
     <title>【工具使用】IEDA使用分享</title>
@@ -943,12 +921,6 @@
 </tr>
 </tbody></table>
 ]]></content>
-      <categories>
-        <category>工具</category>
-      </categories>
-      <tags>
-        <tag>idea</tag>
-      </tags>
   </entry>
   <entry>
     <title>【工具类】FixedBitSet</title>
@@ -1033,14 +1005,6 @@
 <li>FixedBitSet类还有一些其他方法，比如prevSetBit(int index)来找到第一个比index小的值和nextSetBit(int index)来找到第一个比index大的数，在Lucene中，常见FixedBitSet来存储文档号，并且通过preSetBit(int index)或nextSetBit(int index)来遍历文档号。</li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>Lucene工具类</tag>
-      </tags>
   </entry>
   <entry>
     <title>【索引文件】.doc文件</title>
@@ -1120,14 +1084,6 @@
 <h2 id="多个域的doc文件的数据结构"><a href="#多个域的doc文件的数据结构" class="headerlink" title="多个域的doc文件的数据结构"></a>多个域的doc文件的数据结构</h2><p><img data-src="/img/in-post/6-20200202105358310.png" alt=""></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>.pos .pay .doc .tim .tip文件都是通过读取内存倒排表的过程中一起生成的，在处理完每个term的信息并写入.pos .pay .doc文件后，开始生成.tim .tip文件，下面更新这部分内容。</p>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>索引文件</tag>
-      </tags>
   </entry>
   <entry>
     <title>【索引文件】.tim、.tip文件</title>
@@ -1274,14 +1230,6 @@
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>tim 、tip文件是索引文件中最复杂的实现，如果要阅读这部分源码，必须先熟悉<a href="https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0220/35.html" target="_blank" rel="noopener"><strong>FST算法</strong></a>，并且源码<code>BlockTreeTermsWriter</code>中pushTerm(ByteRef text)方法可以简单理解成为她就是为了统计相同前缀的term的个数是否到达25(minItemsInBlock)。</p>
 <p>另外tip文件的数据结构没有详细介绍，是因为这部分与FST紧密关联，理解了FST算法就自然知道<strong>FSTIndex</strong>。</p>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>索引文件</tag>
-      </tags>
   </entry>
   <entry>
     <title>【索引文件】.nvd、.nvm文件</title>
@@ -1354,14 +1302,6 @@
 <h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
 <p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>索引文件</tag>
-      </tags>
   </entry>
   <entry>
     <title>【索引文件】.pos、.pay文件</title>
@@ -1447,14 +1387,6 @@
 <h2 id="多个域的pos文件的数据结构"><a href="#多个域的pos文件的数据结构" class="headerlink" title="多个域的pos文件的数据结构"></a>多个域的pos文件的数据结构</h2><p><img data-src="/img/in-post/7-20200201164528840.png" alt=""></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>.pos 、.pay、.doc、.tim 、.tip文件都是在<a href="https://www.amazingkoala.com.cn/Lucene/Index/2019/0716/74.html" target="_blank" rel="noopener">flush</a>阶段通过读取倒排表一起生成的，另外.doc跟.pos、.pay文件还有映射关系，后续总结.doc文件会涉及。</p>
 ]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>索引文件</tag>
-      </tags>
   </entry>
   <entry>
     <title>【并发容器和框架】三、Java线程池的实现原理和使用</title>
@@ -1986,15 +1918,6 @@
 </li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发框架</tag>
-        <tag>ThreadPool</tag>
-      </tags>
   </entry>
   <entry>
     <title>【opendaylight】——MD-SAL RPC源码概览</title>
@@ -2064,13 +1987,6 @@
 <p><img data-src="/img/in-post/1578029343307.png" alt=""></p>
 <h2 id="2-路由增量同步"><a href="#2-路由增量同步" class="headerlink" title="2.路由增量同步"></a>2.路由增量同步</h2><p>MD-SAL RPC框架通过Gossip实现各节点服务信息的最终一致性，原生ODL的Gossip机制先广播各个节点服务信息的version，如果某个节点发现它缓存的其中一个节点的服务信息version较低时再发送请求获取该节点的全量服务信息进行同步。具体路由增量同步的详细优化见下一篇博客。</p>
 ]]></content>
-      <categories>
-        <category>opendaylight</category>
-      </categories>
-      <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
-      </tags>
   </entry>
   <entry>
     <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
@@ -2120,13 +2036,6 @@
 <li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
 </ul>
 ]]></content>
-      <categories>
-        <category>opendaylight</category>
-      </categories>
-      <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
-      </tags>
   </entry>
   <entry>
     <title>【并发容器和框架】四、Executor框架</title>
@@ -2227,15 +2136,6 @@
 </li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发框架</tag>
-        <tag>Executor</tag>
-      </tags>
   </entry>
   <entry>
     <title>【NLP】一、线性回归与随机梯度下降法</title>
@@ -2310,14 +2210,6 @@
 </li>
 </ol>
 ]]></content>
-      <categories>
-        <category>NLP</category>
-      </categories>
-      <tags>
-        <tag>随机梯度下降</tag>
-        <tag>有监督</tag>
-        <tag>线性回归</tag>
-      </tags>
   </entry>
   <entry>
     <title>【Solr应用】——Json Facet使用总结</title>
@@ -2656,13 +2548,6 @@
 <p><img data-src="/img/in-post/1574851332886.png" alt=""></p>
 <p><img data-src="/img/in-post/image-20191201191027108.png" alt=""></p>
 ]]></content>
-      <categories>
-        <category>Solr</category>
-      </categories>
-      <tags>
-        <tag>Solr</tag>
-        <tag>Json Facet</tag>
-      </tags>
   </entry>
   <entry>
     <title>【并发容器和框架】二、Fork/Join框架</title>
@@ -2795,15 +2680,6 @@
 <p>查看任务是否完成，如果已完成直接返回；如果没有执行完，则从任务数组里取出任务并执行并设置NORMAL或者EXCEPTIONAL状态。</p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>Fork/Join 只需要了解其使用方法和应用场景，以及基本的机制即可。总结</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发框架</tag>
-        <tag>ForkJoin</tag>
-      </tags>
   </entry>
   <entry>
     <title>【数据结构与算法】-【算法】排序</title>
@@ -2939,13 +2815,6 @@ public void insertionSort(int[] a, int n) {
 </li>
 </ol>
 ]]></content>
-      <categories>
-        <category>数据结构与算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>排序</tag>
-      </tags>
   </entry>
   <entry>
     <title>【并发容器和框架】一、CocurrentHashMap的实现原理与使用</title>
@@ -3317,15 +3186,6 @@ public void insertionSort(int[] a, int n) {
 <p><a href="https://www.wanaright.com/2018/09/30/java10-concurrenthashmap-no-segment-lock/" target="_blank" rel="noopener">Java8之后的ConcurrentHashMap, 舍弃分段锁</a></p>
 <p><a href="https://cloud.tencent.com/developer/article/1509556" target="_blank" rel="noopener">java8的ConcurrentHashMap为何放弃分段锁</a> 这篇文章讲到了jdk 1.7分段锁的劣势</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发容器</tag>
-        <tag>ConcurrentHashMap</tag>
-      </tags>
   </entry>
   <entry>
     <title>【数据结构与算法】-【数据结构篇】链表</title>
@@ -3342,13 +3202,6 @@ public void insertionSort(int[] a, int n) {
 <h1 id="双向链表"><a href="#双向链表" class="headerlink" title="双向链表"></a>双向链表</h1><p><img data-src="/img/in-post/1571715634978.png" alt=""></p>
 <h2 id="双向循环链表"><a href="#双向循环链表" class="headerlink" title="双向循环链表"></a>双向循环链表</h2><p><img data-src="/img/in-post/1571715676227.png" alt=""></p>
 <h1 id="链表VS数组比拼"><a href="#链表VS数组比拼" class="headerlink" title="链表VS数组比拼"></a>链表VS数组比拼</h1>]]></content>
-      <categories>
-        <category>数据结构与算法</category>
-      </categories>
-      <tags>
-        <tag>数据结构</tag>
-        <tag>链表</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程互斥篇】六、无锁方案-原子操作的实现原理</title>
@@ -3534,16 +3387,6 @@ public void insertionSort(int[] a, int n) {
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>在多线对某个共享变量进行操作时，特别是对数值进行加减等基本数值操作时，可以使用Java的原子类型替换普通变量。</p>
 <p>Java的原子类型的原子性的实现原理主要是通过调用CPU的CAS指令来实现，而指令本身就是原子的，因此保证了共享变量的原子性更新。<strong>同时原子类型也具有可见性</strong>。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>互斥</tag>
-        <tag>原子操作</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程互斥篇】五、无锁方案-不可变性final与内存语义</title>
@@ -3615,17 +3458,6 @@ public void insertionSort(int[] a, int n) {
 <p>同样，由于X86处理器不会对存在间接依赖关系的操作做重排序，所以在X86处理器中，读final域需要的LoadLoad屏障也会被省略掉。</p>
 <p><strong>也就说，X86处理器中，final域的读/写不会插入任何内存屏障！</strong></p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>互斥</tag>
-        <tag>可见性</tag>
-        <tag>volatile</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程互斥篇】四、无锁方案-volatile原理与内存语义</title>
@@ -3772,17 +3604,6 @@ public void insertionSort(int[] a, int n) {
 <p>因此，在旧的内存模型中，volatile的写-读没有锁释放-获取 锁具有的内存语义。为了提供一种比锁更轻量级的线程之间的通信，JSR-133专家决定增强volatile的内存语义：严格限制编译器和处理器对volatile变量与普通变量的重排序，<strong>确保volatile的写-读和锁的释放-获取</strong>具有相同的内存语义。从编译器重排序规则和处理器内存屏障插入策略来看，只要volatile变量与普通变量之间可能会破坏volatile的内存语义，这种重排序就会被编译器重排序规则和处理器内存屏障插入策略禁止。</p>
 <p>由于volatile仅仅保证对单个volatile变量的读/写具有原子性，而锁的互斥性可以确保整个临界区代码的执行具有原子性。在功能上，锁比volatile更强大；在可伸缩性和执行性能上，volatile更有优势。但是如果想在代码中用volatile替代锁，一定要谨慎！</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>互斥</tag>
-        <tag>可见性</tag>
-        <tag>volatile</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程互斥篇】三、有锁方案-synchronized的实现原理与应用</title>
@@ -3920,16 +3741,6 @@ public void insertionSort(int[] a, int n) {
 </tr>
 </tbody></table>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>互斥</tag>
-        <tag>synchronized</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程互斥篇】二、有锁方案-读写锁ReadWriteLock——快速使用一个完备的缓存</title>
@@ -4082,16 +3893,6 @@ try {
 <p>当然也可以在源头数据发生变化时，快速反馈给缓存，但这就要依赖具体的场景了。例如MySQL作为数据源头，可以通过实时地解析binlog来识别数据是否发生变化，如果发生了变化就将最新的数据推送给缓存。另外，还有一些方案采取的是数据库和缓存双写的方案。</p>
 <p>总之，采用哪个方案还要看具体场景。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>互斥</tag>
-        <tag>ReadWriteLock</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程互斥篇】一、有锁方案-锁Lock(并发包中的管程)</title>
@@ -4229,16 +4030,6 @@ public ReentrantLock(boolean fair){
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>Java SDK并发包里的Lock接口里面的每个方法，你可以感受到，都是经过深思熟虑的。除了支持类似synchronized隐式加锁的lockI()之外，还支持超时、非阻塞、可中断的方式获取锁，这三种方式为我们编写更加安全、健壮的并发程序提供了很大的方便。</p>
 <p>除了上面总结的三个最佳实践外，也可以参考诸如：减少锁的持有时间、减小锁的粒度等业界广为人知的规则，其实本质上都是相同的，不过是在该加锁的地方加锁而已。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>互斥</tag>
-        <tag>lock</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程协作篇】四、CountDownLatch和CyclicBarrier：如何让多线程步调一致</title>
@@ -4457,16 +4248,6 @@ class WaitingTask implements Runnable {
 </ul>
 <p>关于使用<a href="https://time.geekbang.org/column/article/89461" target="_blank" rel="noopener">CountDownLatch和CyclicBarrier解决多线程协同的好例子</a>可以参考阅读，写的非常好！</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>线程协作</tag>
-        <tag>信号量</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程协作篇】三、信号量Semaphore-控制临界区资源的多线程访问</title>
@@ -4725,16 +4506,6 @@ Latch barrier passed for WaitingTask 9  </code></pre>
 </blockquote>
 <p>后续，还有Semaphore是如何实现acquire与release的，内部阻塞队列是如何做的？都使用了那些技巧？单独实现互斥与Lock的不同于优劣？敬请期待后面的详细的源码分析。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>线程协作</tag>
-        <tag>信号量</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程协作篇】二、生产者与消费者与阻塞队列</title>
@@ -5134,16 +4905,6 @@ class LiftOffRunner implements Runnable {
 <p><img data-src="/img/in-post/image-20191108010009201.png" alt=""></p>
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://time.geekbang.org/column/article/90201" target="_blank" rel="noopener">并发容器：都有哪些“坑”需要我们填？</a></p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>线程协作</tag>
-        <tag>阻塞队列</tag>
-      </tags>
   </entry>
   <entry>
     <title>【线程协作篇】一、wait、notify、notifyAll&amp;Lock、Condition</title>
@@ -5447,16 +5208,6 @@ class WaitPerson implements Runnable {
 <li>注意加锁的范围，防止错失信号的发生。</li>
 </ol>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>线程协作</tag>
-        <tag>wait</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】十一、Java线程的状态和生命周期</title>
@@ -5670,15 +5421,6 @@ class WaitPerson implements Runnable {
 </tr>
 </tbody></table>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>生命周期</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】十二、如何构建线程安全的对象——对象的共享</title>
@@ -5838,14 +5580,6 @@ public void initialize() {
 <p><strong>保护对象</strong>。被保护的对象只能通过持有特定的锁来访问。保护对象包括封装在其他线程安全对象中的对象，以及已发布的并且由某个特定锁保护的对象。</p>
 </blockquote>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】十、管程——并发编程的万能钥匙</title>
@@ -5879,15 +5613,6 @@ public void initialize() {
 <p>以代码来示例：</p>
 <p>下面的代码实现一个阻塞队列，阻塞队列有两个操作分别是入队和出队，这两个方法都是先获取互斥锁，类比管程模型中的入口。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>管程</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】九、从操作系统角度看并发</title>
@@ -6239,15 +5964,6 @@ use 本管程外部定义、内部可调用的函数名表;
 </ul>
 <h3 id="管程运行示意图"><a href="#管程运行示意图" class="headerlink" title="管程运行示意图"></a>管程运行示意图</h3><p><img data-src="/img/in-post/1557891985426.png" alt=""></p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>并发</tag>
-        <tag>操作系统</tag>
-        <tag>管程</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】七、死锁</title>
@@ -6512,15 +6228,6 @@ class Account {
 <p>如果在调用某个方法时不需要持有锁，那么这种调用被称为<strong>开发调用</strong>。</p>
 <h2 id="死锁诊断"><a href="#死锁诊断" class="headerlink" title="死锁诊断"></a>死锁诊断</h2><h3 id="通过线程转储信息来分析死锁"><a href="#通过线程转储信息来分析死锁" class="headerlink" title="通过线程转储信息来分析死锁"></a>通过线程转储信息来分析死锁</h3><p>可以通过JVM的Thread Dump功能来分析诊断当前死锁的发生。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>死锁</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】八、安全性、活跃性、性能问题</title>
@@ -6634,16 +6341,6 @@ class Account {
 <p>活跃性方面需要注意死锁、活锁、饥饿等问题</p>
 <p>性能方面介绍了两个方案，但是遇到具体问题要具体分析，根据忒定场景选择合适的算法和数据结构。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>死锁</tag>
-        <tag>线程的风险</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】六、互斥锁：解决原子性问题</title>
@@ -6777,15 +6474,6 @@ class Account {
 <li>解决原子性问题，是要保证中间状态对外不可见。</li>
 </ol>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-        <tag>互斥锁</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】五、Java内存模型：看Java如何解决可见性和有序性问题</title>
@@ -7028,14 +6716,6 @@ public FinalFieldExample() {
 <p><a href="https://www.hollischuang.com/archives/3526" target="_blank" rel="noopener">到底什么是计算机内存模型?</a></p>
 <p>《深入理解Java虚拟机》、《Java并发实战》、《Java并发编程的艺术》</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】四、并发编程的3个问题（可见性、原子性、有序性问题）</title>
@@ -7158,23 +6838,11 @@ public FinalFieldExample() {
 <p>关于可见性、原子性、有序问题的操作系统及硬件层面的知识后面也应该会深入总结下去，以帮助我们理解和写出正确、健壮的并发程序。</p>
 <p>关于文章中提到的缓存、CPU等概念可以看第一篇<a href="https://zhoulei17.github.io/2019/03/04/java-concurrency-system/" target="_blank" rel="noopener">系统知识篇</a></p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>Solr-SolrCloud核心概念</title>
     <url>/2019/03/29/2019-3-29-search-engine-solrcloud/</url>
     <content><![CDATA[]]></content>
-      <tags>
-        <tag>Search</tag>
-        <tag>Solr</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】三、控制线程</title>
@@ -7732,14 +7400,6 @@ Exiting via while() test</code></pre>
 </li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】二、线程基本使用</title>
@@ -7833,14 +7493,6 @@ Exiting via while() test</code></pre>
 }
 </code></pre>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>【目录】</title>
@@ -7926,14 +7578,6 @@ Exiting via while() test</code></pre>
 </li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>【基本概念篇】一、认识进程与线程</title>
@@ -8225,15 +7869,6 @@ Exiting via while() test</code></pre>
 </li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>操作系统</tag>
-        <tag>进程</tag>
-        <tag>线程</tag>
-      </tags>
   </entry>
   <entry>
     <title>【开篇】-全景图</title>
@@ -8279,14 +7914,6 @@ Exiting via while() test</code></pre>
 </ul>
 <p>（图片不知道能不能看清楚，思维导图附件我会放到我的博客后台根目录下的xmind目录下）。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>【Java集合】-LinkedHashMap</title>
@@ -8509,16 +8136,6 @@ Exiting via while() test</code></pre>
     }</code></pre>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>LinkedHashMap比HashMap多维护了一个双向链表，用来维持元素访问和插入顺序，遍历时就按照访问和插入的顺序访问双向链表。其他特性与HashMap一致 见 <a href="https://zhoulei17.github.io/2019/01/20/java-collection-HashMap/" target="_blank" rel="noopener">[JAVA基础-集合3:HashMap]</a> 。</p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>集合</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>Collection</tag>
-        <tag>集合</tag>
-        <tag>LinkedHashMap</tag>
-      </tags>
   </entry>
   <entry>
     <title>【数据结构与算法】Java中Map用到的数据结构:红黑树</title>
@@ -8527,14 +8144,6 @@ Exiting via while() test</code></pre>
 <p>TreeMap 则是基于红黑树的一种提供顺序访问的Map（这里并不是指LinkedHashMap的插入访问顺序），提供时间法再度是logn的查找时间。</p>
 <p>因此本文，先单独介绍下红黑树算法的相关内容，以方面后面专门讲解的HashMap树化操作和TreeMap的介绍。</p>
 <h2 id="二叉顺序树"><a href="#二叉顺序树" class="headerlink" title="二叉顺序树"></a>二叉顺序树</h2><h2 id="平衡二叉树"><a href="#平衡二叉树" class="headerlink" title="平衡二叉树"></a>平衡二叉树</h2><h2 id="红黑树"><a href="#红黑树" class="headerlink" title="红黑树"></a>红黑树</h2><h3 id="红黑树解决的问题"><a href="#红黑树解决的问题" class="headerlink" title="红黑树解决的问题"></a>红黑树解决的问题</h3><h3 id="红黑树的规则定义"><a href="#红黑树的规则定义" class="headerlink" title="红黑树的规则定义"></a>红黑树的规则定义</h3><h3 id="红黑树的操作"><a href="#红黑树的操作" class="headerlink" title="红黑树的操作"></a>红黑树的操作</h3>]]></content>
-      <categories>
-        <category>数据结构与算法</category>
-      </categories>
-      <tags>
-        <tag>Collection</tag>
-        <tag>算法</tag>
-        <tag>java红黑树</tag>
-      </tags>
   </entry>
   <entry>
     <title>【Java集合】-HashMap</title>
@@ -9032,16 +8641,6 @@ Exiting via while() test</code></pre>
 </ol>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://blog.csdn.net/v123411739/article/details/78996181" target="_blank" rel="noopener">https://blog.csdn.net/v123411739/article/details/78996181</a><br><a href="https://www.cnblogs.com/xrq730/p/5030920.html" target="_blank" rel="noopener">https://www.cnblogs.com/xrq730/p/5030920.html</a></p>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>集合</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>Collection</tag>
-        <tag>集合</tag>
-        <tag>HashMap</tag>
-      </tags>
   </entry>
   <entry>
     <title>【Java集合】-LinkedList</title>
@@ -9349,16 +8948,6 @@ Exiting via while() test</code></pre>
 </li>
 </ul>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>集合</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>Collection</tag>
-        <tag>集合</tag>
-        <tag>LinkedList</tag>
-      </tags>
   </entry>
   <entry>
     <title>【Java集合】-ArrayList</title>
@@ -9712,16 +9301,6 @@ Exiting via while() test</code></pre>
 </li>
 </ol>
 ]]></content>
-      <categories>
-        <category>Java</category>
-        <category>集合</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>ArrayList</tag>
-        <tag>Collection</tag>
-        <tag>集合</tag>
-      </tags>
   </entry>
   <entry>
     <title>【职业生涯】2016～2018工作总结</title>
@@ -9843,12 +9422,6 @@ Exiting via while() test</code></pre>
 <p>Jetty对HTTP2协议实现</p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>最后，我是一个不盲目追求新技术的人，力求看透技术的本质，这往往是最困难的。技术只是工具，我想一旦你明白同类工具的原理，你一定能举一反三，了解你不曾使用的工具。技术是永远学不完的，对新技术保持热情，又不盲目随从，注重基础，看清本质，方能走得更远。</p>
 ]]></content>
-      <categories>
-        <category>职业生涯</category>
-      </categories>
-      <tags>
-        <tag>work summary</tag>
-      </tags>
   </entry>
   <entry>
     <title>HTTP/2特性总结</title>
@@ -9950,24 +9523,11 @@ Exiting via while() test</code></pre>
 </ul>
 <p>当然，上述分析基于实际HTTP2交换的简化标识，但它依然说明了新协议的很多优点和特点。</p>
 ]]></content>
-      <categories>
-        <category>HTTP</category>
-      </categories>
-      <tags>
-        <tag>HTTP</tag>
-        <tag>HTTP2</tag>
-      </tags>
   </entry>
   <entry>
     <title>【Jetty源码阅读系列】二、连接管理</title>
     <url>/2015/11/05/jetty-source-connection/</url>
     <content><![CDATA[]]></content>
-      <categories>
-        <category>Jetty</category>
-      </categories>
-      <tags>
-        <tag>Jetty</tag>
-      </tags>
   </entry>
   <entry>
     <title>Markdown学习笔记</title>
@@ -10070,11 +9630,5 @@ Exiting via while() test</code></pre>
     }
 }</code></pre>
 ]]></content>
-      <categories>
-        <category>工具</category>
-      </categories>
-      <tags>
-        <tag>Markdown</tag>
-      </tags>
   </entry>
 </search>
