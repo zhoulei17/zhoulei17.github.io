@@ -121,12 +121,12 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">53</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">54</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">58</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">59</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -187,6 +187,157 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/" class="post-title-link" itemprop="url">【线程互斥篇】六、无锁方案-原子操作的实现原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-01 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-01T00:00:00+08:00">2019-09-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-22 18:10:55" itemprop="dateModified" datetime="2020-03-22T18:10:55+08:00">2020-03-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/" class="post-meta-item leancloud_visitors" data-flag-title="【线程互斥篇】六、无锁方案-原子操作的实现原理" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="原子性问题"><a href="#原子性问题" class="headerlink" title="原子性问题"></a>原子性问题</h1><p>在计算机硬件优化导致的3大BUG源头中，其中有一大源头就是原子性的问题，见<a href="[http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug%E7%9A%84%E6%BA%90%E5%A4%B4%E4%BA%8C%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%B8%A6%E6%9D%A5%E7%9A%84%E5%8E%9F%E5%AD%90%E6%80%A7%E9%97%AE%E9%A2%98](http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug的源头二线程切换带来的原子性问题)">线程切换带来的原子性问题</a>，解决原子性问题的一大方案是<strong>1）有锁方案：synchronized或者互斥锁Lock</strong>，当然这种锁有一个缺陷：需要加锁、解锁、本身加锁、释放锁性能消耗大，而且拿不到锁的线程还会进入阻塞状态，进而触发线程切换，线程切换对性能的消耗也很大。</p>
+<p>当然还有一种<strong>2）无锁方案就是CAS自旋来实现变量的并发操作的原子操作</strong>。下面就来详细讲下CPU的原子操作并引入CAS指令到Java中来实现Java的原子操作，并且Java提供了Atomic包的多个原子操作的封装。</p>
+<p>下面这篇博客是要来说清楚Java解决原子性问题</p>
+<h1 id="原子操作的实现原理"><a href="#原子操作的实现原理" class="headerlink" title="原子操作的实现原理"></a>原子操作的实现原理</h1><h2 id="术语定义"><a href="#术语定义" class="headerlink" title="术语定义"></a>术语定义</h2><table>
+<thead>
+<tr>
+<th>术语名称</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>缓存行</td>
+<td>缓存的最小操作单元</td>
+</tr>
+<tr>
+<td>比较并交换</td>
+<td>CAS操作需要输入两个数值，一个旧值(期望操作前的值)和一个新值，在操作期间先比较旧值有没有发生变化，如果没有发生变化，才交换成新值，发生了则不交换</td>
+</tr>
+<tr>
+<td>CPU流水线</td>
+<td>CPU流水线的工作方式就像工业生产上的装配流水线，在CPU中由5<del>6个不同功能的电路单元组成一条指令处理流水线，然后将一条X86指令分成5</del>6步后再由这些电路单元分别执行，这样就能实现在一个CPU时钟周期完成一条指令，因此提高了CPU的运算速度。</td>
+</tr>
+<tr>
+<td>内存顺序冲突</td>
+<td>内存顺序冲突一般是由假共享引起的，假共享是指多个CPU同时修改同一个缓存行的不同部分而引起其中一个CPU的操作无效，当出现这个内存顺序冲突时，CPU必须清空流水线</td>
+</tr>
+</tbody></table>
+<h2 id="CPU如何实现原子操作"><a href="#CPU如何实现原子操作" class="headerlink" title="CPU如何实现原子操作"></a>CPU如何实现原子操作</h2><p>32位IA-32 CPU使用基于<strong>缓存加锁、总线加锁</strong>的方式实现多处理器之间的原子操作。</p>
+<ul>
+<li>首先处理器会自动保证基本的内存操作的原子性。处理器保证从系统内存中读取或者写入一个字节是原子的，意思是当一个处理器读取一个字节数，其他处理器不能访问这个字节的内存地址。</li>
+<li>Pentium 6和最新处理器能自动保证<strong>单</strong>处理器对同一个缓存行里进行16/32/64位的操作是原子的</li>
+</ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1534,140 +1685,6 @@ class LiftOffRunner implements Runnable {
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/05/15/2019-5-15-java-concurreny-java-thread-status/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" class="post-title-link" itemprop="url">【基本概念篇】十一、Java线程的状态和生命周期</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-05-15 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-15T00:00:00+08:00">2019-05-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:41" itemprop="dateModified" datetime="2020-03-22T18:10:41+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" class="post-meta-item leancloud_visitors" data-flag-title="【基本概念篇】十一、Java线程的状态和生命周期" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>6.5k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Java线程本质上就是操作系统的线程，它们是一一对应的。</p>
-<p>在操作系统层面，线程也有“生老病死”，专业的说法叫生命周期。对于有生命周期的事物，要学好它，思路非常简单，只要能搞懂<strong>生命周期中各个节点的状态转换机制</strong>就可以了。</p>
-<p>虽然不同的开发语言对于操作系统线程进行了不同的封装，但是对于线程的生命周期这部分，基本上是雷同的。所以，我们先来了解一下通用的线程生命周期模型，这部分内容也适用于很多其他编程语言；然后再针对性地学习一下Java中线程的生命周期。</p>
-<h1 id="通用的线程生命周期"><a href="#通用的线程生命周期" class="headerlink" title="通用的线程生命周期"></a>通用的线程生命周期</h1><p>通用的线程生命基本上可以用下图“五态模型”来描述。这五态分别是：<strong>初始状态、可运行状态、休眠状态和终止状态</strong>。</p>
-<p><img data-src="/img/in-post/1558418791341.png" alt></p>
-<ol>
-<li><strong>初始状态</strong>：指线程已经被创建，但是还不允许分配CPU执行。此状态属于编程语言特有，仅仅是在编程语言层面被创建（如果是Java开发，可以认为是Java内部状态），在操作系统层面真正的线程还没有被创建。</li>
-<li><strong>可运行状态</strong>：指的是线程可以分配CPU执行。在这种状态下，真正的操作系统线程已经被成功创建了，所以可以分配CPU执行。</li>
-<li><strong>运行状态</strong>：当有空闲CPU时，操作系统会将其分配给一个处于可运行状态的线程，被分配到CPU的线程的状态就转换成了运行状态。</li>
-<li><strong>休眠状态</strong>：运行状态的线程如果调用一个阻塞的API(例如已阻塞方式读文件)或者等待某个事件（例如条件变量），那么线程的状态就会转换到休眠状态，同时释放CPU使用权，休眠状态的线程永远没有机会获得CPU的使用权。当等待的时间出现了，线程就会从休眠状态转换为可运行状态。</li>
-<li><strong>终止状态</strong>：线程执行完或者出现异常就会进入终止状态，终止状态的线程不会切换到其他任何状态，进入终止状态也就意味着线程的生命周期结束了。</li>
-</ol>
-<p>这五种状态在不同的变成语言里面会有简化合并。例如，C语言的POSIX Thread规范，就把初始状态和可运行状态合并了；Java语言里则把可运行状态和运行状态合并了，这两个状态在操作系统调用层面有用，而JVM不关心这两个状态，因为JVM把线程调度交给操作系统处理了。</p>
-<p>除了简化合并，这五种状态也有可能被简化，比如，Java里就喜欢了休眠状态，下面来详细说。</p>
-<h1 id="Java中的线程生命周期"><a href="#Java中的线程生命周期" class="headerlink" title="Java中的线程生命周期"></a>Java中的线程生命周期</h1>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/05/15/2019-5-15-java-concurreny-java-thread-status/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1740,7 +1757,7 @@ class LiftOffRunner implements Runnable {
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">53</span>
+          <span class="site-state-item-count">54</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1753,7 +1770,7 @@ class LiftOffRunner implements Runnable {
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-count">59</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1815,13 +1832,13 @@ class LiftOffRunner implements Runnable {
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">241k</span>
+    <span title="站点总字数">246k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:39</span>
+    <span title="站点阅读时长">3:43</span>
 </div>
 
         
