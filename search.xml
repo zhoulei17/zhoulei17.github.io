@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>【Solr】-【Search】Solr fq与pf的原理与实现</title>
+    <url>/2020/03/31/solr-search-fq&amp;pf/</url>
+    <content><![CDATA[<p>环境：在单机模式下，启动本地solr调试。</p>
+<h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><pre><code class="java">http://127.0.0.1:8983/test/Collection/select?q=ABST:apple&amp;fq=TTL:apple&amp;timeAllowed=10000000</code></pre>
+<h1 id="q与fq的主要流程图"><a href="#q与fq的主要流程图" class="headerlink" title="q与fq的主要流程图"></a>q与fq的主要流程图</h1><img data-src="/img/in-post/image-20200401013329206.png" alt="image-20200401013329206" style="zoom:150%;" />
+
+]]></content>
+      <categories>
+        <category>Solr</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Solr</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Solr】SolrCloud</title>
+    <url>/2020/03/31/solr-solrcloud/</url>
+    <content><![CDATA[<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="SolrCloud"><a href="#SolrCloud" class="headerlink" title="SolrCloud"></a>SolrCloud</h1>]]></content>
+      <categories>
+        <category>Solr</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Solr</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【Lucene】-【Search】Collector（二）FilterCollector与TopDocsCollector</title>
     <url>/2020/03/30/lucene-search-collector2/</url>
     <content><![CDATA[<p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
@@ -870,6 +898,37 @@
       </tags>
   </entry>
   <entry>
+    <title>【DocValues】一、SortedDocValues</title>
+    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
+    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
+<ul>
+<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
+<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
+</ul>
+<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
+<blockquote>
+<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
+<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
+<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
+</blockquote>
+<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
+<li>NumericDocValues</li>
+<li>SortedNumericDocValues</li>
+<li>SortedDocValues</li>
+<li>SortedSetDocValues</li>
+<li>BinaryDocValues</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>DocValues</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【工具使用】IEDA使用分享</title>
     <url>/2020/02/07/tools-idea-simple/</url>
     <content><![CDATA[<h1 id="IDEA-MAC下原生快捷键"><a href="#IDEA-MAC下原生快捷键" class="headerlink" title="IDEA MAC下原生快捷键"></a>IDEA MAC下原生快捷键</h1><p>之前一直在window平台使用eclipse后来切换成linux开发环境使用idea更加高效，快捷键一直沿用的eclipse，后来又切换成mac下办公，发现沿用eclipse的快捷键总不能习惯，于是索性完全去使用idea原生快捷键。本总结是本人最常用的一些快捷键。</p>
@@ -1182,37 +1241,6 @@
       </categories>
       <tags>
         <tag>idea</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【DocValues】一、SortedDocValues</title>
-    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
-    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
-<ul>
-<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
-<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
-</ul>
-<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
-<blockquote>
-<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
-<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
-<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
-</blockquote>
-<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
-<li>NumericDocValues</li>
-<li>SortedNumericDocValues</li>
-<li>SortedDocValues</li>
-<li>SortedSetDocValues</li>
-<li>BinaryDocValues</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>DocValues</tag>
       </tags>
   </entry>
   <entry>
@@ -2585,8 +2613,8 @@
       </tags>
   </entry>
   <entry>
-    <title>【Solr应用】——Json Facet使用总结</title>
-    <url>/2019/11/27/Json%20Facet/</url>
+    <title>【Solr】-【Search】Json Facet使用总结</title>
+    <url>/2019/11/27/solr-search-Json%20Facet/</url>
     <content><![CDATA[<h1 id="Faceted-Search"><a href="#Faceted-Search" class="headerlink" title="Faceted Search"></a>Faceted Search</h1><h2 id="Metric-Example"><a href="#Metric-Example" class="headerlink" title="Metric Example"></a>Metric Example</h2><pre><code class="java">curl http://192.168.3.13:31121/xxx/PATENT/query -d &#39;
   q=*:*&amp;
   json.facet={
@@ -7433,15 +7461,6 @@ public FinalFieldExample() {
       </tags>
   </entry>
   <entry>
-    <title>Solr-SolrCloud核心概念</title>
-    <url>/2019/03/29/2019-3-29-search-engine-solrcloud/</url>
-    <content><![CDATA[]]></content>
-      <tags>
-        <tag>Search</tag>
-        <tag>Solr</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【基本概念篇】三、控制线程</title>
     <url>/2019/03/09/2019-3-09-java-concurreny-control-thread/</url>
     <content><![CDATA[<h1 id="控制Java线程"><a href="#控制Java线程" class="headerlink" title="控制Java线程"></a>控制Java线程</h1><h2 id="线程休眠sleep"><a href="#线程休眠sleep" class="headerlink" title="线程休眠sleep"></a>线程休眠sleep</h2><p>如果想让当前线程暂停执行一段时间并进入<strong>阻塞</strong>状态，调用Thread的静态方法sleep()。</p>
@@ -9620,9 +9639,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
+        <tag>LinkedList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
-        <tag>LinkedList</tag>
       </tags>
   </entry>
   <entry>
@@ -9983,9 +10002,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
-        <tag>ArrayList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
+        <tag>ArrayList</tag>
       </tags>
   </entry>
   <entry>
