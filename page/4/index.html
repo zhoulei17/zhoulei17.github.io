@@ -121,7 +121,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">58</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">59</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
@@ -187,6 +187,143 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/" class="post-title-link" itemprop="url">【线程互斥篇】二、有锁方案-读写锁ReadWriteLock——快速使用一个完备的缓存</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-22 18:10:59" itemprop="dateModified" datetime="2020-03-22T18:10:59+08:00">2020-03-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/" class="post-meta-item leancloud_visitors" data-flag-title="【线程互斥篇】二、有锁方案-读写锁ReadWriteLock——快速使用一个完备的缓存" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读—写锁"><a href="#读—写锁" class="headerlink" title="读—写锁"></a>读—写锁</h1><p>ReentrantLock实现了一种标准的互斥锁：每次最多只有一个线程持有ReentLock，但对于数据完整性来说，互斥通常是一种过于强硬的加强规则，因此也就不必要的限制了并发性。不仅仅限制了”写/写”冲突和”写/读”冲突，但同样也避免了”读/读”冲突。</p>
+<p>如果是”读/读”场景，允许多个线程同时访问数据，会提高性能。只要每个线程都能确保读到最新的数据，并且在读取数据时不会有其他线程修改数据，就不会发生问题。</p>
+<p>总结，读-写锁：</p>
+<blockquote>
+<ol>
+<li>允许多个线程同时读共享变量</li>
+<li>只允许一个线程写共享变量</li>
+<li>如果一个写线程正在执行写操作，此时禁止读线程读共享变量。</li>
+<li>如果有线程在读共享变量，此时禁止写线程写共享变量。</li>
+</ol>
+</blockquote>
+<p>尽管这两个锁看上去是彼此独立的，但读取锁和写入锁只是读——写锁对象的不同视图。</p>
+<pre><code class="java">public interface ReadWriteLock{
+  Lock readLock()；
+  Lock writeLock();    
+}</code></pre>
+<p>在读—写锁实现的加锁策略中，允许多个读操作同时进行，但每次中允许一个写操作。与Lock一样，ReadWriteLock可以采用多种不同的实现方式，这些方式在性能、调度保证、获取优先性、公平性以及加锁语义等方面可能有所不同。</p>
+<h1 id="性能方面"><a href="#性能方面" class="headerlink" title="性能方面"></a>性能方面</h1><p>读—写锁是一种性能优化措施，在一些特定的情况下能实现更高的并发性。在实际情况中，对于在多处理器系统上被频繁读取的数据，读-写锁能够提高性能。而在其他情况下，读-写的性能比独占锁要略差一点，这是因为它们复杂度更高。当然还要结合程序来分析，所以一般不是非得使用在读多的场景下，还是使用直接使用独占锁。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/07/31/2019-7-31-java-concurrency-Mutex-readwritelock/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1538,155 +1675,6 @@ class LiftOffRunner implements Runnable {
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/04/21/2019-4-21-java-concurreny-deadlock/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/04/21/2019-4-21-java-concurreny-deadlock/" class="post-title-link" itemprop="url">【基本概念篇】七、死锁</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-04-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-21T00:00:00+08:00">2019-04-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:43" itemprop="dateModified" datetime="2020-03-22T18:10:43+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/04/21/2019-4-21-java-concurreny-deadlock/" class="post-meta-item leancloud_visitors" data-flag-title="【基本概念篇】七、死锁" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/04/21/2019-4-21-java-concurreny-deadlock/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/04/21/2019-4-21-java-concurreny-deadlock/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>5.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h1><p><strong>当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。</strong></p>
-<p>在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。</p>
-<h1 id="死锁发生的场景"><a href="#死锁发生的场景" class="headerlink" title="死锁发生的场景"></a>死锁发生的场景</h1><h2 id="顺序死锁"><a href="#顺序死锁" class="headerlink" title="顺序死锁"></a>顺序死锁</h2><pre><code class="java">public class LeaftRightLock {
-    private final Object leftLock = new Object();
-    private final Object rightLock = new Object();
-
-    public void leftRight() {
-        synchronized(leftLock) {
-            synchronized(rightLock) {
-                //doSomething
-            }
-        }
-    }
-
-    public void rightLeft() {
-        synchronized(rightLock) {
-            synchronized(rightLock) {
-                //doSomething
-            }
-        }
-    }
-}</code></pre>
-<p><img data-src="/img/in-post/image-20190429231508637.png" alt></p>
-<ul>
-<li><p>死锁场景：两个线程试图以不同顺序来获得相同的锁。</p>
-</li>
-<li><p>死锁避免：如果按照相同的顺序来请求锁，那么就不会出现循环的加锁依赖性，因此也就不会出现死锁。要想验证锁的顺序一致性，需要对程序中的加锁行为进行全局分析。</p>
-</li>
-</ul>
-<h2 id="动态的锁顺序死锁"><a href="#动态的锁顺序死锁" class="headerlink" title="动态的锁顺序死锁"></a>动态的锁顺序死锁</h2><p>有时候，不能清楚知道是否在锁顺序上有足够的控制权来避免死锁的发生。如下程序看似没什么问题，将资金从一个账户转入另外一个账户，在转账之前要获得者两个Account对象的锁，以确保通过原子方式来更新两个账户中的余额。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/04/21/2019-4-21-java-concurreny-deadlock/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1759,7 +1747,7 @@ class LiftOffRunner implements Runnable {
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-count">59</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1834,13 +1822,13 @@ class LiftOffRunner implements Runnable {
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">257k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:49</span>
+    <span title="站点阅读时长">3:54</span>
 </div>
 
         

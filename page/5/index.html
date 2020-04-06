@@ -121,7 +121,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">58</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">59</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
@@ -187,6 +187,155 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/04/21/2019-4-21-java-concurreny-deadlock/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/04/21/2019-4-21-java-concurreny-deadlock/" class="post-title-link" itemprop="url">【基本概念篇】七、死锁</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-04-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-21T00:00:00+08:00">2019-04-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-22 18:10:43" itemprop="dateModified" datetime="2020-03-22T18:10:43+08:00">2020-03-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/04/21/2019-4-21-java-concurreny-deadlock/" class="post-meta-item leancloud_visitors" data-flag-title="【基本概念篇】七、死锁" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/04/21/2019-4-21-java-concurreny-deadlock/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/04/21/2019-4-21-java-concurreny-deadlock/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h1><p><strong>当一个线程永远地持有一个锁，并且其他线程都尝试获得这个锁时，那么它们将永远地被阻塞。</strong></p>
+<p>在数据库事务中存在死锁会采取检测等机制释放一个资源从而避免死锁，让其他事务继续进行；而在JVM中，解决死锁问题方便并没有数据服务那么强大，当一组Java线程发生死锁时，这些线程将永远不能使用。这可能导致子程序或者整个应用程序完全停止，恢复应用程序的唯一方式就是重启。</p>
+<h1 id="死锁发生的场景"><a href="#死锁发生的场景" class="headerlink" title="死锁发生的场景"></a>死锁发生的场景</h1><h2 id="顺序死锁"><a href="#顺序死锁" class="headerlink" title="顺序死锁"></a>顺序死锁</h2><pre><code class="java">public class LeaftRightLock {
+    private final Object leftLock = new Object();
+    private final Object rightLock = new Object();
+
+    public void leftRight() {
+        synchronized(leftLock) {
+            synchronized(rightLock) {
+                //doSomething
+            }
+        }
+    }
+
+    public void rightLeft() {
+        synchronized(rightLock) {
+            synchronized(rightLock) {
+                //doSomething
+            }
+        }
+    }
+}</code></pre>
+<p><img data-src="/img/in-post/image-20190429231508637.png" alt></p>
+<ul>
+<li><p>死锁场景：两个线程试图以不同顺序来获得相同的锁。</p>
+</li>
+<li><p>死锁避免：如果按照相同的顺序来请求锁，那么就不会出现循环的加锁依赖性，因此也就不会出现死锁。要想验证锁的顺序一致性，需要对程序中的加锁行为进行全局分析。</p>
+</li>
+</ul>
+<h2 id="动态的锁顺序死锁"><a href="#动态的锁顺序死锁" class="headerlink" title="动态的锁顺序死锁"></a>动态的锁顺序死锁</h2><p>有时候，不能清楚知道是否在锁顺序上有足够的控制权来避免死锁的发生。如下程序看似没什么问题，将资金从一个账户转入另外一个账户，在转账之前要获得者两个Account对象的锁，以确保通过原子方式来更新两个账户中的余额。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/04/21/2019-4-21-java-concurreny-deadlock/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1554,167 +1703,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/01/31/2019-1-31-java-collection-LinkedHashMap/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/" class="post-title-link" itemprop="url">【Java集合】-LinkedHashMap</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-01-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-31T00:00:00+08:00">2019-01-31</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:52" itemprop="dateModified" datetime="2020-03-22T18:10:52+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/%E9%9B%86%E5%90%88/" itemprop="url" rel="index"><span itemprop="name">集合</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/" class="post-meta-item leancloud_visitors" data-flag-title="【Java集合】-LinkedHashMap" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.5k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在大部分情况下，只要不涉及线程安全且没有特殊要求，都推荐使用HashMap作为键值对存储数据结构。但是HashMap不具备一个特征就是：迭代HashMap的顺序并不是HashMap放置的顺序，也就是无序的。HashMap的这一缺点往往会带来困扰，因为有些场景我们期待有个有序的Map，例如需要实现一个某种过期策略的缓存。这时候应该使用LinkedHashMap，它在遍历时保持了与插入时一致的熟悉，虽然增加了时间和空间上的消耗，但是通过维护一个运行与所有条目的双向链表，LinkedHashMap保证了元素迭代的顺序。类定义</p>
-<p><code>public class LinkedHashMap&lt;K,V&gt;
-    extends HashMap&lt;K,V&gt;
-    implements Map&lt;K,V&gt;</code></p>
-<p>可以看到其核心算法继承HashMap。</p>
-<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><ul>
-<li>数据节点定义<pre><code class="java">  static class Entry&lt;K,V&gt; extends HashMap.Node&lt;K,V&gt; {
-      Entry&lt;K,V&gt; before, after;
-      Entry(int hash, K key, V value, Node&lt;K,V&gt; next) {
-          super(hash, key, value, next);
-      }
-  }</code></pre>
-</li>
-</ul>
-<p>LinkedHashMap的数据节点定义 继承了HashMap的数据节点Node&lt;K,V&gt;。</p>
-<p>新增：before 、after两个指针，用来维护插入顺序。</p>
-<p>用图来列一下：</p>
-<table>
-<thead>
-<tr>
-<th>LinkedHashMap的节点Entry&lt;K,V&gt;定义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Entry&lt;K,V&gt; before（新增）</td>
-</tr>
-<tr>
-<td>Entry&lt;K,V&gt; after（新增）</td>
-</tr>
-<tr>
-<td>int hash</td>
-</tr>
-<tr>
-<td>K key</td>
-</tr>
-<tr>
-<td>V value</td>
-</tr>
-<tr>
-<td>Node&lt;K,V&gt; next</td>
-</tr>
-</tbody></table>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1787,7 +1775,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-count">59</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1862,13 +1850,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">257k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:49</span>
+    <span title="站点阅读时长">3:54</span>
 </div>
 
         

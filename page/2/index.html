@@ -121,7 +121,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">58</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">59</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
@@ -187,6 +187,140 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/02/07/lucene-dv-SortedDocValues/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/07/lucene-dv-SortedDocValues/" class="post-title-link" itemprop="url">【DocValues】一、SortedDocValues</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-02-07 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-07T00:00:00+08:00">2020-02-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-21 20:06:02" itemprop="dateModified" datetime="2020-03-21T20:06:02+08:00">2020-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/02/07/lucene-dv-SortedDocValues/" class="post-meta-item leancloud_visitors" data-flag-title="【DocValues】一、SortedDocValues" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/02/07/lucene-dv-SortedDocValues/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/02/07/lucene-dv-SortedDocValues/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
+<ul>
+<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
+<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
+</ul>
+<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
+<blockquote>
+<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
+<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
+<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
+</blockquote>
+<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
+<li>NumericDocValues</li>
+<li>SortedNumericDocValues</li>
+<li>SortedDocValues</li>
+<li>SortedSetDocValues</li>
+<li>BinaryDocValues</li>
+</ul>
+
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/02/07/lucene-dv-SortedDocValues/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1399,131 +1533,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/11/27/java-concurrency-container-Executor/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/java-concurrency-container-Executor/" class="post-title-link" itemprop="url">【并发容器和框架】四、Executor框架</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-27T00:00:00+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:50" itemprop="dateModified" datetime="2020-03-22T18:10:50+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/11/27/java-concurrency-container-Executor/" class="post-meta-item leancloud_visitors" data-flag-title="【并发容器和框架】四、Executor框架" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/11/27/java-concurrency-container-Executor/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/java-concurrency-container-Executor/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
-<h1 id="1-Executor框架简介"><a href="#1-Executor框架简介" class="headerlink" title="1. Executor框架简介"></a>1. Executor框架简介</h1><h2 id="1-1-Executor框架的两级调度模型"><a href="#1-1-Executor框架的两级调度模型" class="headerlink" title="1.1 Executor框架的两级调度模型"></a>1.1 Executor框架的两级调度模型</h2><p>在HotSpot VM的线程模型中，Java线程被一对一映射为本地操作系统线程。Java线程启动时会创建一个本地操作系统线程;当该Java线程终止时，这个操作系统线程也会被回收。操作系统会调度所有线程并将它们分配给可用的CPU。</p>
-<p>在上层，Java多线程程序通常应用分解为若干个任务，然后使用用户级的调度器（Executor框架）将这些任务映射为固定数量的线程；在底层，操作系统内核将这些线程映射到硬件处理器上。如这种两级调度模型示意图见下一节。</p>
-<p>从图中可以看出，应用程序通过Executor框架控制上层的调度；而下层的调度由操作系统内核控制，下层的调度不受应用程序的控制。</p>
-<h2 id="1-2-Executor框架的结构与成员"><a href="#1-2-Executor框架的结构与成员" class="headerlink" title="1.2 Executor框架的结构与成员"></a>1.2 Executor框架的结构与成员</h2><p><img data-src="/img/in-post/image-20191222214449679.png" alt></p>
-<h3 id="1-2-1-Executor框架的结构"><a href="#1-2-1-Executor框架的结构" class="headerlink" title="1.2.1 Executor框架的结构"></a>1.2.1 Executor框架的结构</h3><p>Executor框架主要由3大部分：</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/11/27/java-concurrency-container-Executor/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1596,7 +1605,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-count">59</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1671,13 +1680,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">257k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:49</span>
+    <span title="站点阅读时长">3:54</span>
 </div>
 
         

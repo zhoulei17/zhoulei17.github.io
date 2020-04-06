@@ -121,7 +121,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">58</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">59</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
@@ -187,6 +187,167 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/01/31/2019-1-31-java-collection-LinkedHashMap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/" class="post-title-link" itemprop="url">【Java集合】-LinkedHashMap</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-01-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-31T00:00:00+08:00">2019-01-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-22 18:10:52" itemprop="dateModified" datetime="2020-03-22T18:10:52+08:00">2020-03-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/%E9%9B%86%E5%90%88/" itemprop="url" rel="index"><span itemprop="name">集合</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/" class="post-meta-item leancloud_visitors" data-flag-title="【Java集合】-LinkedHashMap" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在大部分情况下，只要不涉及线程安全且没有特殊要求，都推荐使用HashMap作为键值对存储数据结构。但是HashMap不具备一个特征就是：迭代HashMap的顺序并不是HashMap放置的顺序，也就是无序的。HashMap的这一缺点往往会带来困扰，因为有些场景我们期待有个有序的Map，例如需要实现一个某种过期策略的缓存。这时候应该使用LinkedHashMap，它在遍历时保持了与插入时一致的熟悉，虽然增加了时间和空间上的消耗，但是通过维护一个运行与所有条目的双向链表，LinkedHashMap保证了元素迭代的顺序。类定义</p>
+<p><code>public class LinkedHashMap&lt;K,V&gt;
+    extends HashMap&lt;K,V&gt;
+    implements Map&lt;K,V&gt;</code></p>
+<p>可以看到其核心算法继承HashMap。</p>
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><ul>
+<li>数据节点定义<pre><code class="java">  static class Entry&lt;K,V&gt; extends HashMap.Node&lt;K,V&gt; {
+      Entry&lt;K,V&gt; before, after;
+      Entry(int hash, K key, V value, Node&lt;K,V&gt; next) {
+          super(hash, key, value, next);
+      }
+  }</code></pre>
+</li>
+</ul>
+<p>LinkedHashMap的数据节点定义 继承了HashMap的数据节点Node&lt;K,V&gt;。</p>
+<p>新增：before 、after两个指针，用来维护插入顺序。</p>
+<p>用图来列一下：</p>
+<table>
+<thead>
+<tr>
+<th>LinkedHashMap的节点Entry&lt;K,V&gt;定义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Entry&lt;K,V&gt; before（新增）</td>
+</tr>
+<tr>
+<td>Entry&lt;K,V&gt; after（新增）</td>
+</tr>
+<tr>
+<td>int hash</td>
+</tr>
+<tr>
+<td>K key</td>
+</tr>
+<tr>
+<td>V value</td>
+</tr>
+<tr>
+<td>Node&lt;K,V&gt; next</td>
+</tr>
+</tbody></table>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/01/31/2019-1-31-java-collection-LinkedHashMap/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1346,7 +1507,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-count">59</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1421,13 +1582,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">257k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:49</span>
+    <span title="站点阅读时长">3:54</span>
 </div>
 
         
