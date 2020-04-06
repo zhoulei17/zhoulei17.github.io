@@ -96,7 +96,7 @@ final class BooleanScorer extends BulkScorer {
 <img data-src="/img/in-post/image-20200406181151085.png" alt="image-20200406181151085" style="zoom:50%;" />
 
 <p>只有文档3、5、6、8、9对应的元素值才大于minShouldMatch，满足查询要求。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文总结了使用BooleanQuery并且所有的TermQuery之间是MUST关系的文档号合并的原理，在后面的文章中会依次介绍SHOULD、MUST_NOT、Filter的TermQuery的文档号合并原理。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文总结了使用BooleanQuery并且所有的TermQuery之间是SHOULD关系的文档号合并的原理，在后面的文章中会依次介绍MUST_NOT、Filter的TermQuery的文档号合并原理。</p>
 ]]></content>
       <categories>
         <category>Lucene</category>
@@ -236,18 +236,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
-    <title>【Solr】SolrCloud</title>
-    <url>/2020/03/31/solr-solrcloud/</url>
-    <content><![CDATA[<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="SolrCloud"><a href="#SolrCloud" class="headerlink" title="SolrCloud"></a>SolrCloud</h1>]]></content>
-      <categories>
-        <category>Solr</category>
-      </categories>
-      <tags>
-        <tag>Solr</tag>
-        <tag>Search</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【Solr】-【Search】Solr fq与pf的原理与实现</title>
     <url>/2020/03/31/solr-search-fq&amp;pf/</url>
     <content><![CDATA[<p>环境：在单机模式下，启动本地solr调试。</p>
@@ -259,8 +247,20 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
         <category>Solr</category>
       </categories>
       <tags>
-        <tag>Solr</tag>
         <tag>Search</tag>
+        <tag>Solr</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Solr】SolrCloud</title>
+    <url>/2020/03/31/solr-solrcloud/</url>
+    <content><![CDATA[<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="SolrCloud"><a href="#SolrCloud" class="headerlink" title="SolrCloud"></a>SolrCloud</h1>]]></content>
+      <categories>
+        <category>Solr</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Solr</tag>
       </tags>
   </entry>
   <entry>
@@ -2525,6 +2525,82 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
+    <title>【opendaylight】——MD-SAL RPC源码概览</title>
+    <url>/2019/11/27/ODL-RPC-module/</url>
+    <content><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
+<p><img data-src="/img/in-post/1578029090431.png" alt=""></p>
+<ul>
+<li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p>
+</li>
+<li><p>sal-broker-impl：实现了BI RPC服务的注册、调用。</p>
+</li>
+<li><p>sal-binding-api：定义了BA RPC服务的注册、调用接口。</p>
+</li>
+<li><p>sal-binding-broker-impl：实现了BA RPC服务的注册、调用，实际的注册、调用操作都通过adapter将BA服务封装成BI服务代理到BI RPC服务中心。</p>
+</li>
+<li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p>
+<h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li>
+</ul>
+<p><img data-src="/img/in-post/1578029209816.png" alt=""></p>
+<ul>
+<li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p>
+</li>
+<li><p>DOMRpcService：定义了BI RPC服务的调用和服务增删的监听接口。</p>
+</li>
+<li><p>DOMRpcAvailabilityListener：BI RPC服务新增和删除的监听接口。</p>
+</li>
+<li><p>DOMRpcRouter：实现了BI RPC服务的注册、调用和服务增加的监听回调。</p>
+</li>
+<li><p>RpcConsumerRegistry：定义了BA RPC服务的查询接口。</p>
+</li>
+<li><p>RouteChangePublisher：定义了BA RPC服务的变更监听接口。</p>
+</li>
+<li><p>RpcProviderRegistry：定义了BA RPC服务的注册接口。</p>
+</li>
+<li><p>BindingDOMRpcServiceAdapter：实现了BA RPC服务的查询，依赖DOMRpcService，将对BA RPC的调用转换为调用DOMRpcService。</p>
+</li>
+<li><p>BindingDOMRpcProviderServiceAdapter：依赖DOMRpcProviderService，将BA RPC封装为DOMRpcImplementation注册到DOMRpcProviderService。</p>
+</li>
+<li><p>HeliumRpcProviderRegistry：聚合BindingDOMRpcServiceAdapter</p>
+</li>
+<li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p>
+</li>
+</ul>
+<h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt=""></p>
+<p>RPC跨进程注册和调用的主要类</p>
+<ul>
+<li><p>RpcManager：跨进程RPC的管理者，负责启动其他Actor，并在节点间同步。</p>
+</li>
+<li><p>RpcInvoker：处理跨进程调用过来的akka请求的Actor，调用本地的DOMRpcService。</p>
+</li>
+<li><p>RpcListener：监听本地DOMRpcService服务的变化，给RpcRegistry发消息刷新本地服务的注册信息。</p>
+</li>
+<li><p>RpcRegistry：维护DOMRpcService服务注册信息的Actor，启动Gossiper定期与其他节点交换注册信息，将本地服务新的变化同步给其他节点，并接收其他节点新的注册信息发送给RpcRegistrar刷新服务。</p>
+</li>
+<li><p>Gossiper：定期与其他节点交换注册信息，如果注册信息有变化则获取新的注册信息发送给RpcRegistry同步。</p>
+</li>
+<li><p>RpcRegistrar：接收RpcRegistry发送过来的远端节点的服务信息，调用本地的DOMRpcProviderService注册远端服务的代理，这样当本地需要使用这些服务时可以在本地DOMRpcService调用到这些服务的代理，将调用请求通过akka发送过去。</p>
+</li>
+</ul>
+<h3 id="BA-RPC服务注册流程"><a href="#BA-RPC服务注册流程" class="headerlink" title="BA RPC服务注册流程"></a>BA RPC服务注册流程</h3><p>通过实现AbstractBindingAwareProvider可以获取到ProviderContext，通过ProviderContext可以注册BA RPC服务，ProviderContext则是调用RpcProviderRegistry服务实现BA RPC服务的注册。</p>
+<h1 id="二、MD-SAL改进"><a href="#二、MD-SAL改进" class="headerlink" title="二、MD-SAL改进"></a>二、MD-SAL改进</h1><h2 id="1-异步RPC"><a href="#1-异步RPC" class="headerlink" title="1.异步RPC"></a>1.异步RPC</h2><p>通过Yang定义RPC生成Java接口都是返回Future对象的接口，即接口语义上由服务的提供方实现接口的异步调用，MD-SAL的RPC框架未实现接口的异步调用，但是实际在AC的服务实现中并未实现调用的异步执行，基本上都是在调用线程执行的操作然后返回ImmediateFuture，这样的服务实现在MD-SAL的RPC框架中存在两个问题：</p>
+<ul>
+<li>1、 调用本地的RPC服务以为返回的Future是异步的，实际上已经同步执行完。</li>
+<li>2、 远程调用请求都是有RpcInvoker来处理，这是个Actor，内部请求都是单线程处理的，调用RPC服务实现成同步执行会导致所有的远程调用变成串行的，远程调用吞吐量会非常低。</li>
+</ul>
+<p>因此改造了RPC的调用，增加了异步调用机制，大致方案是通过定制的类似ODL ProviderContext的Activator在注册异步服务时为异步服务创建并关联一个独立的akka Routor，定制ODL RPC的框架代码，在存在关联的akka Routor时将请求发送给该Routor处理从而实现同步的服务实现转异步。调用流程如下：</p>
+<p><img data-src="/img/in-post/1578029343307.png" alt=""></p>
+<h2 id="2-路由增量同步"><a href="#2-路由增量同步" class="headerlink" title="2.路由增量同步"></a>2.路由增量同步</h2><p>MD-SAL RPC框架通过Gossip实现各节点服务信息的最终一致性，原生ODL的Gossip机制先广播各个节点服务信息的version，如果某个节点发现它缓存的其中一个节点的服务信息version较低时再发送请求获取该节点的全量服务信息进行同步。具体路由增量同步的详细优化见下一篇博客。</p>
+]]></content>
+      <categories>
+        <category>opendaylight</category>
+      </categories>
+      <tags>
+        <tag>odl</tag>
+        <tag>rpc</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
     <url>/2019/11/27/ODL-mdsal-codereview/</url>
     <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
@@ -3114,82 +3190,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       <tags>
         <tag>Solr</tag>
         <tag>Json Facet</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【opendaylight】——MD-SAL RPC源码概览</title>
-    <url>/2019/11/27/ODL-RPC-module/</url>
-    <content><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
-<p><img data-src="/img/in-post/1578029090431.png" alt=""></p>
-<ul>
-<li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p>
-</li>
-<li><p>sal-broker-impl：实现了BI RPC服务的注册、调用。</p>
-</li>
-<li><p>sal-binding-api：定义了BA RPC服务的注册、调用接口。</p>
-</li>
-<li><p>sal-binding-broker-impl：实现了BA RPC服务的注册、调用，实际的注册、调用操作都通过adapter将BA服务封装成BI服务代理到BI RPC服务中心。</p>
-</li>
-<li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p>
-<h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li>
-</ul>
-<p><img data-src="/img/in-post/1578029209816.png" alt=""></p>
-<ul>
-<li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p>
-</li>
-<li><p>DOMRpcService：定义了BI RPC服务的调用和服务增删的监听接口。</p>
-</li>
-<li><p>DOMRpcAvailabilityListener：BI RPC服务新增和删除的监听接口。</p>
-</li>
-<li><p>DOMRpcRouter：实现了BI RPC服务的注册、调用和服务增加的监听回调。</p>
-</li>
-<li><p>RpcConsumerRegistry：定义了BA RPC服务的查询接口。</p>
-</li>
-<li><p>RouteChangePublisher：定义了BA RPC服务的变更监听接口。</p>
-</li>
-<li><p>RpcProviderRegistry：定义了BA RPC服务的注册接口。</p>
-</li>
-<li><p>BindingDOMRpcServiceAdapter：实现了BA RPC服务的查询，依赖DOMRpcService，将对BA RPC的调用转换为调用DOMRpcService。</p>
-</li>
-<li><p>BindingDOMRpcProviderServiceAdapter：依赖DOMRpcProviderService，将BA RPC封装为DOMRpcImplementation注册到DOMRpcProviderService。</p>
-</li>
-<li><p>HeliumRpcProviderRegistry：聚合BindingDOMRpcServiceAdapter</p>
-</li>
-<li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p>
-</li>
-</ul>
-<h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt=""></p>
-<p>RPC跨进程注册和调用的主要类</p>
-<ul>
-<li><p>RpcManager：跨进程RPC的管理者，负责启动其他Actor，并在节点间同步。</p>
-</li>
-<li><p>RpcInvoker：处理跨进程调用过来的akka请求的Actor，调用本地的DOMRpcService。</p>
-</li>
-<li><p>RpcListener：监听本地DOMRpcService服务的变化，给RpcRegistry发消息刷新本地服务的注册信息。</p>
-</li>
-<li><p>RpcRegistry：维护DOMRpcService服务注册信息的Actor，启动Gossiper定期与其他节点交换注册信息，将本地服务新的变化同步给其他节点，并接收其他节点新的注册信息发送给RpcRegistrar刷新服务。</p>
-</li>
-<li><p>Gossiper：定期与其他节点交换注册信息，如果注册信息有变化则获取新的注册信息发送给RpcRegistry同步。</p>
-</li>
-<li><p>RpcRegistrar：接收RpcRegistry发送过来的远端节点的服务信息，调用本地的DOMRpcProviderService注册远端服务的代理，这样当本地需要使用这些服务时可以在本地DOMRpcService调用到这些服务的代理，将调用请求通过akka发送过去。</p>
-</li>
-</ul>
-<h3 id="BA-RPC服务注册流程"><a href="#BA-RPC服务注册流程" class="headerlink" title="BA RPC服务注册流程"></a>BA RPC服务注册流程</h3><p>通过实现AbstractBindingAwareProvider可以获取到ProviderContext，通过ProviderContext可以注册BA RPC服务，ProviderContext则是调用RpcProviderRegistry服务实现BA RPC服务的注册。</p>
-<h1 id="二、MD-SAL改进"><a href="#二、MD-SAL改进" class="headerlink" title="二、MD-SAL改进"></a>二、MD-SAL改进</h1><h2 id="1-异步RPC"><a href="#1-异步RPC" class="headerlink" title="1.异步RPC"></a>1.异步RPC</h2><p>通过Yang定义RPC生成Java接口都是返回Future对象的接口，即接口语义上由服务的提供方实现接口的异步调用，MD-SAL的RPC框架未实现接口的异步调用，但是实际在AC的服务实现中并未实现调用的异步执行，基本上都是在调用线程执行的操作然后返回ImmediateFuture，这样的服务实现在MD-SAL的RPC框架中存在两个问题：</p>
-<ul>
-<li>1、 调用本地的RPC服务以为返回的Future是异步的，实际上已经同步执行完。</li>
-<li>2、 远程调用请求都是有RpcInvoker来处理，这是个Actor，内部请求都是单线程处理的，调用RPC服务实现成同步执行会导致所有的远程调用变成串行的，远程调用吞吐量会非常低。</li>
-</ul>
-<p>因此改造了RPC的调用，增加了异步调用机制，大致方案是通过定制的类似ODL ProviderContext的Activator在注册异步服务时为异步服务创建并关联一个独立的akka Routor，定制ODL RPC的框架代码，在存在关联的akka Routor时将请求发送给该Routor处理从而实现同步的服务实现转异步。调用流程如下：</p>
-<p><img data-src="/img/in-post/1578029343307.png" alt=""></p>
-<h2 id="2-路由增量同步"><a href="#2-路由增量同步" class="headerlink" title="2.路由增量同步"></a>2.路由增量同步</h2><p>MD-SAL RPC框架通过Gossip实现各节点服务信息的最终一致性，原生ODL的Gossip机制先广播各个节点服务信息的version，如果某个节点发现它缓存的其中一个节点的服务信息version较低时再发送请求获取该节点的全量服务信息进行同步。具体路由增量同步的详细优化见下一篇博客。</p>
-]]></content>
-      <categories>
-        <category>opendaylight</category>
-      </categories>
-      <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
       </tags>
   </entry>
   <entry>
@@ -9874,9 +9874,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
-        <tag>LinkedList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
+        <tag>LinkedList</tag>
       </tags>
   </entry>
   <entry>
@@ -10237,9 +10237,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
+        <tag>ArrayList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
-        <tag>ArrayList</tag>
       </tags>
   </entry>
   <entry>

@@ -191,7 +191,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/11/27/ODL-RPC-module/">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/11/27/solr-search-Json%20Facet/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar2.png">
@@ -205,7 +205,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/11/27/ODL-RPC-module/" class="post-title-link" itemprop="url">【opendaylight】——MD-SAL RPC源码概览</a>
+            <a href="/2019/11/27/solr-search-Json%20Facet/" class="post-title-link" itemprop="url">【Solr】-【Search】Json Facet使用总结</a>
         </h2>
 
         <div class="post-meta">
@@ -222,7 +222,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 09:06:59" itemprop="dateModified" datetime="2020-03-22T09:06:59+08:00">2020-03-22</time>
+                <time title="修改时间：2020-03-31 02:23:41" itemprop="dateModified" datetime="2020-03-31T02:23:41+08:00">2020-03-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -230,12 +230,12 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/opendaylight/" itemprop="url" rel="index"><span itemprop="name">opendaylight</span></a>
+                  <a href="/categories/Solr/" itemprop="url" rel="index"><span itemprop="name">Solr</span></a>
                 </span>
             </span>
 
           
-            <span id="/2019/11/27/ODL-RPC-module/" class="post-meta-item leancloud_visitors" data-flag-title="【opendaylight】——MD-SAL RPC源码概览" title="阅读次数">
+            <span id="/2019/11/27/solr-search-Json%20Facet/" class="post-meta-item leancloud_visitors" data-flag-title="【Solr】-【Search】Json Facet使用总结" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -250,8 +250,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2019/11/27/ODL-RPC-module/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/ODL-RPC-module/" itemprop="commentCount"></span>
+    <a title="valine" href="/2019/11/27/solr-search-Json%20Facet/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/solr-search-Json%20Facet/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -261,14 +261,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.3k</span>
+              <span>6.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>6 分钟</span>
             </span>
 
         </div>
@@ -280,50 +280,69 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
-<p><img data-src="/img/in-post/1578029090431.png" alt></p>
-<ul>
-<li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p>
-</li>
-<li><p>sal-broker-impl：实现了BI RPC服务的注册、调用。</p>
-</li>
-<li><p>sal-binding-api：定义了BA RPC服务的注册、调用接口。</p>
-</li>
-<li><p>sal-binding-broker-impl：实现了BA RPC服务的注册、调用，实际的注册、调用操作都通过adapter将BA服务封装成BI服务代理到BI RPC服务中心。</p>
-</li>
-<li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p>
-<h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li>
-</ul>
-<p><img data-src="/img/in-post/1578029209816.png" alt></p>
-<ul>
-<li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p>
-</li>
-<li><p>DOMRpcService：定义了BI RPC服务的调用和服务增删的监听接口。</p>
-</li>
-<li><p>DOMRpcAvailabilityListener：BI RPC服务新增和删除的监听接口。</p>
-</li>
-<li><p>DOMRpcRouter：实现了BI RPC服务的注册、调用和服务增加的监听回调。</p>
-</li>
-<li><p>RpcConsumerRegistry：定义了BA RPC服务的查询接口。</p>
-</li>
-<li><p>RouteChangePublisher：定义了BA RPC服务的变更监听接口。</p>
-</li>
-<li><p>RpcProviderRegistry：定义了BA RPC服务的注册接口。</p>
-</li>
-<li><p>BindingDOMRpcServiceAdapter：实现了BA RPC服务的查询，依赖DOMRpcService，将对BA RPC的调用转换为调用DOMRpcService。</p>
-</li>
-<li><p>BindingDOMRpcProviderServiceAdapter：依赖DOMRpcProviderService，将BA RPC封装为DOMRpcImplementation注册到DOMRpcProviderService。</p>
-</li>
-<li><p>HeliumRpcProviderRegistry：聚合BindingDOMRpcServiceAdapter</p>
-</li>
-<li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p>
-</li>
-</ul>
-<h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt></p>
-<p>RPC跨进程注册和调用的主要类</p>
+          <h1 id="Faceted-Search"><a href="#Faceted-Search" class="headerlink" title="Faceted Search"></a>Faceted Search</h1><h2 id="Metric-Example"><a href="#Metric-Example" class="headerlink" title="Metric Example"></a>Metric Example</h2><pre><code class="java">curl http://192.168.3.13:31121/xxx/PATENT/query -d &#39;
+  q=*:*&amp;
+  json.facet={
+    &quot;AVG_CITE_COUNT&quot;:&quot;avg(CITE_COUNT)&quot;,
+    &quot;NUM_IN_COUNTRY&quot;:&quot;unique(IN_COUNTRY)&quot;,
+    &quot;MEDIA_CLAIM_COUNT&quot;:&quot;percentile(CLAIM_COUNT,50)&quot;
+  }
+&#39;</code></pre>
+<p>响应:</p>
+<pre><code class="java">&quot;facets&quot;:{
+    &quot;count&quot;:661044,
+    &quot;MEDIA_CLAIM_COUNT&quot;:19.0,
+    &quot;AVG_CITE_COUNT&quot;:13.03796393q=*:*&amp;4739052,
+    &quot;NUM_IN_COUNTRY&quot;:185}</code></pre>
+<h2 id="Bucketing-Facet-Example"><a href="#Bucketing-Facet-Example" class="headerlink" title="Bucketing Facet Example"></a>Bucketing Facet Example</h2><pre><code class="java">curl http://192.168.3.13:31121/xxx/PATENT/query -d &#39;
+  q=*:*&amp;
+  json.facet={
+    categories:{
+      type:terms,
+      field:APD_YEARMONTHDAY,
+      limit:10
+    }
+  }
+&#39;</code></pre>
+<p>响应：</p>
+<pre><code class="java">  &quot;facets&quot;:{
+    &quot;count&quot;:661044,
+    &quot;categories&quot;:{
+      &quot;buckets&quot;:[{
+          &quot;val&quot;:20000524,
+          &quot;count&quot;:1167},
+        {
+          &quot;val&quot;:20160923,
+          &quot;count&quot;:935},
+        {
+          &quot;val&quot;:20151218,
+          &quot;count&quot;:857},
+        {
+          &quot;val&quot;:20160331,
+          &quot;count&quot;:838},
+        {
+          &quot;val&quot;:20160129,
+          &quot;count&quot;:702},
+        {
+          &quot;val&quot;:20160630,
+          &quot;count&quot;:595},
+        {
+          &quot;val&quot;:20160729,
+          &quot;count&quot;:553},
+        {
+          &quot;val&quot;:20150210,
+          &quot;count&quot;:459},
+        {
+          &quot;val&quot;:20161216,
+          &quot;count&quot;:459},
+        {
+          &quot;val&quot;:20160527,
+          &quot;count&quot;:454}]
+    }}}</code></pre>
+<h2 id="Making-a-Facet-Request"><a href="#Making-a-Facet-Request" class="headerlink" title="Making a Facet Request"></a>Making a Facet Request</h2>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2019/11/27/ODL-RPC-module/#more" rel="contents">
+              <a class="btn" href="/2019/11/27/solr-search-Json%20Facet/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
