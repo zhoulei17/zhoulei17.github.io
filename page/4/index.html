@@ -121,7 +121,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">59</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">60</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
@@ -187,6 +187,137 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/" class="post-title-link" itemprop="url">【线程互斥篇】三、有锁方案-synchronized的实现原理与应用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-11 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-11T00:00:00+08:00">2019-08-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-22 18:10:56" itemprop="dateModified" datetime="2020-03-22T18:10:56+08:00">2020-03-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/" class="post-meta-item leancloud_visitors" data-flag-title="【线程互斥篇】三、有锁方案-synchronized的实现原理与应用" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在jdk 1.6之前，synchronized一直被称为重量级锁，随着jdk 1.6对synchronized进行各种优化后，有些情况并不那么重了。</p>
+<p>Jdk 1.6为了减少锁获得和释放带来的性能消耗而引入的<strong>偏向锁和轻量级锁，以及锁的存储结构和升级过程</strong>。</p>
+<h1 id="synchronized基础"><a href="#synchronized基础" class="headerlink" title="synchronized基础"></a>synchronized基础</h1><p>再来总结一下synchronized实现同步的基础：Java中的每一个对象都可以作为锁。具体可以使用一下3中形式：</p>
+<ul>
+<li>对于普通同步方法，锁是当前实例对象。</li>
+<li>对于静态同步方法，锁是当前类的Class对象。</li>
+<li>对于同步方法块，锁是synchronized括号中配置的对象。</li>
+</ul>
+<p>当一个线程试图访问同步代码块时，它首先必须得到锁，退出或抛出异常时必须释放锁。</p>
+<p><strong>那么锁到底存在哪里?</strong></p>
+<p><strong>锁里面会存储什么信息呢</strong></p>
+<h1 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h1><p>从JVM规范中可以看到，synchronized在JVM理的实现原理：</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/08/11/2019-8-11-java-concurrency-mutex-synchronized/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1511,170 +1642,6 @@ class LiftOffRunner implements Runnable {
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/05/09/2019-5-09-java-concurreny-system-courrenency/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/" class="post-title-link" itemprop="url">【基本概念篇】九、从操作系统角度看并发</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-05-09 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-09T00:00:00+08:00">2019-05-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:42" itemprop="dateModified" datetime="2020-03-22T18:10:42+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/" class="post-meta-item leancloud_visitors" data-flag-title="【基本概念篇】九、从操作系统角度看并发" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.9k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>本文，先来看下操作系统级别的并发进程知识，以此引入下文中Java并发的管程以及信号量的知识。</p>
-<p>在并发进程与并发线程一样如果不控制共享资源都会产生错误，这点暂不赘述。</p>
-<p>先来看下进程之间的关系是怎么样的？</p>
-<h1 id="进程间的关系"><a href="#进程间的关系" class="headerlink" title="进程间的关系"></a>进程间的关系</h1><ol>
-<li><p>直接式与间接式制约</p>
-<p>直接式制约：一程序段等待另一程序段的执行结果</p>
-<p>间接式制约：并发程序段竞争同一资源</p>
-</li>
-<li><p>相交进程与无关进程：这个不用展开讲了，主要是逻辑上有无联系的区分。</p>
-</li>
-<li><p><strong>进程的同步与互斥：</strong></p>
-<ul>
-<li>进程同步（直接作用）：根据一定的时序关系合作完成一项任务<ul>
-<li>并发进程因直接制约而互相等待，彼此相互发送消息进行合作，是的各进程按一定的速度执行</li>
-<li>进程间的互相联系是有意识安排的，直接作用只发生相交进程间</li>
-</ul>
-</li>
-</ul>
-<p><img data-src="/img/in-post/1557480839440.png" alt></p>
-<ul>
-<li><p>进程互斥（间接作用）：各进程竞争使用临界资源</p>
-<ul>
-<li><p>临界资源：一次只允许一个进程使用的资源</p>
-</li>
-<li><p>进程互斥是进程同步的一种特殊情况</p>
-</li>
-<li><p>进程间要通过某种中介发生联系，是无意识安排的，可以发生在相交进程之间，也可发生在无关进程之间。</p>
-<p><img data-src="/img/in-post/1557480647158.png" alt></p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ol>
-<h1 id="临界区管理"><a href="#临界区管理" class="headerlink" title="临界区管理"></a>临界区管理</h1><p>进程间的互斥主要是对临界区的互斥访问，因此关于临界区如何管理是整个进程并发互斥的关键课题。</p>
-<p>因此下面来简单了解下临界区的管理话题。</p>
-<h2 id="临界区和其使用规则"><a href="#临界区和其使用规则" class="headerlink" title="临界区和其使用规则"></a>临界区和其使用规则</h2><ul>
-<li>临界区：进程中涉及临近资源的程序段为临界区/互斥区，多个进程的临界区为相关临界区</li>
-<li>临界区的使用原则：有空让进、无空等待、多中择一、有限等待、让权等待</li>
-<li>解决进程互斥的两种做法：<ul>
-<li>由竞争各方平等协商解决，包括硬件、软件两类方法。</li>
-<li>引入进程管理者来协调竞争各方对互斥资源的使用。</li>
-</ul>
-</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/05/09/2019-5-09-java-concurreny-system-courrenency/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1747,7 +1714,7 @@ class LiftOffRunner implements Runnable {
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-count">60</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1822,13 +1789,13 @@ class LiftOffRunner implements Runnable {
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">257k</span>
+    <span title="站点总字数">262k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:54</span>
+    <span title="站点阅读时长">3:58</span>
 </div>
 
         

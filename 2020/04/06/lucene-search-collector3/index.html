@@ -20,20 +20,28 @@
     var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="在上一篇Collector(二)的文章中，介绍了TopDocsCollector的其中一个子类TopScoreDocCollector收集器，以及TopScoreDocCollector的两个子类SimpleTopScoreDocCollector、PagingTopScoreDocCollector，它们的排序规则是“先打分、后文档号”。 这次，介绍TopDocsCollector的另外一个子">
+  <meta name="description" content="继上一篇介绍TopDocsCollector子类TopFieldCollector的子类SimpleFieldCollector，下面继续总结。 源码为： org.apache.lucene.search.TopFieldCollectorTopDocsCollectorTopFieldCollector根据过滤(filtering)规则，TopFieldCollector派生两个子类：  Si">
 <meta property="og:type" content="article">
-<meta property="og:title" content="【Lucene】-【Search】Collector（三）TopFieldCollector">
+<meta property="og:title" content="【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector">
 <meta property="og:url" content="2tongtong.cn/2020/04/06/lucene-search-collector3/index.html">
 <meta property="og:site_name" content="Z.L&#39;s blog">
-<meta property="og:description" content="在上一篇Collector(二)的文章中，介绍了TopDocsCollector的其中一个子类TopScoreDocCollector收集器，以及TopScoreDocCollector的两个子类SimpleTopScoreDocCollector、PagingTopScoreDocCollector，它们的排序规则是“先打分、后文档号”。 这次，介绍TopDocsCollector的另外一个子">
+<meta property="og:description" content="继上一篇介绍TopDocsCollector子类TopFieldCollector的子类SimpleFieldCollector，下面继续总结。 源码为： org.apache.lucene.search.TopFieldCollectorTopDocsCollectorTopFieldCollector根据过滤(filtering)规则，TopFieldCollector派生两个子类：  Si">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="/img/in-post/Collector-5579809.png">
-<meta property="og:image" content="/img/in-post/image-20200406230101284.png">
-<meta property="og:image" content="/img/in-post/image-20200406232808460.png">
-<meta property="og:image" content="/img/in-post/image-20200406231935935.png">
 <meta property="og:image" content="/img/in-post/image-20200406233905182.png">
+<meta property="og:image" content="/img/in-post/3-7191040.png">
+<meta property="og:image" content="/img/in-post/4-7191031.png">
+<meta property="og:image" content="/img/in-post/5-7193863.png">
+<meta property="og:image" content="/img/in-post/image-20200418171133754.png">
+<meta property="og:image" content="/img/in-post/image-20200418201402142.png">
+<meta property="og:image" content="/img/in-post/image-20200418202459263.png">
+<meta property="og:image" content="/img/in-post/image-20200418211251733.png">
+<meta property="og:image" content="/img/in-post/image-20200418211332115.png">
+<meta property="og:image" content="/img/in-post/image-20200419005405886.png">
+<meta property="og:image" content="/img/in-post/10-20200419005634534.png">
+<meta property="og:image" content="/img/in-post/11-7229567.png">
 <meta property="article:published_time" content="2020-04-05T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-04-06T15:40:04.257Z">
+<meta property="article:modified_time" content="2020-04-19T00:46:52.260Z">
 <meta property="article:author" content="Zhou Lei">
 <meta property="article:tag" content="Search">
 <meta property="article:tag" content="Lucene">
@@ -54,7 +62,7 @@
   };
 </script>
 
-  <title>【Lucene】-【Search】Collector（三）TopFieldCollector | Z.L's blog</title>
+  <title>【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector | Z.L's blog</title>
   
 
 
@@ -134,7 +142,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">59</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">60</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
@@ -217,7 +225,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          【Lucene】-【Search】Collector（三）TopFieldCollector
+          【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector
         </h1>
 
         <div class="post-meta">
@@ -226,10 +234,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-04-06 00:00:00 / 修改时间：23:40:04" itemprop="dateCreated datePublished" datetime="2020-04-06T00:00:00+08:00">2020-04-06</time>
+              <time title="创建时间：2020-04-06 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-06T00:00:00+08:00">2020-04-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-19 08:46:52" itemprop="dateModified" datetime="2020-04-19T08:46:52+08:00">2020-04-19</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -241,7 +255,7 @@
             </span>
 
           
-            <span id="/2020/04/06/lucene-search-collector3/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】Collector（三）TopFieldCollector" title="阅读次数">
+            <span id="/2020/04/06/lucene-search-collector3/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -267,14 +281,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.8k</span>
+              <span>4.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -287,167 +301,141 @@
 
       
         <p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
-<p>在上一篇Collector(二)的文章中，介绍了<code>TopDocsCollector</code>的其中一个子类<code>TopScoreDocCollector</code>收集器，以及<code>TopScoreDocCollector</code>的两个子类<code>SimpleTopScoreDocCollector</code>、<code>PagingTopScoreDocCollector</code>，它们的排序规则是“先打分、后文档号”。</p>
-<p>这次，介绍<code>TopDocsCollector</code>的另外一个子类<code>TopFieldCollector</code>，它的排序规则是“先域比较（FieldComparator），后文档号”。</p>
+<p>继上一篇介绍<code>TopDocsCollector</code>子类TopFieldCollector的子类SimpleFieldCollector，下面继续总结。</p>
+<p>源码为：</p>
+<pre><code>org.apache.lucene.search.TopFieldCollector</code></pre><h1 id="TopDocsCollector"><a href="#TopDocsCollector" class="headerlink" title="TopDocsCollector"></a>TopDocsCollector</h1><h2 id="TopFieldCollector"><a href="#TopFieldCollector" class="headerlink" title="TopFieldCollector"></a>TopFieldCollector</h2><p>根据过滤(filtering)规则，TopFieldCollector派生两个子类：</p>
 <ul>
-<li>先域比较（FieldComparator）：根据文档（Document）中的排序域（SortField）的阈值进行排序。</li>
-<li>后文档号：由于文档号是唯一的，当无法通过域比较来获得顺序关系时，可以再通过文档号进行排序，文档号越小，排名越靠前。</li>
+<li>SimpleFieldCollector：无过滤规则</li>
+<li>PagingFieldCollector：有过滤规则</li>
 </ul>
-<p>下面通过一个例子先介绍怎么使用TopFieldCollector，然后再来介绍排序的原理。</p>
-<p>在搜索阶段如果使用了域排序，那么Lucene默认使用的是<code>TopFieldCollector</code>。</p>
-<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><h2 id="索引代码"><a href="#索引代码" class="headerlink" title="索引代码"></a>索引代码</h2><pre><code class="java">    //0
-    Document doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a b&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);
-
-    //1
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;b&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,-1));
-    indexWriter.addDocument(doc);
-
-    //2
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;c b&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,4));
-    indexWriter.addDocument(doc);
-
-    //3
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,1));
-    indexWriter.addDocument(doc);
-
-    //4
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);
-
-    //5
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
-    indexWriter.addDocument(doc);
-
-    indexWriter.commit();
-    indexWriter.close();
-</code></pre>
-<h2 id="查询代码"><a href="#查询代码" class="headerlink" title="查询代码"></a>查询代码</h2><pre><code class="java">  public void test() {
-
-    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
-    builder.setMinimumNumberShouldMatch(2);
-
-    SortField sortField = new SortedNumericSortField(&quot;sortByNumber&quot;, SortField.Type.LONG);
-    Sort sort = new Sort(sortField);
-
-    searchBySort(builder.build(), 10, sort);
-    //search(builder.build(), 10);
-  }</code></pre>
-<p>Sort可以在查询时指定(IndexSearcher)，也可以在在Index阶段设置如：</p>
-<pre><code class="java">    IndexWriterConfig iwc = new IndexWriterConfig(new MockAnalyzer(random()));
-    Sort indexSort = new Sort(new SortedNumericSortField(&quot;foo&quot;, SortField.Type.LONG));
-    iwc.setIndexSort(indexSort);</code></pre>
+<p>TopFieldCollector中几个变量：</p>
 <ul>
-<li><p>SortedNumericSortField：根据文档（document)中NumericDocValues域的阈值进行排序，如果文档没有这个域，那么阈值视为0。</p>
-</li>
-<li><p>如上面的索引代码，文档1和文档4没有这个域，那么就按照文档号排序。查询排序代码排序结果为：</p>
-<img data-src="/img/in-post/image-20200406230101284.png" alt="image-20200406230101284" style="zoom: 50%;" />
-
-
-
-</li>
+<li>trackMaxScore：该值是TopFieldCollector类的构造参数，是否需要记录所有满足查询条件的文档集合中最高的文档打分值，用maxScore记录该最大值。</li>
+<li>trackDocScores：该值是TopFieldCollector类的构造参数，是否需要记录所有满足查询条件的文档的打分值。</li>
+<li>totalHits：该值描述了Collector处理的满足搜索条件的文档数量，没当进入下图中SimpleFieldcCollector收集文档的流程就会增加+1。</li>
 </ul>
-<h1 id="排序类型选择"><a href="#排序类型选择" class="headerlink" title="排序类型选择"></a>排序类型选择</h1><p><strong>上面除了可以使用<code>NumericDocValue</code>类型索引字段然后使用SortedNumericSortField进行Numeric类型排序检索，还可以使用<code>SortedSetSortField</code>String类型排序字段。</strong></p>
-<pre><code class="java">    //4
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);
-
-    //5
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
-    indexWriter.addDocument(doc);
-
-
-    //6
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;a&quot;)));//MIN
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;h&quot;)));//MIDDLE_MAX
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;f&quot;)));//MIDDLE_MIN
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;y&quot;)));//MAX
-    indexWriter.addDocument(doc);
-
-    //7
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;c&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;i&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;e&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;z&quot;)));
-    indexWriter.addDocument(doc);
-
-    //8
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;b&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;j&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;d&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;x&quot;)));</code></pre>
-<p>然后使用<strong>查询代码</strong>为：</p>
-<pre><code class="java">    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
-    builder.setMinimumNumberShouldMatch(2);
-
-    SortField sortField = new SortedSetSortField(&quot;sortByString&quot;, false , SortedSetSelector.Type.MIN);
-    Sort sort = new Sort(sortField);
-
-    searchBySort(builder.build(), 10, sort);</code></pre>
-<p>默认从小到大输出，结果为：</p>
-<p><img data-src="/img/in-post/image-20200406232808460.png" alt="image-20200406232808460"></p>
-<h2 id="SortedSetSelector-Type"><a href="#SortedSetSelector-Type" class="headerlink" title="SortedSetSelector.Type"></a>SortedSetSelector.Type</h2><p>reverse设置false，按照从小到大排序，反之true是从大到小排序。</p>
-<p>除了上面使用的<code>SortedSetSelector.Type.MIN</code>，还有<img data-src="/img/in-post/image-20200406231935935.png" alt="image-20200406231935935"></p>
-<p><code>MIDDLE_MAX</code></p>
-<p><code>MIDDLE_MIN</code></p>
-<p><code>MAX</code></p>
-<p>下面介绍下这四种类型</p>
-<ul>
-<li><p><code>MIN</code>：选择域值最小的进行排序，如上面文档6、7、8 会使用a c b作为排序条件，即结果：</p>
-<p>4-&gt;5-&gt;6-&gt;8-&gt;7（4、5该域为null，默认按照文档号排序）</p>
-</li>
-<li><p><code>MAX</code>：选择域值最大的进行排序，如上面的文档6、7、8会使用y z x作为排序条件，即结果：</p>
-<p>4-&gt;5-&gt;8-&gt;6-&gt;7</p>
-</li>
-<li><p><code>MIDDLE_MIN</code>：选择中间域值，如果域值个数为偶数个，那么中间域值有两个，则取<strong>较小值</strong>。如上面的6、7、8 会使用f e d作为排序条件。结果为：</p>
-<p>4-&gt;5-&gt;8-&gt;7-&gt;6</p>
-</li>
-<li><p><code>MIDLE_MAX</code>：参考MIDDLE_MIN就是取中间两个的较大值作为排序条件了。具体不赘述了。</p>
-</li>
-</ul>
-<p>刚刚讲了<strong><code>SortedNumericSortField</code></strong>和<strong><code>SortedSetSortField</code></strong>都可以在索引阶段设置多个具有相同域名的不通值，用法跟<strong><code>SortedSetSortField</code></strong>是一样的，就不赘述了。</p>
-<p>接下来看下根据过滤(filtering)规则，接着介绍TopFieldCollector的两个子类：</p>
-<ul>
-<li><p>SimpleFieldCollector：无过滤规则</p>
-</li>
-<li><p>PagingFieldCollector：有过滤规则，具体内容在下文展开</p>
-</li>
-</ul>
-<h1 id="SimpleFieldCollector"><a href="#SimpleFieldCollector" class="headerlink" title="SimpleFieldCollector"></a>SimpleFieldCollector</h1><p>它的collect的方法流程图如下：</p>
+<p>如果业务中不需要用到文档的打分值或者maxScore，建议另这两个参数为false，因为找出maxScore或者文档的打分值需要遍历所有满足条件的文档，无法提前结束Collector工作（canEalyTerminate），在满足查询提交的文档数量较大的情况下，提前结束Collector的收集工作能显著提供查询性能。canEalryTerminate会在下文中介绍。</p>
+<h1 id="子类-SimpleFieldCollector"><a href="#子类-SimpleFieldCollector" class="headerlink" title="子类 SimpleFieldCollector"></a>子类 SimpleFieldCollector</h1><p>它的collect的方法流程图如下：</p>
 <img data-src="/img/in-post/image-20200406233905182.png" alt="image-20200406233905182" style="zoom:45%;" />
 
 
 
+<h2 id="记录文档打分值最高的文档"><a href="#记录文档打分值最高的文档" class="headerlink" title="记录文档打分值最高的文档"></a>记录文档打分值最高的文档</h2><pre><code class="java">          float score = Float.NaN;
+          if (trackMaxScore) {
+            score = scorer.score();
+            if (score &gt; maxScore) {
+              maxScore = score;
+            }
+          }</code></pre>
+<img data-src="/img/in-post/3-7191040.png" alt="img" style="zoom:50%;" />
+
+<p>如果参数trackMaxScore为true，那么Collector每处理一篇文档，就要记录该文档的打分值score，如果score大于当前maxScore的值，则更新maxScore的值。</p>
+<h2 id="添加文档信息"><a href="#添加文档信息" class="headerlink" title="添加文档信息"></a>添加文档信息</h2><pre><code class="java">          } else {
+            // Startup transient: queue hasn&#39;t gathered numHits yet
+            final int slot = totalHits - 1;
+
+            if (trackDocScores &amp;&amp; !trackMaxScore) {
+              score = scorer.score();
+            }
+
+            // Copy hit into queue
+            comparator.copy(slot, doc);
+            add(slot, doc, score);
+            if (queueFull) {
+              comparator.setBottom(bottom.slot);
+            }
+          }</code></pre>
+<img data-src="/img/in-post/4-7191031.png" alt="img" style="zoom:50%;" />
+
+<p>使用优先级队列PriorityQueue来存放满足搜索条件的文档信息（文档信息至少包含了文档打分score以及文档docid），分数最低的文档信息位于堆顶，堆的大小默认为段中的文档总数（也可以指定堆的大小，即用户期望返回的TopN）。</p>
+<p>如果堆没有满，将文档号交给FieldComparator，FieldComparator的概念可以参考<a href="https://www.amazingkoala.com.cn/Lucene/Search/2019/0415/50.html" target="_blank" rel="noopener">FieldComparator</a>，它用来描述文档间的排序关系（从代码层面来说，通过FieldComparator实现了优先级队列PriorityQueue的<code>lessThan()</code>方法，优先级队列实现为<code>FieldValueHitQueue</code> 根据比较字段的数量<code>FieldValueHitQueue</code> 有两个匿名实现类<code>MultiComparatorsFieldValueHitQueue</code>和<code>OneComparatorFieldValueHitQueue</code>）接着添加信息到堆中。</p>
+<h2 id="设置bottom值"><a href="#设置bottom值" class="headerlink" title="设置bottom值"></a>设置bottom值</h2><pre><code class="java">            if (queueFull) {
+              comparator.setBottom(bottom.slot);
+            }</code></pre>
+<img data-src="/img/in-post/5-7193863.png" alt="img" style="zoom:50%;" />
+
+<p>在<code>添加文档信息到堆中</code>流程后，如果此时堆正好满了，需要设置bottom的值，即从我们已经处理的文档中找出最差的文档进行比较即可。</p>
+<h2 id="仅统计满足查询条件的文档个数"><a href="#仅统计满足查询条件的文档个数" class="headerlink" title="仅统计满足查询条件的文档个数"></a>仅统计满足查询条件的文档个数</h2><pre><code class="java">         if (queueFull) {
+            if (collectedAllCompetitiveHits) {
+              return;
+            }</code></pre>
+<img data-src="/img/in-post/image-20200418171133754.png" alt="image-20200418171133754" style="zoom: 33%;" />
+
+<p>在堆满的情况下，并且collectedAllCompetitiveHits为true，直接可以退出，尽快直接退出了，还是统计了totalHits的值，所以从collectedAllCompetitiveHits的命中方式也可以看出只是统计了totalHits。</p>
+<p>满足如下条件的情况下，collectedAllCompetitiveHits会为true：</p>
+<p><code>canEarlyStopComparing = true &amp; canEarlyTerminate = false</code></p>
+<ul>
+<li><p><code>canEarlyStopComparing</code>：该值描述了是否可以提前结束域比较，当索引期间通过<code>IndexWriterConfig.setIndexSort(Sort sort)</code>设置的排序规则与搜索期间提供的排序规则一致时，Collector收到的文档集合已经是有序的，<code>canEarlyStopComparing</code>设置true的依据方法：</p>
+<pre><code class="java">  static boolean canEarlyTerminate(Sort searchSort, Sort indexSort) {
+    return canEarlyTerminateOnDocId(searchSort) ||
+           canEarlyTerminateOnPrefix(searchSort, indexSort);
+  }
+
+  private static boolean canEarlyTerminateOnDocId(Sort searchSort) {
+    final SortField[] fields1 = searchSort.getSort();
+    return SortField.FIELD_DOC.equals(fields1[0]);
+  }
+
+  private static boolean canEarlyTerminateOnPrefix(Sort searchSort, Sort indexSort) {
+    if (indexSort != null) {
+      final SortField[] fields1 = searchSort.getSort();
+      final SortField[] fields2 = indexSort.getSort();
+      // early termination is possible if fields1 is a prefix of fields2
+      if (fields1.length &gt; fields2.length) {
+        return false;
+      }
+      return Arrays.asList(fields1).equals(Arrays.asList(fields2).subList(0, fields1.length));
+    } else {
+      return false;
+    }
+  }</code></pre>
+<p>在堆已满的情况下，后面的处理文档号就没有比较的必要性了。</p>
+<p>每次获取一个段的信息时设置<code>canEalryStopComparing</code>，即调用getLeafCollector(LeafReaderContext context)时候设置。</p>
+</li>
+</ul>
+<ul>
+<li><p><code>caneEarlyTerminate</code>：该值描述了是否可以提前结束Collector的收集工作，canEarlyTerminate设置为true需要满足下面条件：</p>
+<pre><code class="java">boolean canEarlyTerminate = trackTotalHits == false &amp;&amp;
+          trackMaxScore == false &amp;&amp;
+          canEarlyStopComparing;
+</code></pre>
+<p>如果满足上面的条件，Lucene会通过抛出异常的方式结束Collector，该异常会被IndexSearcher捕获。这样的好处在于能提高性能。比如说某一次查询，需要返回TOP5，但是满足搜索条件的文档数量有1000000W条，那么在Collector中当处理了5篇文档后（文档在段中有序），就可以直接返回结果了。</p>
+<p>如果条件不满足，即canEarlyTerminate值为false，那么尽管我们已经收集了TOP5的数据（查询结果不会再变化），但是需要继续遍历处理剩余的999999篇文档，因为我们需要记录totalHits（如果trackTotalHits为true）或者需要获得打分值最大的文档（trackMaxScore为true），所以此时collectedAllCompetitiveHits为true，继续处理下一篇文档。</p>
+</li>
+</ul>
+<h2 id="无法提前结束域比较"><a href="#无法提前结束域比较" class="headerlink" title="无法提前结束域比较"></a>无法提前结束域比较</h2><img data-src="/img/in-post/image-20200418201402142.png" alt="image-20200418201402142" style="zoom:50%;" />
+
+<img data-src="/img/in-post/image-20200418202459263.png" alt="image-20200418202459263" style="zoom:50%;" />
+
+<p>由于通过域比较后，当前文档比bottom还要差，那么先通过canEarlyStopingComparing判断出能不能提前结束比较，如果canEarlyStopComparing为false，则退出并处理下一篇文档。</p>
+<p>canEarlyStopComparing为false说明段中的文档没有按照搜索期间的排序规则进行排序，所以当前已经收集的TopN未必是最终的搜索结果，所以退出处理下一篇文档。</p>
+<h2 id="设置collectedAllCompetitiveHits"><a href="#设置collectedAllCompetitiveHits" class="headerlink" title="设置collectedAllCompetitiveHits"></a>设置collectedAllCompetitiveHits</h2><img data-src="/img/in-post/image-20200418211251733.png" alt="image-20200418211251733" style="zoom:50%;" />
 
 
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>下一篇Collector（三）继续</p>
+
+<img data-src="/img/in-post/image-20200418211332115.png" alt="image-20200418211332115" style="zoom:50%;" />
+
+<p>可以提前结束域比较，即canEalyStopComparing为true，并且不可以提前结束Collector的收集工作，即canEarlyTerminate为false，那么同时满足这两个条件就可以设置collectedAllCompetitiveHits为true了。使得处理下一篇文档时就可以走<code>仅统计满足查询条件的文档个数</code>的流程。</p>
+<h2 id="提前结束Collector的收集工作"><a href="#提前结束Collector的收集工作" class="headerlink" title="提前结束Collector的收集工作"></a>提前结束Collector的收集工作</h2><img data-src="/img/in-post/image-20200419005405886.png" alt="image-20200419005405886" style="zoom:50%;" />
+
+<p><img data-src="/img/in-post/10-20200419005634534.png" alt="img"></p>
+<p>可以提前结束Collector的收集工作，那么闲估算剩余满足查询条件的文档数量，通过线性估算出文档数量。估算方法见代码，</p>
+<p>接着设置一个earlyTerminated的值为true，用户在得到查询结果后可以通过该值来了解Collector提前结束收集工作这个事件。</p>
+<p>抛出CollectionTerminatedException异常的方式来实现。</p>
+<h1 id="子类-PagingFieldCollector"><a href="#子类-PagingFieldCollector" class="headerlink" title="子类 PagingFieldCollector"></a>子类 PagingFieldCollector</h1><p>PagingFieldCollector同PaingTopScoreDocCollector一样，相对于SimpleFieldCollector实现了分页功能，collect(int doc)的流程图是相似的，并用红圈标记了不同处。</p>
+<p>PaingFieldCollector的collect(int doc)方法流程图：</p>
+<h1 id=""><a href="#" class="headerlink" title=""></a><img data-src="/img/in-post/11-7229567.png" alt="img"></h1><p>相对于SimpleFieldCollector来说对了<code>是否已经被收集</code></p>
+<h2 id="是否已经被收集"><a href="#是否已经被收集" class="headerlink" title="是否已经被收集"></a>是否已经被收集</h2><p><code>是否已经被收集了</code>描述的是该文档是否已经在前面的索引中被收集了，判断条件如下：</p>
+<pre><code class="java">          final int topCmp = reverseMul * comparator.compareTop(doc);
+          if (topCmp &gt; 0 || (topCmp == 0 &amp;&amp; doc &lt;= afterDoc)) {
+            // Already collected on a previous page
+            return;
+          }</code></pre>
+<ul>
+<li>topCmp： 该值描述当前文档与FieldCollector的top值做比较后的值，top值描述的是之前所有分页收集结果中最差的文档，在初始化PagingFieldCollector对象时需要用户提供该值(通过上一次的查询结果就能获得)，并设置top的值。如果topComp&gt;0，说明当前文档比最差的好(competitive)，必定该偏文档已经在前面某次某分页收集中被收集过了。</li>
+<li>afterDoc：该值描述之前所有分页搜索结果中最差的文档的文档号，如果域比较无法区分得出排序结果，由于文档号是唯一的，所以再根据文档号进行比较，文档号的大的比文档号小的差，所以再topComp==0的情况下，如果当前文档号小于等于afterDoc，必定该篇文档已经在前面某次分页中被收集过了。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此【search】系列常见的Collector已经总结完了，下一篇开始介绍查询原理相关内容。</p>
 
     </div>
 
@@ -491,7 +479,10 @@
     <a href="/2020/04/02/lucene-search-should/" rel="prev" title="【Lucene】-【Search】SHOULD原理">
       <i class="fa fa-chevron-left"></i> 【Lucene】-【Search】SHOULD原理
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/13/lucene-search-collector4/" rel="next" title="【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector">
+      【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -552,7 +543,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#例子"><span class="nav-number">1.</span> <span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#索引代码"><span class="nav-number">1.1.</span> <span class="nav-text">索引代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查询代码"><span class="nav-number">1.2.</span> <span class="nav-text">查询代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#排序类型选择"><span class="nav-number">2.</span> <span class="nav-text">排序类型选择</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SortedSetSelector-Type"><span class="nav-number">2.1.</span> <span class="nav-text">SortedSetSelector.Type</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SimpleFieldCollector"><span class="nav-number">3.</span> <span class="nav-text">SimpleFieldCollector</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TopDocsCollector"><span class="nav-number">1.</span> <span class="nav-text">TopDocsCollector</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#TopFieldCollector"><span class="nav-number">1.1.</span> <span class="nav-text">TopFieldCollector</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#子类-SimpleFieldCollector"><span class="nav-number">2.</span> <span class="nav-text">子类 SimpleFieldCollector</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#记录文档打分值最高的文档"><span class="nav-number">2.1.</span> <span class="nav-text">记录文档打分值最高的文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#添加文档信息"><span class="nav-number">2.2.</span> <span class="nav-text">添加文档信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置bottom值"><span class="nav-number">2.3.</span> <span class="nav-text">设置bottom值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#仅统计满足查询条件的文档个数"><span class="nav-number">2.4.</span> <span class="nav-text">仅统计满足查询条件的文档个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#无法提前结束域比较"><span class="nav-number">2.5.</span> <span class="nav-text">无法提前结束域比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置collectedAllCompetitiveHits"><span class="nav-number">2.6.</span> <span class="nav-text">设置collectedAllCompetitiveHits</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#提前结束Collector的收集工作"><span class="nav-number">2.7.</span> <span class="nav-text">提前结束Collector的收集工作</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#子类-PagingFieldCollector"><span class="nav-number">3.</span> <span class="nav-text">子类 PagingFieldCollector</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#"><span class="nav-number">4.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#是否已经被收集"><span class="nav-number">4.1.</span> <span class="nav-text">是否已经被收集</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -568,7 +559,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-count">60</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -643,13 +634,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">257k</span>
+    <span title="站点总字数">262k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:54</span>
+    <span title="站点阅读时长">3:58</span>
 </div>
 
         
