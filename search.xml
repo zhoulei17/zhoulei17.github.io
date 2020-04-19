@@ -1,157 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector</title>
-    <url>/2020/04/13/lucene-search-collector3/</url>
-    <content><![CDATA[<p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
-<p>继上一篇介绍<code>TopDocsCollector</code>子类TopFieldCollector的子类SimpleFieldCollector，下面继续总结。</p>
-<p>源码为：</p>
-<pre><code>org.apache.lucene.search.TopFieldCollector</code></pre><h1 id="TopDocsCollector"><a href="#TopDocsCollector" class="headerlink" title="TopDocsCollector"></a>TopDocsCollector</h1><h2 id="TopFieldCollector"><a href="#TopFieldCollector" class="headerlink" title="TopFieldCollector"></a>TopFieldCollector</h2><p>根据过滤(filtering)规则，TopFieldCollector派生两个子类：</p>
-<ul>
-<li>SimpleFieldCollector：无过滤规则</li>
-<li>PagingFieldCollector：有过滤规则</li>
-</ul>
-<p>TopFieldCollector中几个变量：</p>
-<ul>
-<li>trackMaxScore：该值是TopFieldCollector类的构造参数，是否需要记录所有满足查询条件的文档集合中最高的文档打分值，用maxScore记录该最大值。</li>
-<li>trackDocScores：该值是TopFieldCollector类的构造参数，是否需要记录所有满足查询条件的文档的打分值。</li>
-<li>totalHits：该值描述了Collector处理的满足搜索条件的文档数量，没当进入下图中SimpleFieldcCollector收集文档的流程就会增加+1。</li>
-</ul>
-<p>如果业务中不需要用到文档的打分值或者maxScore，建议另这两个参数为false，因为找出maxScore或者文档的打分值需要遍历所有满足条件的文档，无法提前结束Collector工作（canEalyTerminate），在满足查询提交的文档数量较大的情况下，提前结束Collector的收集工作能显著提供查询性能。canEalryTerminate会在下文中介绍。</p>
-<h1 id="子类-SimpleFieldCollector"><a href="#子类-SimpleFieldCollector" class="headerlink" title="子类 SimpleFieldCollector"></a>子类 SimpleFieldCollector</h1><p>它的collect的方法流程图如下：</p>
-<img data-src="/img/in-post/image-20200406233905182.png" alt="image-20200406233905182" style="zoom:45%;" />
-
-
-
-<h2 id="记录文档打分值最高的文档"><a href="#记录文档打分值最高的文档" class="headerlink" title="记录文档打分值最高的文档"></a>记录文档打分值最高的文档</h2><pre><code class="java">          float score = Float.NaN;
-          if (trackMaxScore) {
-            score = scorer.score();
-            if (score &gt; maxScore) {
-              maxScore = score;
-            }
-          }</code></pre>
-<img data-src="/img/in-post/3-7191040.png" alt="img" style="zoom:50%;" />
-
-<p>如果参数trackMaxScore为true，那么Collector每处理一篇文档，就要记录该文档的打分值score，如果score大于当前maxScore的值，则更新maxScore的值。</p>
-<h2 id="添加文档信息"><a href="#添加文档信息" class="headerlink" title="添加文档信息"></a>添加文档信息</h2><pre><code class="java">          } else {
-            // Startup transient: queue hasn&#39;t gathered numHits yet
-            final int slot = totalHits - 1;
-
-            if (trackDocScores &amp;&amp; !trackMaxScore) {
-              score = scorer.score();
-            }
-
-            // Copy hit into queue
-            comparator.copy(slot, doc);
-            add(slot, doc, score);
-            if (queueFull) {
-              comparator.setBottom(bottom.slot);
-            }
-          }</code></pre>
-<img data-src="/img/in-post/4-7191031.png" alt="img" style="zoom:50%;" />
-
-<p>使用优先级队列PriorityQueue来存放满足搜索条件的文档信息（文档信息至少包含了文档打分score以及文档docid），分数最低的文档信息位于堆顶，堆的大小默认为段中的文档总数（也可以指定堆的大小，即用户期望返回的TopN）。</p>
-<p>如果堆没有满，将文档号交给FieldComparator，FieldComparator的概念可以参考<a href="https://www.amazingkoala.com.cn/Lucene/Search/2019/0415/50.html" target="_blank" rel="noopener">FieldComparator</a>，它用来描述文档间的排序关系（从代码层面来说，通过FieldComparator实现了优先级队列PriorityQueue的<code>lessThan()</code>方法，优先级队列实现为<code>FieldValueHitQueue</code> 根据比较字段的数量<code>FieldValueHitQueue</code> 有两个匿名实现类<code>MultiComparatorsFieldValueHitQueue</code>和<code>OneComparatorFieldValueHitQueue</code>）接着添加信息到堆中。</p>
-<h2 id="设置bottom值"><a href="#设置bottom值" class="headerlink" title="设置bottom值"></a>设置bottom值</h2><pre><code class="java">            if (queueFull) {
-              comparator.setBottom(bottom.slot);
-            }</code></pre>
-<img data-src="/img/in-post/5-7193863.png" alt="img" style="zoom:50%;" />
-
-<p>在<code>添加文档信息到堆中</code>流程后，如果此时堆正好满了，需要设置bottom的值，即从我们已经处理的文档中找出最差的文档进行比较即可。</p>
-<h2 id="仅统计满足查询条件的文档个数"><a href="#仅统计满足查询条件的文档个数" class="headerlink" title="仅统计满足查询条件的文档个数"></a>仅统计满足查询条件的文档个数</h2><pre><code class="java">         if (queueFull) {
-            if (collectedAllCompetitiveHits) {
-              return;
-            }</code></pre>
-<img data-src="/img/in-post/image-20200418171133754.png" alt="image-20200418171133754" style="zoom: 33%;" />
-
-<p>在堆满的情况下，并且collectedAllCompetitiveHits为true，直接可以退出，尽快直接退出了，还是统计了totalHits的值，所以从collectedAllCompetitiveHits的命中方式也可以看出只是统计了totalHits。</p>
-<p>满足如下条件的情况下，collectedAllCompetitiveHits会为true：</p>
-<p><code>canEarlyStopComparing = true &amp; canEarlyTerminate = false</code></p>
-<ul>
-<li><p><code>canEarlyStopComparing</code>：该值描述了是否可以提前结束域比较，当索引期间通过<code>IndexWriterConfig.setIndexSort(Sort sort)</code>设置的排序规则与搜索期间提供的排序规则一致时，Collector收到的文档集合已经是有序的，<code>canEarlyStopComparing</code>设置true的依据方法：</p>
-<pre><code class="java">  static boolean canEarlyTerminate(Sort searchSort, Sort indexSort) {
-    return canEarlyTerminateOnDocId(searchSort) ||
-           canEarlyTerminateOnPrefix(searchSort, indexSort);
-  }
-
-  private static boolean canEarlyTerminateOnDocId(Sort searchSort) {
-    final SortField[] fields1 = searchSort.getSort();
-    return SortField.FIELD_DOC.equals(fields1[0]);
-  }
-
-  private static boolean canEarlyTerminateOnPrefix(Sort searchSort, Sort indexSort) {
-    if (indexSort != null) {
-      final SortField[] fields1 = searchSort.getSort();
-      final SortField[] fields2 = indexSort.getSort();
-      // early termination is possible if fields1 is a prefix of fields2
-      if (fields1.length &gt; fields2.length) {
-        return false;
-      }
-      return Arrays.asList(fields1).equals(Arrays.asList(fields2).subList(0, fields1.length));
-    } else {
-      return false;
-    }
-  }</code></pre>
-<p>在堆已满的情况下，后面的处理文档号就没有比较的必要性了。</p>
-<p>每次获取一个段的信息时设置<code>canEalryStopComparing</code>，即调用getLeafCollector(LeafReaderContext context)时候设置。</p>
-</li>
-</ul>
-<ul>
-<li><p><code>caneEarlyTerminate</code>：该值描述了是否可以提前结束Collector的收集工作，canEarlyTerminate设置为true需要满足下面条件：</p>
-<pre><code class="java">boolean canEarlyTerminate = trackTotalHits == false &amp;&amp;
-          trackMaxScore == false &amp;&amp;
-          canEarlyStopComparing;
-</code></pre>
-<p>如果满足上面的条件，Lucene会通过抛出异常的方式结束Collector，该异常会被IndexSearcher捕获。这样的好处在于能提高性能。比如说某一次查询，需要返回TOP5，但是满足搜索条件的文档数量有1000000W条，那么在Collector中当处理了5篇文档后（文档在段中有序），就可以直接返回结果了。</p>
-<p>如果条件不满足，即canEarlyTerminate值为false，那么尽管我们已经收集了TOP5的数据（查询结果不会再变化），但是需要继续遍历处理剩余的999999篇文档，因为我们需要记录totalHits（如果trackTotalHits为true）或者需要获得打分值最大的文档（trackMaxScore为true），所以此时collectedAllCompetitiveHits为true，继续处理下一篇文档。</p>
-</li>
-</ul>
-<h2 id="无法提前结束域比较"><a href="#无法提前结束域比较" class="headerlink" title="无法提前结束域比较"></a>无法提前结束域比较</h2><img data-src="/img/in-post/image-20200418201402142.png" alt="image-20200418201402142" style="zoom:50%;" />
-
-<img data-src="/img/in-post/image-20200418202459263.png" alt="image-20200418202459263" style="zoom:50%;" />
-
-<p>由于通过域比较后，当前文档比bottom还要差，那么先通过canEarlyStopingComparing判断出能不能提前结束比较，如果canEarlyStopComparing为false，则退出并处理下一篇文档。</p>
-<p>canEarlyStopComparing为false说明段中的文档没有按照搜索期间的排序规则进行排序，所以当前已经收集的TopN未必是最终的搜索结果，所以退出处理下一篇文档。</p>
-<h2 id="设置collectedAllCompetitiveHits"><a href="#设置collectedAllCompetitiveHits" class="headerlink" title="设置collectedAllCompetitiveHits"></a>设置collectedAllCompetitiveHits</h2><img data-src="/img/in-post/image-20200418211251733.png" alt="image-20200418211251733" style="zoom:50%;" />
-
-
-
-<img data-src="/img/in-post/image-20200418211332115.png" alt="image-20200418211332115" style="zoom:50%;" />
-
-<p>可以提前结束域比较，即canEalyStopComparing为true，并且不可以提前结束Collector的收集工作，即canEarlyTerminate为false，那么同时满足这两个条件就可以设置collectedAllCompetitiveHits为true了。使得处理下一篇文档时就可以走<code>仅统计满足查询条件的文档个数</code>的流程。</p>
-<h2 id="提前结束Collector的收集工作"><a href="#提前结束Collector的收集工作" class="headerlink" title="提前结束Collector的收集工作"></a>提前结束Collector的收集工作</h2><img data-src="/img/in-post/image-20200419005405886.png" alt="image-20200419005405886" style="zoom:50%;" />
-
-<p><img data-src="/img/in-post/10-20200419005634534.png" alt="img"></p>
-<p>可以提前结束Collector的收集工作，那么闲估算剩余满足查询条件的文档数量，通过线性估算出文档数量。估算方法见代码，</p>
-<p>接着设置一个earlyTerminated的值为true，用户在得到查询结果后可以通过该值来了解Collector提前结束收集工作这个事件。</p>
-<p>抛出CollectionTerminatedException异常的方式来实现。</p>
-<h1 id="子类-PagingFieldCollector"><a href="#子类-PagingFieldCollector" class="headerlink" title="子类 PagingFieldCollector"></a>子类 PagingFieldCollector</h1><p>PagingFieldCollector同PaingTopScoreDocCollector一样，相对于SimpleFieldCollector实现了分页功能，collect(int doc)的流程图是相似的，并用红圈标记了不同处。</p>
-<p>PaingFieldCollector的collect(int doc)方法流程图：</p>
-<h1 id=""><a href="#" class="headerlink" title=""></a><img data-src="/img/in-post/11-7229567.png" alt="img"></h1><p>相对于SimpleFieldCollector来说对了<code>是否已经被收集</code></p>
-<h2 id="是否已经被收集"><a href="#是否已经被收集" class="headerlink" title="是否已经被收集"></a>是否已经被收集</h2><p><code>是否已经被收集了</code>描述的是该文档是否已经在前面的索引中被收集了，判断条件如下：</p>
-<pre><code class="java">          final int topCmp = reverseMul * comparator.compareTop(doc);
-          if (topCmp &gt; 0 || (topCmp == 0 &amp;&amp; doc &lt;= afterDoc)) {
-            // Already collected on a previous page
-            return;
-          }</code></pre>
-<ul>
-<li>topCmp： 该值描述当前文档与FieldCollector的top值做比较后的值，top值描述的是之前所有分页收集结果中最差的文档，在初始化PagingFieldCollector对象时需要用户提供该值(通过上一次的查询结果就能获得)，并设置top的值。如果topComp&gt;0，说明当前文档比最差的好(competitive)，必定该偏文档已经在前面某次某分页收集中被收集过了。</li>
-<li>afterDoc：该值描述之前所有分页搜索结果中最差的文档的文档号，如果域比较无法区分得出排序结果，由于文档号是唯一的，所以再根据文档号进行比较，文档号的大的比文档号小的差，所以再topComp==0的情况下，如果当前文档号小于等于afterDoc，必定该篇文档已经在前面某次分页中被收集过了。</li>
-</ul>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此【search】系列常见的Collector已经总结完了，下一篇开始介绍查询原理相关内容。</p>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>Collector</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector</title>
-    <url>/2020/04/08/lucene-search-collector4/</url>
+    <url>/2020/04/13/lucene-search-collector4/</url>
     <content><![CDATA[<p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
 <p>在上一篇Collector(二)的文章中，介绍了<code>TopDocsCollector</code>的其中一个子类<code>TopScoreDocCollector</code>收集器，以及<code>TopScoreDocCollector</code>的两个子类<code>SimpleTopScoreDocCollector</code>、<code>PagingTopScoreDocCollector</code>，它们的排序规则是“先打分、后文档号”。</p>
 <p>这次，介绍<code>TopDocsCollector</code>的另外一个子类<code>TopFieldCollector</code>，它的排序规则是“先域比较（FieldComparator），后文档号”。</p>
@@ -314,6 +165,155 @@
 
 
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>下一篇Collector（四）继续</p>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>Collector</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector</title>
+    <url>/2020/04/08/lucene-search-collector3/</url>
+    <content><![CDATA[<p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
+<p>继上一篇介绍<code>TopDocsCollector</code>子类TopFieldCollector的子类SimpleFieldCollector，下面继续总结。</p>
+<p>源码为：</p>
+<pre><code>org.apache.lucene.search.TopFieldCollector</code></pre><h1 id="TopDocsCollector"><a href="#TopDocsCollector" class="headerlink" title="TopDocsCollector"></a>TopDocsCollector</h1><h2 id="TopFieldCollector"><a href="#TopFieldCollector" class="headerlink" title="TopFieldCollector"></a>TopFieldCollector</h2><p>根据过滤(filtering)规则，TopFieldCollector派生两个子类：</p>
+<ul>
+<li>SimpleFieldCollector：无过滤规则</li>
+<li>PagingFieldCollector：有过滤规则</li>
+</ul>
+<p>TopFieldCollector中几个变量：</p>
+<ul>
+<li>trackMaxScore：该值是TopFieldCollector类的构造参数，是否需要记录所有满足查询条件的文档集合中最高的文档打分值，用maxScore记录该最大值。</li>
+<li>trackDocScores：该值是TopFieldCollector类的构造参数，是否需要记录所有满足查询条件的文档的打分值。</li>
+<li>totalHits：该值描述了Collector处理的满足搜索条件的文档数量，没当进入下图中SimpleFieldcCollector收集文档的流程就会增加+1。</li>
+</ul>
+<p>如果业务中不需要用到文档的打分值或者maxScore，建议另这两个参数为false，因为找出maxScore或者文档的打分值需要遍历所有满足条件的文档，无法提前结束Collector工作（canEalyTerminate），在满足查询提交的文档数量较大的情况下，提前结束Collector的收集工作能显著提供查询性能。canEalryTerminate会在下文中介绍。</p>
+<h1 id="子类-SimpleFieldCollector"><a href="#子类-SimpleFieldCollector" class="headerlink" title="子类 SimpleFieldCollector"></a>子类 SimpleFieldCollector</h1><p>它的collect的方法流程图如下：</p>
+<img data-src="/img/in-post/image-20200406233905182.png" alt="image-20200406233905182" style="zoom:45%;" />
+
+
+
+<h2 id="记录文档打分值最高的文档"><a href="#记录文档打分值最高的文档" class="headerlink" title="记录文档打分值最高的文档"></a>记录文档打分值最高的文档</h2><pre><code class="java">          float score = Float.NaN;
+          if (trackMaxScore) {
+            score = scorer.score();
+            if (score &gt; maxScore) {
+              maxScore = score;
+            }
+          }</code></pre>
+<img data-src="/img/in-post/3-7191040.png" alt="img" style="zoom:50%;" />
+
+<p>如果参数trackMaxScore为true，那么Collector每处理一篇文档，就要记录该文档的打分值score，如果score大于当前maxScore的值，则更新maxScore的值。</p>
+<h2 id="添加文档信息"><a href="#添加文档信息" class="headerlink" title="添加文档信息"></a>添加文档信息</h2><pre><code class="java">          } else {
+            // Startup transient: queue hasn&#39;t gathered numHits yet
+            final int slot = totalHits - 1;
+
+            if (trackDocScores &amp;&amp; !trackMaxScore) {
+              score = scorer.score();
+            }
+
+            // Copy hit into queue
+            comparator.copy(slot, doc);
+            add(slot, doc, score);
+            if (queueFull) {
+              comparator.setBottom(bottom.slot);
+            }
+          }</code></pre>
+<img data-src="/img/in-post/4-7191031.png" alt="img" style="zoom:50%;" />
+
+<p>使用优先级队列PriorityQueue来存放满足搜索条件的文档信息（文档信息至少包含了文档打分score以及文档docid），分数最低的文档信息位于堆顶，堆的大小默认为段中的文档总数（也可以指定堆的大小，即用户期望返回的TopN）。</p>
+<p>如果堆没有满，将文档号交给FieldComparator，FieldComparator的概念可以参考<a href="https://www.amazingkoala.com.cn/Lucene/Search/2019/0415/50.html" target="_blank" rel="noopener">FieldComparator</a>，它用来描述文档间的排序关系（从代码层面来说，通过FieldComparator实现了优先级队列PriorityQueue的<code>lessThan()</code>方法，优先级队列实现为<code>FieldValueHitQueue</code> 根据比较字段的数量<code>FieldValueHitQueue</code> 有两个匿名实现类<code>MultiComparatorsFieldValueHitQueue</code>和<code>OneComparatorFieldValueHitQueue</code>）接着添加信息到堆中。</p>
+<h2 id="设置bottom值"><a href="#设置bottom值" class="headerlink" title="设置bottom值"></a>设置bottom值</h2><pre><code class="java">            if (queueFull) {
+              comparator.setBottom(bottom.slot);
+            }</code></pre>
+<img data-src="/img/in-post/5-7193863.png" alt="img" style="zoom:50%;" />
+
+<p>在<code>添加文档信息到堆中</code>流程后，如果此时堆正好满了，需要设置bottom的值，即从我们已经处理的文档中找出最差的文档进行比较即可。</p>
+<h2 id="仅统计满足查询条件的文档个数"><a href="#仅统计满足查询条件的文档个数" class="headerlink" title="仅统计满足查询条件的文档个数"></a>仅统计满足查询条件的文档个数</h2><pre><code class="java">         if (queueFull) {
+            if (collectedAllCompetitiveHits) {
+              return;
+            }</code></pre>
+<img data-src="/img/in-post/image-20200418171133754.png" alt="image-20200418171133754" style="zoom: 33%;" />
+
+<p>在堆满的情况下，并且collectedAllCompetitiveHits为true，直接可以退出，尽快直接退出了，还是统计了totalHits的值，所以从collectedAllCompetitiveHits的命中方式也可以看出只是统计了totalHits。</p>
+<p>满足如下条件的情况下，collectedAllCompetitiveHits会为true：</p>
+<p><code>canEarlyStopComparing = true &amp; canEarlyTerminate = false</code></p>
+<ul>
+<li><p><code>canEarlyStopComparing</code>：该值描述了是否可以提前结束域比较，当索引期间通过<code>IndexWriterConfig.setIndexSort(Sort sort)</code>设置的排序规则与搜索期间提供的排序规则一致时，Collector收到的文档集合已经是有序的，<code>canEarlyStopComparing</code>设置true的依据方法：</p>
+<pre><code class="java">  static boolean canEarlyTerminate(Sort searchSort, Sort indexSort) {
+    return canEarlyTerminateOnDocId(searchSort) ||
+           canEarlyTerminateOnPrefix(searchSort, indexSort);
+  }
+
+  private static boolean canEarlyTerminateOnDocId(Sort searchSort) {
+    final SortField[] fields1 = searchSort.getSort();
+    return SortField.FIELD_DOC.equals(fields1[0]);
+  }
+
+  private static boolean canEarlyTerminateOnPrefix(Sort searchSort, Sort indexSort) {
+    if (indexSort != null) {
+      final SortField[] fields1 = searchSort.getSort();
+      final SortField[] fields2 = indexSort.getSort();
+      // early termination is possible if fields1 is a prefix of fields2
+      if (fields1.length &gt; fields2.length) {
+        return false;
+      }
+      return Arrays.asList(fields1).equals(Arrays.asList(fields2).subList(0, fields1.length));
+    } else {
+      return false;
+    }
+  }</code></pre>
+<p>在堆已满的情况下，后面的处理文档号就没有比较的必要性了。</p>
+<p>每次获取一个段的信息时设置<code>canEalryStopComparing</code>，即调用getLeafCollector(LeafReaderContext context)时候设置。</p>
+</li>
+</ul>
+<ul>
+<li><p><code>caneEarlyTerminate</code>：该值描述了是否可以提前结束Collector的收集工作，canEarlyTerminate设置为true需要满足下面条件：</p>
+<pre><code class="java">boolean canEarlyTerminate = trackTotalHits == false &amp;&amp;
+          trackMaxScore == false &amp;&amp;
+          canEarlyStopComparing;
+</code></pre>
+<p>如果满足上面的条件，Lucene会通过抛出异常的方式结束Collector，该异常会被IndexSearcher捕获。这样的好处在于能提高性能。比如说某一次查询，需要返回TOP5，但是满足搜索条件的文档数量有1000000W条，那么在Collector中当处理了5篇文档后（文档在段中有序），就可以直接返回结果了。</p>
+<p>如果条件不满足，即canEarlyTerminate值为false，那么尽管我们已经收集了TOP5的数据（查询结果不会再变化），但是需要继续遍历处理剩余的999999篇文档，因为我们需要记录totalHits（如果trackTotalHits为true）或者需要获得打分值最大的文档（trackMaxScore为true），所以此时collectedAllCompetitiveHits为true，继续处理下一篇文档。</p>
+</li>
+</ul>
+<h2 id="无法提前结束域比较"><a href="#无法提前结束域比较" class="headerlink" title="无法提前结束域比较"></a>无法提前结束域比较</h2><img data-src="/img/in-post/image-20200418201402142.png" alt="image-20200418201402142" style="zoom:50%;" />
+
+<img data-src="/img/in-post/image-20200418202459263.png" alt="image-20200418202459263" style="zoom:50%;" />
+
+<p>由于通过域比较后，当前文档比bottom还要差，那么先通过canEarlyStopingComparing判断出能不能提前结束比较，如果canEarlyStopComparing为false，则退出并处理下一篇文档。</p>
+<p>canEarlyStopComparing为false说明段中的文档没有按照搜索期间的排序规则进行排序，所以当前已经收集的TopN未必是最终的搜索结果，所以退出处理下一篇文档。</p>
+<h2 id="设置collectedAllCompetitiveHits"><a href="#设置collectedAllCompetitiveHits" class="headerlink" title="设置collectedAllCompetitiveHits"></a>设置collectedAllCompetitiveHits</h2><img data-src="/img/in-post/image-20200418211251733.png" alt="image-20200418211251733" style="zoom:50%;" />
+
+
+
+<img data-src="/img/in-post/image-20200418211332115.png" alt="image-20200418211332115" style="zoom:50%;" />
+
+<p>可以提前结束域比较，即canEalyStopComparing为true，并且不可以提前结束Collector的收集工作，即canEarlyTerminate为false，那么同时满足这两个条件就可以设置collectedAllCompetitiveHits为true了。使得处理下一篇文档时就可以走<code>仅统计满足查询条件的文档个数</code>的流程。</p>
+<h2 id="提前结束Collector的收集工作"><a href="#提前结束Collector的收集工作" class="headerlink" title="提前结束Collector的收集工作"></a>提前结束Collector的收集工作</h2><img data-src="/img/in-post/image-20200419005405886.png" alt="image-20200419005405886" style="zoom:50%;" />
+
+<p><img data-src="/img/in-post/10-20200419005634534.png" alt="img"></p>
+<p>可以提前结束Collector的收集工作，那么闲估算剩余满足查询条件的文档数量，通过线性估算出文档数量。估算方法见代码，</p>
+<p>接着设置一个earlyTerminated的值为true，用户在得到查询结果后可以通过该值来了解Collector提前结束收集工作这个事件。</p>
+<p>抛出CollectionTerminatedException异常的方式来实现。</p>
+<h1 id="子类-PagingFieldCollector"><a href="#子类-PagingFieldCollector" class="headerlink" title="子类 PagingFieldCollector"></a>子类 PagingFieldCollector</h1><p>PagingFieldCollector同PaingTopScoreDocCollector一样，相对于SimpleFieldCollector实现了分页功能，collect(int doc)的流程图是相似的，并用红圈标记了不同处。</p>
+<p>PaingFieldCollector的collect(int doc)方法流程图：</p>
+<h1 id=""><a href="#" class="headerlink" title=""></a><img data-src="/img/in-post/11-7229567.png" alt="img"></h1><p>相对于SimpleFieldCollector来说对了<code>是否已经被收集</code></p>
+<h2 id="是否已经被收集"><a href="#是否已经被收集" class="headerlink" title="是否已经被收集"></a>是否已经被收集</h2><p><code>是否已经被收集了</code>描述的是该文档是否已经在前面的索引中被收集了，判断条件如下：</p>
+<pre><code class="java">          final int topCmp = reverseMul * comparator.compareTop(doc);
+          if (topCmp &gt; 0 || (topCmp == 0 &amp;&amp; doc &lt;= afterDoc)) {
+            // Already collected on a previous page
+            return;
+          }</code></pre>
+<ul>
+<li>topCmp： 该值描述当前文档与FieldCollector的top值做比较后的值，top值描述的是之前所有分页收集结果中最差的文档，在初始化PagingFieldCollector对象时需要用户提供该值(通过上一次的查询结果就能获得)，并设置top的值。如果topComp&gt;0，说明当前文档比最差的好(competitive)，必定该偏文档已经在前面某次某分页收集中被收集过了。</li>
+<li>afterDoc：该值描述之前所有分页搜索结果中最差的文档的文档号，如果域比较无法区分得出排序结果，由于文档号是唯一的，所以再根据文档号进行比较，文档号的大的比文档号小的差，所以再topComp==0的情况下，如果当前文档号小于等于afterDoc，必定该篇文档已经在前面某次分页中被收集过了。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此【search】系列常见的Collector已经总结完了，下一篇开始介绍查询原理相关内容。</p>
 ]]></content>
       <categories>
         <category>Lucene</category>
