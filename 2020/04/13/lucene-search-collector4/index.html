@@ -20,26 +20,25 @@
     var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="在上一篇Collector(二)的文章中，介绍了TopDocsCollector的其中一个子类TopScoreDocCollector收集器，以及TopScoreDocCollector的两个子类SimpleTopScoreDocCollector、PagingTopScoreDocCollector，它们的排序规则是“先打分、后文档号”。 这次，介绍TopDocsCollector的另外一个子">
+  <meta name="description" content="Query及子类Query 类    &#x2F;**    * Expert: Constructs an appropriate Weight implementation for this query.    * &lt;p&gt;    * Only implemented by primitive queries, which re-write to themselves.    *    * @">
 <meta property="og:type" content="article">
-<meta property="og:title" content="【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector">
+<meta property="og:title" content="【Lucene】-【Search】查询原理一、Query及其各种实现">
 <meta property="og:url" content="2tongtong.cn/2020/04/13/lucene-search-collector4/index.html">
 <meta property="og:site_name" content="Z.L&#39;s blog">
-<meta property="og:description" content="在上一篇Collector(二)的文章中，介绍了TopDocsCollector的其中一个子类TopScoreDocCollector收集器，以及TopScoreDocCollector的两个子类SimpleTopScoreDocCollector、PagingTopScoreDocCollector，它们的排序规则是“先打分、后文档号”。 这次，介绍TopDocsCollector的另外一个子">
+<meta property="og:description" content="Query及子类Query 类    &#x2F;**    * Expert: Constructs an appropriate Weight implementation for this query.    * &lt;p&gt;    * Only implemented by primitive queries, which re-write to themselves.    *    * @">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="/img/in-post/Collector-5579809.png">
-<meta property="og:image" content="/img/in-post/image-20200406230101284.png">
-<meta property="og:image" content="/img/in-post/image-20200406232808460.png">
-<meta property="og:image" content="/img/in-post/image-20200406231935935.png">
-<meta property="og:image" content="/img/in-post/image-20200406233905182.png">
+<meta property="og:image" content="/img/in-post/image-20200419112647627.png">
+<meta property="og:image" content="/img/in-post/image-20200419112527008.png">
+<meta property="og:image" content="/img/in-post/image-20200420231427751.png">
+<meta property="og:image" content="/img/in-post/image-20200423003100442.png">
 <meta property="article:published_time" content="2020-04-12T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-04-19T01:01:12.295Z">
+<meta property="article:modified_time" content="2020-04-22T16:53:04.687Z">
 <meta property="article:author" content="Zhou Lei">
 <meta property="article:tag" content="Search">
 <meta property="article:tag" content="Lucene">
-<meta property="article:tag" content="Collector">
+<meta property="article:tag" content="Query">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="/img/in-post/Collector-5579809.png">
+<meta name="twitter:image" content="/img/in-post/image-20200419112647627.png">
 
 <link rel="canonical" href="2tongtong.cn/2020/04/13/lucene-search-collector4/">
 
@@ -54,7 +53,7 @@
   };
 </script>
 
-  <title>【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector | Z.L's blog</title>
+  <title>【Lucene】-【Search】查询原理一、Query及其各种实现 | Z.L's blog</title>
   
 
 
@@ -134,12 +133,12 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">60</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">61</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">61</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">62</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -217,7 +216,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector
+          【Lucene】-【Search】查询原理一、Query及其各种实现
         </h1>
 
         <div class="post-meta">
@@ -234,7 +233,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-04-19 09:01:12" itemprop="dateModified" datetime="2020-04-19T09:01:12+08:00">2020-04-19</time>
+                <time title="修改时间：2020-04-23 00:53:04" itemprop="dateModified" datetime="2020-04-23T00:53:04+08:00">2020-04-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -247,7 +246,7 @@
             </span>
 
           
-            <span id="/2020/04/13/lucene-search-collector4/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector" title="阅读次数">
+            <span id="/2020/04/13/lucene-search-collector4/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】查询原理一、Query及其各种实现" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -273,14 +272,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.8k</span>
+              <span>13k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>12 分钟</span>
             </span>
 
         </div>
@@ -292,168 +291,413 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
-<p>在上一篇Collector(二)的文章中，介绍了<code>TopDocsCollector</code>的其中一个子类<code>TopScoreDocCollector</code>收集器，以及<code>TopScoreDocCollector</code>的两个子类<code>SimpleTopScoreDocCollector</code>、<code>PagingTopScoreDocCollector</code>，它们的排序规则是“先打分、后文档号”。</p>
-<p>这次，介绍<code>TopDocsCollector</code>的另外一个子类<code>TopFieldCollector</code>，它的排序规则是“先域比较（FieldComparator），后文档号”。</p>
+        <h1 id="Query及子类"><a href="#Query及子类" class="headerlink" title="Query及子类"></a>Query及子类</h1><h2 id="Query-类"><a href="#Query-类" class="headerlink" title="Query 类"></a>Query 类</h2><img data-src="/img/in-post/image-20200419112647627.png" alt="image-20200419112647627" style="zoom:67%;" />
+
+<pre><code class="java">  /**
+   * Expert: Constructs an appropriate Weight implementation for this query.
+   * &lt;p&gt;
+   * Only implemented by primitive queries, which re-write to themselves.
+   *
+   * @param needsScores   True if document scores ({@link Scorer#score}) are needed.
+   * @param boost         The boost that is propagated by the parent queries.
+   */
+  public Weight createWeight(IndexSearcher searcher, boolean needsScores, float boost) throws IOException {
+    throw new UnsupportedOperationException(&quot;Query &quot; + this + &quot; does not implement createWeight&quot;);
+  }
+
+  /** Expert: called to re-write queries into primitive queries. For example,
+   * a PrefixQuery will be rewritten into a BooleanQuery that consists
+   * of TermQuerys.
+   */
+  public Query rewrite(IndexReader reader) throws IOException {
+    return this;
+  }
+</code></pre>
+<p>Query类主要有2个方法createWeight和rewrite方法。看方法名和注释，就知道是干啥的，不详细赘述。</p>
+<h2 id="常用Query子类"><a href="#常用Query子类" class="headerlink" title="常用Query子类"></a>常用Query子类</h2><p><img data-src="/img/in-post/image-20200419112527008.png" alt="image-20200419112527008"></p>
 <ul>
-<li>先域比较（FieldComparator）：根据文档（Document）中的排序域（SortField）的阈值进行排序。</li>
-<li>后文档号：由于文档号是唯一的，当无法通过域比较来获得顺序关系时，可以再通过文档号进行排序，文档号越小，排名越靠前。</li>
+<li>TermQuery</li>
+<li>BooleanQuery</li>
+<li>WildcardQuery</li>
+<li>PrefixQuery</li>
+<li>FuzzyQuery</li>
+<li>RegexpQuery</li>
+<li>PhraseQuery</li>
+<li>TermRangeQuery</li>
+<li>ConstantScoreQuery</li>
+<li>DisjunctionMaxQuery</li>
+<li>PonitRangeQuery</li>
 </ul>
-<p>下面通过一个例子先介绍怎么使用TopFieldCollector，然后再来介绍排序的原理。</p>
-<p>在搜索阶段如果使用了域排序，那么Lucene默认使用的是<code>TopFieldCollector</code>。</p>
-<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><h2 id="索引代码"><a href="#索引代码" class="headerlink" title="索引代码"></a>索引代码</h2><pre><code class="java">    //0
-    Document doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a b&quot;, Field.Store.YES));
+<h1 id="TermQuery"><a href="#TermQuery" class="headerlink" title="TermQuery"></a>TermQuery</h1><pre><code class="java">    Query termQuery = new TermQuery(new Term(&quot;content&quot;, &quot;quick&quot;));
+    super.search(termQuery, 10);</code></pre>
+<p>包含<strong>域名(FieldName)为”content”，域值(FieldValue)中包含”a”的域（Field）</strong>的文档。</p>
+<h1 id="BooleanQuery"><a href="#BooleanQuery" class="headerlink" title="BooleanQuery"></a>BooleanQuery</h1><pre><code class="java">  @Test
+  public void test() throws IOException {
+    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;quick&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;fox&quot;)), BooleanClause.Occur.SHOULD);
+    builder.setMinimumNumberShouldMatch(1);
+    super.search(builder.build(), 10);
+  }
+
+  public void indexData() throws IOException {
+    Document doc;
+    // 文档0
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a quick black fox，quick white fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author1&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档1
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;fox quick&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author2&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档2
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;quick red dog&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档3
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a really quick red fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    indexWriter.commit();
+    // 索引阶段结束
+  }</code></pre>
+<p>BooleanQuery为组合查询，上图给出的最简单的多个TermQuery的组合（允许其他多种不同查询方式的组合），上图描述的是，期望的文档必须至少（根据BooleanClause.Occur.SHOULD）满足两个TermQuery中的一个，如果都满足，打分更高。</p>
+<h1 id="WildcardQuery"><a href="#WildcardQuery" class="headerlink" title="WildcardQuery"></a>WildcardQuery</h1><p><strong>通配符查询方式</strong>，支持两种通配符：</p>
+<pre><code class="java">  @Test
+  public void test2() {
+    Query query = new WildcardQuery(new Term(&quot;content&quot;, &quot;q*k&quot;));
+    super.search(query, 10);
+  }
+
+  @Test
+  public void test3() {
+    Query query = new WildcardQuery(new Term(&quot;content&quot;, &quot;q\&quot;d&quot;));
+    super.search(query, 10);
+  }
+
+  @Test
+  public void test4() {
+    Query query = new WildcardQuery(new Term(&quot;content&quot;, &quot;q\\\&quot;d&quot;));
+    super.search(query, 10);
+  }
+</code></pre>
+<p>支持两种通配符，转义符号是对星号、问号进行转义查询的，并不是通配符。</p>
+<ul>
+<li>*星号：匹配零个或多个字符。</li>
+<li>？问号：匹配一个字符。</li>
+<li>\转义：用来对星号跟问号进行转移，表示这两个作为字符使用，而不是通配符。</li>
+</ul>
+<h1 id="PrefixQuery"><a href="#PrefixQuery" class="headerlink" title="PrefixQuery"></a>PrefixQuery</h1><p>表示查询前缀的Query。如下查询前缀是”go”的域的文档。</p>
+<pre><code class="java">  @Test
+  public void test() throws IOException {
+    Query query = new PrefixQuery(new Term(&quot;content&quot;, &quot;qo&quot;));
+    super.search(query, 10);
+  }
+
+  public void indexData() throws IOException {
+
+    System.out.println(&quot;index mine test case data&quot;);
+
+    Document doc;
+
+    // 文档0
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a quick black fox，quick white fox qck quisk&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author1&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档1
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;fox qoik&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author2&quot;, Field.Store.YES));
     indexWriter.addDocument(doc);
 
-    //1
+
+    // 文档2
     doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;b&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,-1));
+    doc.add(new TextField(&quot;content&quot;, &quot;qouick red dog&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
     indexWriter.addDocument(doc);
 
-    //2
+    // 文档3
     doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;c b&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,4));
+    doc.add(new TextField(&quot;content&quot;, &quot;a really quick red fox and dog, qok fox , qek fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
     indexWriter.addDocument(doc);
 
-    //3
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,1));
-    indexWriter.addDocument(doc);
 
-    //4
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);
-
-    //5
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
-    indexWriter.addDocument(doc);
 
     indexWriter.commit();
     indexWriter.close();
-</code></pre>
-<h2 id="查询代码"><a href="#查询代码" class="headerlink" title="查询代码"></a>查询代码</h2><pre><code class="java">  public void test() {
-
-    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
-    builder.setMinimumNumberShouldMatch(2);
-
-    SortField sortField = new SortedNumericSortField(&quot;sortByNumber&quot;, SortField.Type.LONG);
-    Sort sort = new Sort(sortField);
-
-    searchBySort(builder.build(), 10, sort);
-    //search(builder.build(), 10);
+    // 索引阶段结束
   }</code></pre>
-<p>Sort可以在查询时指定(IndexSearcher)，也可以在在Index阶段设置如：</p>
-<pre><code class="java">    IndexWriterConfig iwc = new IndexWriterConfig(new MockAnalyzer(random()));
-    Sort indexSort = new Sort(new SortedNumericSortField(&quot;foo&quot;, SortField.Type.LONG));
-    iwc.setIndexSort(indexSort);</code></pre>
+<h1 id="FuzzyQuery"><a href="#FuzzyQuery" class="headerlink" title="FuzzyQuery"></a>FuzzyQuery</h1><p>模糊查询，使用编辑距离来实现模糊匹配，如：</p>
+<p><img data-src="/img/in-post/image-20200420231427751.png" alt="image-20200420231427751"></p>
+<p><strong>编辑距离是2，必须至少2个相同的前缀字符。</strong>会匹配0，1文档。</p>
+<p>索引代码如下：</p>
+<pre><code class="java">    Document doc;
+
+    // 文档0
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;good job&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author1&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档1
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;my god&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author2&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档2
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;gd&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档3
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;g*d&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    indexWriter.commit();
+    indexWriter.close();</code></pre>
+<p>如上图，各个参数介绍如下：</p>
 <ul>
-<li><p>SortedNumericSortField：根据文档（document)中NumericDocValues域的阈值进行排序，如果文档没有这个域，那么阈值视为0。</p>
-</li>
-<li><p>如上面的索引代码，文档1和文档4没有这个域，那么就按照文档号排序。查询排序代码排序结果为：</p>
-<img data-src="/img/in-post/image-20200406230101284.png" alt="image-20200406230101284" style="zoom: 50%;" />
-
-
-
-</li>
+<li>maxEdits：编辑距离的最大编辑值。<strong>默认值2</strong></li>
+<li>prefixLength：模糊匹配到term的至少跟上面Query的域值”god”有两个相同的前缀值，即term的前缀要以”go”开头。<strong>默认为0。</strong></li>
+<li>maxExpansions：在maxEidts跟prefixLength条件下，可能匹配到很多个term，但是只允许处理最多20个term。<strong>默认为50。</strong></li>
+<li>transpositions：该值暂不介绍，需要了解<a href="https://www.amazingkoala.com.cn/Lucene/gongjulei/2019/0417/51.html" target="_blank" rel="noopener">确定性有穷自动机</a>的知识。<strong>默认为true。</strong></li>
 </ul>
-<h1 id="排序类型选择"><a href="#排序类型选择" class="headerlink" title="排序类型选择"></a>排序类型选择</h1><p><strong>上面除了可以使用<code>NumericDocValue</code>类型索引字段然后使用SortedNumericSortField进行Numeric类型排序检索，还可以使用<code>SortedSetSortField</code>String类型排序字段。</strong></p>
-<pre><code class="java">    //4
+<p>再看例子：</p>
+<pre><code>@Test
+public void test2() {
+  Query query = new FuzzyQuery(new Term(&quot;content&quot;, &quot;god&quot;),2);
+  super.search(query, 10);
+}</code></pre><p> 编辑距离为2，其他都使用默认。匹配文档0~3。</p>
+<h1 id="RegexpQuery"><a href="#RegexpQuery" class="headerlink" title="RegexpQuery"></a>RegexpQuery</h1><p>查询方式为正则表达式查询，使用正则表达式来匹配域的域值：</p>
+<pre><code class="java">  @Test
+  public void test() {
+    Query query = new RegexpQuery(new Term(&quot;content&quot;, &quot;q[o]*k&quot;));
+    super.search(query, 10);
+  }</code></pre>
+<p>如上，域值表示 以 “q”开头，以”d”结尾，中间包含零个或多个”o”的域（Field）的文档。如下索引，会匹配文档1和3。</p>
+<pre><code class="java">    // 文档0
     doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;content&quot;, &quot;quisk&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档1
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;qooook&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档2
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;qouick&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档3
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;qok fox&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+</code></pre>
+<h1 id="PhraseQuery"><a href="#PhraseQuery" class="headerlink" title="PhraseQuery"></a>PhraseQuery</h1><p>参数position表示Phrase中输入的两个term的位置相对关系</p>
+<p>setSlop中的slop设置表示允许编辑距离，用来调整两个term的相对位置（必须满足）。</p>
+<p>有关于PhraseQuery实现原理见<a href="https://zhoulei.site/2020/03/29/lucene-search-phrase/" target="_blank" rel="noopener">一文读懂PhraseQuery</a></p>
+<p>索引代码：</p>
+<pre><code class="java">    // 文档0
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a quick black fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author1&quot;, Field.Store.YES));
     indexWriter.addDocument(doc);
 
-    //5
+    // 文档1
     doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
+    doc.add(new TextField(&quot;content&quot;, &quot;a really quick fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author2&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档2
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;quick good good fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
     indexWriter.addDocument(doc);
 
 
-    //6
+    // 文档3
     doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;a&quot;)));//MIN
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;h&quot;)));//MIDDLE_MAX
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;f&quot;)));//MIDDLE_MIN
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;y&quot;)));//MAX
+    doc.add(new TextField(&quot;content&quot;, &quot;quick good good good fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
     indexWriter.addDocument(doc);
 
-    //7
+
+    // 文档4
     doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;c&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;i&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;e&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;z&quot;)));
+    doc.add(new TextField(&quot;content&quot;, &quot;fox quick&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+</code></pre>
+<p>多个例子：</p>
+<pre><code class="java">  @Test
+  //0,1，2
+  public void test() {
+    PhraseQuery.Builder builder = new PhraseQuery.Builder();
+    builder.add(new Term(&quot;content&quot;, &quot;quick&quot;), 1);
+    builder.add(new Term(&quot;content&quot;, &quot;fox&quot;), 3);
+    builder.setSlop(1);
+    super.search(builder.build(), 10);
+  }
+</code></pre>
+<p>相对位置为(3-1)=2，同时允许编辑最大距离1，可以命中0，1，2。</p>
+<p>命中0，是因为相对位置就为2。</p>
+<p>命中1，2是因为quick和fox的相对距离是1和3，因为允许的编辑距离是1，所以文档1，2也可以匹配。</p>
+<p>同理：</p>
+<p>如果slop=0，可以命中文档0。</p>
+<p>如果slop=1，可以命中文档0、1、 2、 3。</p>
+<p>如果slop=3，可以命中文档0、1、2、3、4。命中4、的原因是因为虽然fox 出现在了 quick前面，但是因为两者相对位置为-1，3-（1+3）=-1。</p>
+<h1 id="TermRangeQuery"><a href="#TermRangeQuery" class="headerlink" title="TermRangeQuery"></a>TermRangeQuery</h1><p>表示term的范围查询：</p>
+<pre><code class="java">    Document doc;
+    // 文档0
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;name&quot;, &quot;author1&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档1
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;bcd&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;name&quot;, &quot;author2&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档2
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;ga&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;name&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+    // 文档3
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;gc&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;name&quot;, &quot;author3&quot;, Field.Store.YES));
     indexWriter.addDocument(doc);
 
-    //8
+    // 文档4
     doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;b&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;j&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;d&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;x&quot;)));</code></pre>
-<p>然后使用<strong>查询代码</strong>为：</p>
-<pre><code class="java">    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
-    builder.setMinimumNumberShouldMatch(2);
+    doc.add(new TextField(&quot;content&quot;, &quot;gch&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;name&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
 
-    SortField sortField = new SortedSetSortField(&quot;sortByString&quot;, false , SortedSetSelector.Type.MIN);
-    Sort sort = new Sort(sortField);
+    // 文档5
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;gchb&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;name&quot;, &quot;author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);</code></pre>
+<p>查询代码：</p>
+<pre><code class="java">  @Test
+  //1,2,3
+  //通过确定型有穷自动机的机制来找到查询条件范围类的所有term
+  public void test() {
+    TermRangeQuery query = new TermRangeQuery(&quot;content&quot;, new BytesRef(&quot;bc&quot;), new BytesRef(&quot;gc&quot;), true,true);
+    super.search(query, 10);
+  }</code></pre>
+<p>匹配文档1、2、3。</p>
+<p>基于确定性有穷自动机实现，具体可以参考<a href="https://www.amazingkoala.com.cn/Lucene/gongjulei/2019/0417/51.html" target="_blank" rel="noopener">Automaton</a>,通过确定性有穷自动机的机制来找到查询条件范围内的所有term。</p>
+<h1 id="PointRangeQuery"><a href="#PointRangeQuery" class="headerlink" title="PointRangeQuery"></a>PointRangeQuery</h1><p>数值类型的范围查询（多维度查询）</p>
+<pre><code class="java">    // 文档0
+    doc = new Document();
+    doc.add(new IntPoint(&quot;coordinate&quot;, 2,8));
+    indexWriter.addDocument(doc);
+    // 文档1
+    doc = new Document();
+    doc.add(new IntPoint(&quot;coordinate&quot;, 4,6));
+    indexWriter.addDocument(doc);
+    // 文档2
+    doc = new Document();
+    doc.add(new IntPoint(&quot;coordinate&quot;, 6,7));
+    indexWriter.addDocument(doc);
+    // 文档3
+    doc = new Document();
+    doc.add(new IntPoint(&quot;coordinate&quot;, 4,3));
+    indexWriter.addDocument(doc);
 
-    searchBySort(builder.build(), 10, sort);</code></pre>
-<p>默认从小到大输出，结果为：</p>
-<p><img data-src="/img/in-post/image-20200406232808460.png" alt="image-20200406232808460"></p>
-<h2 id="SortedSetSelector-Type"><a href="#SortedSetSelector-Type" class="headerlink" title="SortedSetSelector.Type"></a>SortedSetSelector.Type</h2><p>reverse设置false，按照从小到大排序，反之true是从大到小排序。</p>
-<p>除了上面使用的<code>SortedSetSelector.Type.MIN</code>，还有<img data-src="/img/in-post/image-20200406231935935.png" alt="image-20200406231935935"></p>
-<p><code>MIDDLE_MAX</code></p>
-<p><code>MIDDLE_MIN</code></p>
-<p><code>MAX</code></p>
-<p>下面介绍下这四种类型</p>
-<ul>
-<li><p><code>MIN</code>：选择域值最小的进行排序，如上面文档6、7、8 会使用a c b作为排序条件，即结果：</p>
-<p>4-&gt;5-&gt;6-&gt;8-&gt;7（4、5该域为null，默认按照文档号排序）</p>
-</li>
-<li><p><code>MAX</code>：选择域值最大的进行排序，如上面的文档6、7、8会使用y z x作为排序条件，即结果：</p>
-<p>4-&gt;5-&gt;8-&gt;6-&gt;7</p>
-</li>
-<li><p><code>MIDDLE_MIN</code>：选择中间域值，如果域值个数为偶数个，那么中间域值有两个，则取<strong>较小值</strong>。如上面的6、7、8 会使用f e d作为排序条件。结果为：</p>
-<p>4-&gt;5-&gt;8-&gt;7-&gt;6</p>
-</li>
-<li><p><code>MIDLE_MAX</code>：参考MIDDLE_MIN就是取中间两个的较大值作为排序条件了。具体不赘述了。</p>
-</li>
-</ul>
-<p>刚刚讲了<strong><code>SortedNumericSortField</code></strong>和<strong><code>SortedSetSortField</code></strong>都可以在索引阶段设置多个具有相同域名的不通值，用法跟<strong><code>SortedSetSortField</code></strong>是一样的，就不赘述了。</p>
-<p>接下来看下根据过滤(filtering)规则，接着介绍TopFieldCollector的两个子类：</p>
-<ul>
-<li><p>SimpleFieldCollector：无过滤规则</p>
-</li>
-<li><p>PagingFieldCollector：有过滤规则，具体内容在下文展开</p>
-</li>
-</ul>
-<h1 id="SimpleFieldCollector"><a href="#SimpleFieldCollector" class="headerlink" title="SimpleFieldCollector"></a>SimpleFieldCollector</h1><p>它的collect的方法流程图如下：</p>
-<img data-src="/img/in-post/image-20200406233905182.png" alt="image-20200406233905182" style="zoom:45%;" />
+    indexWriter.commit();
+    indexWriter.close();</code></pre>
+<pre><code class="java">  @Test
+  public void test() {
+    int[] lowValue = {1,5};
+    int[] upValue = {4,7};
+    Query query = IntPoint.newRangeQuery(&quot;coordinate&quot;,lowValue,upValue);
+    super.search(query, 10);
+  }
+</code></pre>
+<p>匹配文档1。</p>
+<img data-src="/img/in-post/image-20200423003100442.png" alt="image-20200423003100442" style="zoom:50%;" />
+
+<p>可以看到红框描述的是lowValue和upValue组成的矩形，所以文档1会匹配。</p>
+<p>另外关于数值类型的索引信息是如何在索引阶段存储的，需要熟悉BKD-TREE和索引文件dim&amp;&amp;dii。</p>
+<h1 id="DisjunctionMaxQuery"><a href="#DisjunctionMaxQuery" class="headerlink" title="DisjunctionMaxQuery"></a>DisjunctionMaxQuery</h1><p>多Query联合查询</p>
+<pre><code class="java">    // 文档0
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a quick black fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author1 author2&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档1
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a really quick red fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author2 author3 author4&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档2
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;quick fox&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author2 author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档3
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;fox quick&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author1 author2 author3&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    // 文档4
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;fox quick&quot;, Field.Store.YES));
+    doc.add(new TextField(&quot;author&quot;, &quot;author1 author2&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);</code></pre>
+<pre><code class="java">    PhraseQuery.Builder builder = new PhraseQuery.Builder();
+    builder.add(new Term(&quot;content&quot;, &quot;quick&quot;), 1);
+    builder.add(new Term(&quot;content&quot;, &quot;fox&quot;), 3);
+    builder.setSlop(0);
+
+    Query termQuery = new TermQuery(new Term(&quot;author&quot;, &quot;author2&quot;));
+    Query termQuery2 = new TermQuery(new Term(&quot;author&quot;, &quot;author3&quot;));
+    BooleanQuery.Builder booleanQueryBuidler = new BooleanQuery.Builder();
+    booleanQueryBuidler.add(termQuery, BooleanClause.Occur.MUST);
+    booleanQueryBuidler.add(termQuery2, BooleanClause.Occur.MUST);
 
 
-
-
-
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>下一篇Collector（四）继续</p>
+    List&lt;Query&gt; queryList = new ArrayList&lt;&gt;();
+    queryList.add(builder.build());
+    queryList.add(booleanQueryBuidler.build());
+    Query query = new DisjunctionMaxQuery(queryList, 1);
+    super.search(query,10);</code></pre>
+<p>如上示例，联合PhraseQuery和BooleanQuery查询，查询的结果为DisjunctionMaxQuery联合的Query的结果合集。</p>
+<p>可以匹配到文档1、2、3、0。文档4匹配不到，是因为它既通过PhraseQuery、又通过BooleanQuery匹配不到。</p>
+<p>两者查询结果的打分如何组合进行最终打分排序，见DisjunctionMaxScorer中按照如下公式组合:</p>
+<pre><code class="java">  protected float score(DisiWrapper topList) throws IOException {
+    float scoreSum = 0;
+    float scoreMax = Float.NEGATIVE_INFINITY;
+    for (DisiWrapper w = topList; w != null; w = w.next) {
+      final float subScore = w.scorer.score();
+      scoreSum += subScore;
+      if (subScore &gt; scoreMax) {
+        scoreMax = subScore;
+      }
+    }
+    return scoreMax + (scoreSum - scoreMax) * tieBreakerMultiplier; 
+  }
+}</code></pre>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此Query的所有Query使用基本介绍完了，关于使用自动机实现的Query，后续再总结自动机时介绍原理。</p>
 
     </div>
 
@@ -485,7 +729,7 @@
           <div class="post-tags">
               <a href="/tags/Search/" rel="tag"># Search</a>
               <a href="/tags/Lucene/" rel="tag"># Lucene</a>
-              <a href="/tags/Collector/" rel="tag"># Collector</a>
+              <a href="/tags/Query/" rel="tag"># Query</a>
           </div>
 
         
@@ -494,8 +738,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/04/08/lucene-search-collector3/" rel="prev" title="【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector">
-      <i class="fa fa-chevron-left"></i> 【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector
+    <a href="/2020/04/13/lucene-search-yuanli1/" rel="prev" title="【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector">
+      <i class="fa fa-chevron-left"></i> 【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector
     </a></div>
       <div class="post-nav-item"></div>
     </div>
@@ -558,7 +802,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#例子"><span class="nav-number">1.</span> <span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#索引代码"><span class="nav-number">1.1.</span> <span class="nav-text">索引代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查询代码"><span class="nav-number">1.2.</span> <span class="nav-text">查询代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#排序类型选择"><span class="nav-number">2.</span> <span class="nav-text">排序类型选择</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SortedSetSelector-Type"><span class="nav-number">2.1.</span> <span class="nav-text">SortedSetSelector.Type</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SimpleFieldCollector"><span class="nav-number">3.</span> <span class="nav-text">SimpleFieldCollector</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Query及子类"><span class="nav-number">1.</span> <span class="nav-text">Query及子类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Query-类"><span class="nav-number">1.1.</span> <span class="nav-text">Query 类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常用Query子类"><span class="nav-number">1.2.</span> <span class="nav-text">常用Query子类</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TermQuery"><span class="nav-number">2.</span> <span class="nav-text">TermQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BooleanQuery"><span class="nav-number">3.</span> <span class="nav-text">BooleanQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WildcardQuery"><span class="nav-number">4.</span> <span class="nav-text">WildcardQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PrefixQuery"><span class="nav-number">5.</span> <span class="nav-text">PrefixQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#FuzzyQuery"><span class="nav-number">6.</span> <span class="nav-text">FuzzyQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RegexpQuery"><span class="nav-number">7.</span> <span class="nav-text">RegexpQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PhraseQuery"><span class="nav-number">8.</span> <span class="nav-text">PhraseQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TermRangeQuery"><span class="nav-number">9.</span> <span class="nav-text">TermRangeQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PointRangeQuery"><span class="nav-number">10.</span> <span class="nav-text">PointRangeQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DisjunctionMaxQuery"><span class="nav-number">11.</span> <span class="nav-text">DisjunctionMaxQuery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -574,7 +818,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-count">61</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -587,7 +831,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-count">62</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -649,13 +893,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">262k</span>
+    <span title="站点总字数">275k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:58</span>
+    <span title="站点阅读时长">4:10</span>
 </div>
 
         

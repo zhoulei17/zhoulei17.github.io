@@ -121,12 +121,12 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">60</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">61</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">61</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">62</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -187,6 +187,174 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/03/29/lucene-search-phrase/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/29/lucene-search-phrase/" class="post-title-link" itemprop="url">【Lucene】-【Search】一文读懂Lucene PhraseQuery</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-29 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-29T00:00:00+08:00">2020-03-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-18 10:29:33" itemprop="dateModified" datetime="2020-04-18T10:29:33+08:00">2020-04-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/29/lucene-search-phrase/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】一文读懂Lucene PhraseQuery" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/29/lucene-search-phrase/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/29/lucene-search-phrase/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>15 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文介绍PhraseQuery的基本用法，为简单起见，只介绍slop=0的场景下的源码，主要是我了说明Luene的优化点和词频统计的算法。slop等于非0部分的算法后续再补充。也因为这是【search系列】的第一篇介绍query的文章，因此本文会把查询的流程和各个类初始化的过程也写了下来，方便其他query总结时参照。</p>
+<h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><p>直接给出笔者调试源码的demo：</p>
+<pre><code class="java">  private void doDemo() {
+    PhraseQuery.Builder builder = new PhraseQuery.Builder();
+    builder.add(new Term(&quot;content&quot;, &quot;quick&quot;), 1);
+    builder.add(new Term(&quot;content&quot;, &quot;fox&quot;), 2);
+    builder.add(new Term(&quot;content&quot;, &quot;dog&quot;), 3);
+
+
+    //builder.add(new Term(&quot;content&quot;, &quot;dog&quot;), 9);
+    //builder.setSlop(1);
+    //builder.add(new Term(&quot;content&quot;,&quot;a quick black fox&quot;));
+    Query query = builder.build();
+    // 返回Top5的结果
+    int resultTopN = 5;
+
+    ScoreDoc[] scoreDocs = new ScoreDoc[0];
+    try {
+      scoreDocs = searcher.search(query, resultTopN).scoreDocs;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    System.out.println(&quot;Total Result Number: &quot;+scoreDocs.length+&quot;&quot;);
+    for (int i = 0; i &lt; scoreDocs.length; i++) {
+      ScoreDoc scoreDoc = scoreDocs[i];
+      // 输出满足查询条件的 文档号
+      System.out.println(&quot;result&quot;+i+&quot;: 文档&quot;+scoreDoc.doc+&quot;&quot;);
+    }
+  }</code></pre>
+<h1 id="代码流程"><a href="#代码流程" class="headerlink" title="代码流程"></a>代码流程</h1><p>给出从输入到文档收集的总体流程，如果图片太小，请打开查看清晰大图。</p>
+<p><img data-src="/img/in-post/image-20200325224838395.png" alt="image-20200325224838395"></p>
+<p>总体流程：</p>
+<ol>
+<li><p>如果使用Solr的REST API请求，根据输入String解析由Solr的Parser类解析并构建出PhraseQuery。如果直接调用Lucene API，就直接构造PhraseQuery并初始化，其中输入position如果position[0]不等于0，就统一把position[]处理为以postion[0]=0为起始的poistion[]数组。</p>
+</li>
+<li><p>初始化PhraseWeight，目的主要是要初始化好BM25Similarity（当然也可以是其他Similarity）相关类为后续打分类做准备，以及在PhraseWeight内部构建好输入Phrase对应的每个Term对象对应的TermContext。</p>
+</li>
+<li><p>初始化PhraseScorer，目的主要有3个：</p>
+<ol>
+<li><p>构建出打分相关的对象。</p>
+</li>
+<li><p>以及打分中会用到的PhraseMatcher对象，PhraseMatcher对象用于在打分之前计算Phrase的词频。</p>
+</li>
+<li><p>对每个Term对应倒排表文档进行合并处理生成ConjuntionDISI对象（同时这也是一个DocIdIterator迭代器，保存了满足所有Term出现在当前字段的文档列表）并封装到TwoPhraseIterator中，这样在后续收集文档时就会在这个文档里面中迭代TwoPhraseIterator中的文档号。</p>
+</li>
+</ol>
+</li>
+<li><p>在步骤3中生成文档列表TwoPhraseIterator进行迭代文档号，通过PhraseMatcher子类，判断当前文档对应的字段对应的一批Term是否满足PhraseQuery中的Position要求，如果满足要求就统计词频。</p>
+<p>统计词频后，使用步骤3中的PhraseScorer进行打分，并使用LeafCollector封装的文档队列进行TOP排序或者其他类似collector类型的收集处理，收集好文档返回。</p>
+</li>
+</ol>
+<p>​      </p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/03/29/lucene-search-phrase/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1468,138 +1636,11 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/11/27/ODL-mdsal-codereview/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/ODL-mdsal-codereview/" class="post-title-link" itemprop="url">【opendaylight】——MD-SAL服务总线RPC服务源码分析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-27T00:00:00+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 09:06:59" itemprop="dateModified" datetime="2020-03-22T09:06:59+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/opendaylight/" itemprop="url" rel="index"><span itemprop="name">opendaylight</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/11/27/ODL-mdsal-codereview/" class="post-meta-item leancloud_visitors" data-flag-title="【opendaylight】——MD-SAL服务总线RPC服务源码分析" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/11/27/ODL-mdsal-codereview/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/ODL-mdsal-codereview/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
-<p><img data-src="/img/in-post/1578029380086.png" alt></p>
-<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt></p>
-<p>说明：</p>
-<ul>
-<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<t>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<domrpcimplementation>&gt; 内的List<domrpcimplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</domrpcimplementation></domrpcimplementation></t></li>
-<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
-</ul>
-<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<t>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</t></li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/11/27/ODL-mdsal-codereview/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1667,7 +1708,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-count">61</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1680,7 +1721,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-count">62</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1742,13 +1783,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">262k</span>
+    <span title="站点总字数">275k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:58</span>
+    <span title="站点阅读时长">4:10</span>
 </div>
 
         
