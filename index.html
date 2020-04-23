@@ -191,160 +191,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/04/13/lucene-search-collector4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/04/13/lucene-search-collector4/" class="post-title-link" itemprop="url">【Lucene】-【Search】查询原理一、Query及其各种实现</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-04-13 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-13T00:00:00+08:00">2020-04-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-04-23 00:53:04" itemprop="dateModified" datetime="2020-04-23T00:53:04+08:00">2020-04-23</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2020/04/13/lucene-search-collector4/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】查询原理一、Query及其各种实现" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2020/04/13/lucene-search-collector4/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/04/13/lucene-search-collector4/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>13k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>12 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Query及子类"><a href="#Query及子类" class="headerlink" title="Query及子类"></a>Query及子类</h1><h2 id="Query-类"><a href="#Query-类" class="headerlink" title="Query 类"></a>Query 类</h2><img data-src="/img/in-post/image-20200419112647627.png" alt="image-20200419112647627" style="zoom:67%;">
-
-<pre><code class="java">  /**
-   * Expert: Constructs an appropriate Weight implementation for this query.
-   * &lt;p&gt;
-   * Only implemented by primitive queries, which re-write to themselves.
-   *
-   * @param needsScores   True if document scores ({@link Scorer#score}) are needed.
-   * @param boost         The boost that is propagated by the parent queries.
-   */
-  public Weight createWeight(IndexSearcher searcher, boolean needsScores, float boost) throws IOException {
-    throw new UnsupportedOperationException(&quot;Query &quot; + this + &quot; does not implement createWeight&quot;);
-  }
-
-  /** Expert: called to re-write queries into primitive queries. For example,
-   * a PrefixQuery will be rewritten into a BooleanQuery that consists
-   * of TermQuerys.
-   */
-  public Query rewrite(IndexReader reader) throws IOException {
-    return this;
-  }
-</code></pre>
-<p>Query类主要有2个方法createWeight和rewrite方法。看方法名和注释，就知道是干啥的，不详细赘述。</p>
-<h2 id="常用Query子类"><a href="#常用Query子类" class="headerlink" title="常用Query子类"></a>常用Query子类</h2><p><img data-src="/img/in-post/image-20200419112527008.png" alt="image-20200419112527008"></p>
-<ul>
-<li>TermQuery</li>
-<li>BooleanQuery</li>
-<li>WildcardQuery</li>
-<li>PrefixQuery</li>
-<li>FuzzyQuery</li>
-<li>RegexpQuery</li>
-<li>PhraseQuery</li>
-<li>TermRangeQuery</li>
-<li>ConstantScoreQuery</li>
-<li>DisjunctionMaxQuery</li>
-<li>PonitRangeQuery</li>
-</ul>
-<h1 id="TermQuery"><a href="#TermQuery" class="headerlink" title="TermQuery"></a>TermQuery</h1><pre><code class="java">    Query termQuery = new TermQuery(new Term(&quot;content&quot;, &quot;quick&quot;));
-    super.search(termQuery, 10);</code></pre>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/04/13/lucene-search-collector4/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/04/13/lucene-search-yuanli1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -484,6 +330,160 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/04/13/lucene-search-yuanli1/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/04/13/lucene-search-collector4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/13/lucene-search-collector4/" class="post-title-link" itemprop="url">【Lucene】-【Search】查询原理一、Query及其各种实现</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-13 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-13T00:00:00+08:00">2020-04-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-23 00:53:04" itemprop="dateModified" datetime="2020-04-23T00:53:04+08:00">2020-04-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/04/13/lucene-search-collector4/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】查询原理一、Query及其各种实现" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/04/13/lucene-search-collector4/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/04/13/lucene-search-collector4/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>12 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Query及子类"><a href="#Query及子类" class="headerlink" title="Query及子类"></a>Query及子类</h1><h2 id="Query-类"><a href="#Query-类" class="headerlink" title="Query 类"></a>Query 类</h2><img data-src="/img/in-post/image-20200419112647627.png" alt="image-20200419112647627" style="zoom:67%;">
+
+<pre><code class="java">  /**
+   * Expert: Constructs an appropriate Weight implementation for this query.
+   * &lt;p&gt;
+   * Only implemented by primitive queries, which re-write to themselves.
+   *
+   * @param needsScores   True if document scores ({@link Scorer#score}) are needed.
+   * @param boost         The boost that is propagated by the parent queries.
+   */
+  public Weight createWeight(IndexSearcher searcher, boolean needsScores, float boost) throws IOException {
+    throw new UnsupportedOperationException(&quot;Query &quot; + this + &quot; does not implement createWeight&quot;);
+  }
+
+  /** Expert: called to re-write queries into primitive queries. For example,
+   * a PrefixQuery will be rewritten into a BooleanQuery that consists
+   * of TermQuerys.
+   */
+  public Query rewrite(IndexReader reader) throws IOException {
+    return this;
+  }
+</code></pre>
+<p>Query类主要有2个方法createWeight和rewrite方法。看方法名和注释，就知道是干啥的，不详细赘述。</p>
+<h2 id="常用Query子类"><a href="#常用Query子类" class="headerlink" title="常用Query子类"></a>常用Query子类</h2><p><img data-src="/img/in-post/image-20200419112527008.png" alt="image-20200419112527008"></p>
+<ul>
+<li>TermQuery</li>
+<li>BooleanQuery</li>
+<li>WildcardQuery</li>
+<li>PrefixQuery</li>
+<li>FuzzyQuery</li>
+<li>RegexpQuery</li>
+<li>PhraseQuery</li>
+<li>TermRangeQuery</li>
+<li>ConstantScoreQuery</li>
+<li>DisjunctionMaxQuery</li>
+<li>PonitRangeQuery</li>
+</ul>
+<h1 id="TermQuery"><a href="#TermQuery" class="headerlink" title="TermQuery"></a>TermQuery</h1><pre><code class="java">    Query termQuery = new TermQuery(new Term(&quot;content&quot;, &quot;quick&quot;));
+    super.search(termQuery, 10);</code></pre>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/04/13/lucene-search-collector4/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
