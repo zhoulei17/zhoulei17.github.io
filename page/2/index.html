@@ -1484,7 +1484,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/11/27/ODL-RPC-module/">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/11/27/ODL-mdsal-codereview/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar2.png">
@@ -1498,7 +1498,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/11/27/ODL-RPC-module/" class="post-title-link" itemprop="url">【opendaylight】——MD-SAL RPC源码概览</a>
+            <a href="/2019/11/27/ODL-mdsal-codereview/" class="post-title-link" itemprop="url">【opendaylight】——MD-SAL服务总线RPC服务源码分析</a>
         </h2>
 
         <div class="post-meta">
@@ -1528,7 +1528,7 @@
             </span>
 
           
-            <span id="/2019/11/27/ODL-RPC-module/" class="post-meta-item leancloud_visitors" data-flag-title="【opendaylight】——MD-SAL RPC源码概览" title="阅读次数">
+            <span id="/2019/11/27/ODL-mdsal-codereview/" class="post-meta-item leancloud_visitors" data-flag-title="【opendaylight】——MD-SAL服务总线RPC服务源码分析" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -1543,8 +1543,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2019/11/27/ODL-RPC-module/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/ODL-RPC-module/" itemprop="commentCount"></span>
+    <a title="valine" href="/2019/11/27/ODL-mdsal-codereview/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/ODL-mdsal-codereview/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -1554,14 +1554,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.3k</span>
+              <span>3.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>3 分钟</span>
             </span>
 
         </div>
@@ -1573,50 +1573,21 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
-<p><img data-src="/img/in-post/1578029090431.png" alt></p>
+          <h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p><img data-src="/img/in-post/1578029380086.png" alt></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt></p>
+<p>说明：</p>
 <ul>
-<li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p>
-</li>
-<li><p>sal-broker-impl：实现了BI RPC服务的注册、调用。</p>
-</li>
-<li><p>sal-binding-api：定义了BA RPC服务的注册、调用接口。</p>
-</li>
-<li><p>sal-binding-broker-impl：实现了BA RPC服务的注册、调用，实际的注册、调用操作都通过adapter将BA服务封装成BI服务代理到BI RPC服务中心。</p>
-</li>
-<li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p>
-<h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li>
+<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<t>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<domrpcimplementation>&gt; 内的List<domrpcimplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</domrpcimplementation></domrpcimplementation></t></li>
+<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
 </ul>
-<p><img data-src="/img/in-post/1578029209816.png" alt></p>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt></p>
 <ul>
-<li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p>
-</li>
-<li><p>DOMRpcService：定义了BI RPC服务的调用和服务增删的监听接口。</p>
-</li>
-<li><p>DOMRpcAvailabilityListener：BI RPC服务新增和删除的监听接口。</p>
-</li>
-<li><p>DOMRpcRouter：实现了BI RPC服务的注册、调用和服务增加的监听回调。</p>
-</li>
-<li><p>RpcConsumerRegistry：定义了BA RPC服务的查询接口。</p>
-</li>
-<li><p>RouteChangePublisher：定义了BA RPC服务的变更监听接口。</p>
-</li>
-<li><p>RpcProviderRegistry：定义了BA RPC服务的注册接口。</p>
-</li>
-<li><p>BindingDOMRpcServiceAdapter：实现了BA RPC服务的查询，依赖DOMRpcService，将对BA RPC的调用转换为调用DOMRpcService。</p>
-</li>
-<li><p>BindingDOMRpcProviderServiceAdapter：依赖DOMRpcProviderService，将BA RPC封装为DOMRpcImplementation注册到DOMRpcProviderService。</p>
-</li>
-<li><p>HeliumRpcProviderRegistry：聚合BindingDOMRpcServiceAdapter</p>
-</li>
-<li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p>
-</li>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<t>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</t></li>
 </ul>
-<h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt></p>
-<p>RPC跨进程注册和调用的主要类</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2019/11/27/ODL-RPC-module/#more" rel="contents">
+              <a class="btn" href="/2019/11/27/ODL-mdsal-codereview/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>

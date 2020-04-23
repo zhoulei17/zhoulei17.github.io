@@ -178,11 +178,11 @@
     
     
     <entry>
-      <title>【Solr】SolrCloud</title>
-      <link href="/2020/03/31/solr-solrcloud/"/>
-      <url>/2020/03/31/solr-solrcloud/</url>
+      <title>【Solr】-【Search】Solr fq与pf的原理与实现</title>
+      <link href="/2020/03/31/solr-search-fq&amp;pf/"/>
+      <url>/2020/03/31/solr-search-fq&amp;pf/</url>
       
-        <content type="html"><![CDATA[<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="SolrCloud"><a href="#SolrCloud" class="headerlink" title="SolrCloud"></a>SolrCloud</h1>]]></content>
+        <content type="html"><![CDATA[<p>环境：在单机模式下，启动本地solr调试。</p><h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><pre><code class="java">http://127.0.0.1:8983/test/Collection/select?q=ABST:apple&amp;fq=TTL:apple&amp;timeAllowed=10000000</code></pre><h1 id="q与fq的主要流程图"><a href="#q与fq的主要流程图" class="headerlink" title="q与fq的主要流程图"></a>q与fq的主要流程图</h1><img data-src="/img/in-post/image-20200401013329206.png" alt="image-20200401013329206" style="zoom:150%;" />]]></content>
       
       
       <categories>
@@ -205,11 +205,11 @@
     
     
     <entry>
-      <title>【Solr】-【Search】Solr fq与pf的原理与实现</title>
-      <link href="/2020/03/31/solr-search-fq&amp;pf/"/>
-      <url>/2020/03/31/solr-search-fq&amp;pf/</url>
+      <title>【Solr】SolrCloud</title>
+      <link href="/2020/03/31/solr-solrcloud/"/>
+      <url>/2020/03/31/solr-solrcloud/</url>
       
-        <content type="html"><![CDATA[<p>环境：在单机模式下，启动本地solr调试。</p><h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><pre><code class="java">http://127.0.0.1:8983/test/Collection/select?q=ABST:apple&amp;fq=TTL:apple&amp;timeAllowed=10000000</code></pre><h1 id="q与fq的主要流程图"><a href="#q与fq的主要流程图" class="headerlink" title="q与fq的主要流程图"></a>q与fq的主要流程图</h1><img data-src="/img/in-post/image-20200401013329206.png" alt="image-20200401013329206" style="zoom:150%;" />]]></content>
+        <content type="html"><![CDATA[<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="SolrCloud"><a href="#SolrCloud" class="headerlink" title="SolrCloud"></a>SolrCloud</h1>]]></content>
       
       
       <categories>
@@ -549,33 +549,6 @@
     
     
     <entry>
-      <title>【opendaylight】——MD-SAL RPC源码概览</title>
-      <link href="/2019/11/27/ODL-RPC-module/"/>
-      <url>/2019/11/27/ODL-RPC-module/</url>
-      
-        <content type="html"><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p><p><img data-src="/img/in-post/1578029090431.png" alt=""></p><ul><li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p></li><li><p>sal-broker-impl：实现了BI RPC服务的注册、调用。</p></li><li><p>sal-binding-api：定义了BA RPC服务的注册、调用接口。</p></li><li><p>sal-binding-broker-impl：实现了BA RPC服务的注册、调用，实际的注册、调用操作都通过adapter将BA服务封装成BI服务代理到BI RPC服务中心。</p></li><li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p><h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li></ul><p><img data-src="/img/in-post/1578029209816.png" alt=""></p><ul><li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p></li><li><p>DOMRpcService：定义了BI RPC服务的调用和服务增删的监听接口。</p></li><li><p>DOMRpcAvailabilityListener：BI RPC服务新增和删除的监听接口。</p></li><li><p>DOMRpcRouter：实现了BI RPC服务的注册、调用和服务增加的监听回调。</p></li><li><p>RpcConsumerRegistry：定义了BA RPC服务的查询接口。</p></li><li><p>RouteChangePublisher：定义了BA RPC服务的变更监听接口。</p></li><li><p>RpcProviderRegistry：定义了BA RPC服务的注册接口。</p></li><li><p>BindingDOMRpcServiceAdapter：实现了BA RPC服务的查询，依赖DOMRpcService，将对BA RPC的调用转换为调用DOMRpcService。</p></li><li><p>BindingDOMRpcProviderServiceAdapter：依赖DOMRpcProviderService，将BA RPC封装为DOMRpcImplementation注册到DOMRpcProviderService。</p></li><li><p>HeliumRpcProviderRegistry：聚合BindingDOMRpcServiceAdapter</p></li><li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p></li></ul><h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt=""></p><p>RPC跨进程注册和调用的主要类</p><ul><li><p>RpcManager：跨进程RPC的管理者，负责启动其他Actor，并在节点间同步。</p></li><li><p>RpcInvoker：处理跨进程调用过来的akka请求的Actor，调用本地的DOMRpcService。</p></li><li><p>RpcListener：监听本地DOMRpcService服务的变化，给RpcRegistry发消息刷新本地服务的注册信息。</p></li><li><p>RpcRegistry：维护DOMRpcService服务注册信息的Actor，启动Gossiper定期与其他节点交换注册信息，将本地服务新的变化同步给其他节点，并接收其他节点新的注册信息发送给RpcRegistrar刷新服务。</p></li><li><p>Gossiper：定期与其他节点交换注册信息，如果注册信息有变化则获取新的注册信息发送给RpcRegistry同步。</p></li><li><p>RpcRegistrar：接收RpcRegistry发送过来的远端节点的服务信息，调用本地的DOMRpcProviderService注册远端服务的代理，这样当本地需要使用这些服务时可以在本地DOMRpcService调用到这些服务的代理，将调用请求通过akka发送过去。</p></li></ul><h3 id="BA-RPC服务注册流程"><a href="#BA-RPC服务注册流程" class="headerlink" title="BA RPC服务注册流程"></a>BA RPC服务注册流程</h3><p>通过实现AbstractBindingAwareProvider可以获取到ProviderContext，通过ProviderContext可以注册BA RPC服务，ProviderContext则是调用RpcProviderRegistry服务实现BA RPC服务的注册。</p><h1 id="二、MD-SAL改进"><a href="#二、MD-SAL改进" class="headerlink" title="二、MD-SAL改进"></a>二、MD-SAL改进</h1><h2 id="1-异步RPC"><a href="#1-异步RPC" class="headerlink" title="1.异步RPC"></a>1.异步RPC</h2><p>通过Yang定义RPC生成Java接口都是返回Future对象的接口，即接口语义上由服务的提供方实现接口的异步调用，MD-SAL的RPC框架未实现接口的异步调用，但是实际在AC的服务实现中并未实现调用的异步执行，基本上都是在调用线程执行的操作然后返回ImmediateFuture，这样的服务实现在MD-SAL的RPC框架中存在两个问题：</p><ul><li>1、 调用本地的RPC服务以为返回的Future是异步的，实际上已经同步执行完。</li><li>2、 远程调用请求都是有RpcInvoker来处理，这是个Actor，内部请求都是单线程处理的，调用RPC服务实现成同步执行会导致所有的远程调用变成串行的，远程调用吞吐量会非常低。</li></ul><p>因此改造了RPC的调用，增加了异步调用机制，大致方案是通过定制的类似ODL ProviderContext的Activator在注册异步服务时为异步服务创建并关联一个独立的akka Routor，定制ODL RPC的框架代码，在存在关联的akka Routor时将请求发送给该Routor处理从而实现同步的服务实现转异步。调用流程如下：</p><p><img data-src="/img/in-post/1578029343307.png" alt=""></p><h2 id="2-路由增量同步"><a href="#2-路由增量同步" class="headerlink" title="2.路由增量同步"></a>2.路由增量同步</h2><p>MD-SAL RPC框架通过Gossip实现各节点服务信息的最终一致性，原生ODL的Gossip机制先广播各个节点服务信息的version，如果某个节点发现它缓存的其中一个节点的服务信息version较低时再发送请求获取该节点的全量服务信息进行同步。具体路由增量同步的详细优化见下一篇博客。</p>]]></content>
-      
-      
-      <categories>
-          
-          <category> opendaylight </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> odl </tag>
-            
-            <tag> rpc </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
       <link href="/2019/11/27/ODL-mdsal-codereview/"/>
       <url>/2019/11/27/ODL-mdsal-codereview/</url>
@@ -603,27 +576,25 @@
     
     
     <entry>
-      <title>【NLP】一、线性回归与随机梯度下降法</title>
-      <link href="/2019/11/27/NLP-Gradient-Descent/"/>
-      <url>/2019/11/27/NLP-Gradient-Descent/</url>
+      <title>【opendaylight】——MD-SAL RPC源码概览</title>
+      <link href="/2019/11/27/ODL-RPC-module/"/>
+      <url>/2019/11/27/ODL-RPC-module/</url>
       
-        <content type="html"><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p><p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p><p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p><p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p><h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p><p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p><p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p><h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p><p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p><h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p><p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p><p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p><h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p><p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p><p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p><p>即单个样本的最小问题转化为：</p><p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p><p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p><p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p><p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p><h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p><h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p><p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p><ul><li><p>步骤一、</p><p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p></li><li><p>步骤二、</p></li></ul><p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p><ul><li><p>步骤三、</p><p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p></li><li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p></li></ul><h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p><p>其手动拟合的过程如下：</p><p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p><h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p><ul><li><p><strong>目标定义</strong></p><p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p></li><li><p><strong>求解过程</strong></p><p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p></li></ul><h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p><p>将上文提到的代价函数带入随机梯度下降的公式中：</p><p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p><p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p><p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p><p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p><p>慢慢拟合</p><p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p><p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p><p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol><li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p></li><li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p></li><li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p><p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p></li></ol>]]></content>
+        <content type="html"><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p><p><img data-src="/img/in-post/1578029090431.png" alt=""></p><ul><li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p></li><li><p>sal-broker-impl：实现了BI RPC服务的注册、调用。</p></li><li><p>sal-binding-api：定义了BA RPC服务的注册、调用接口。</p></li><li><p>sal-binding-broker-impl：实现了BA RPC服务的注册、调用，实际的注册、调用操作都通过adapter将BA服务封装成BI服务代理到BI RPC服务中心。</p></li><li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p><h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li></ul><p><img data-src="/img/in-post/1578029209816.png" alt=""></p><ul><li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p></li><li><p>DOMRpcService：定义了BI RPC服务的调用和服务增删的监听接口。</p></li><li><p>DOMRpcAvailabilityListener：BI RPC服务新增和删除的监听接口。</p></li><li><p>DOMRpcRouter：实现了BI RPC服务的注册、调用和服务增加的监听回调。</p></li><li><p>RpcConsumerRegistry：定义了BA RPC服务的查询接口。</p></li><li><p>RouteChangePublisher：定义了BA RPC服务的变更监听接口。</p></li><li><p>RpcProviderRegistry：定义了BA RPC服务的注册接口。</p></li><li><p>BindingDOMRpcServiceAdapter：实现了BA RPC服务的查询，依赖DOMRpcService，将对BA RPC的调用转换为调用DOMRpcService。</p></li><li><p>BindingDOMRpcProviderServiceAdapter：依赖DOMRpcProviderService，将BA RPC封装为DOMRpcImplementation注册到DOMRpcProviderService。</p></li><li><p>HeliumRpcProviderRegistry：聚合BindingDOMRpcServiceAdapter</p></li><li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p></li></ul><h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt=""></p><p>RPC跨进程注册和调用的主要类</p><ul><li><p>RpcManager：跨进程RPC的管理者，负责启动其他Actor，并在节点间同步。</p></li><li><p>RpcInvoker：处理跨进程调用过来的akka请求的Actor，调用本地的DOMRpcService。</p></li><li><p>RpcListener：监听本地DOMRpcService服务的变化，给RpcRegistry发消息刷新本地服务的注册信息。</p></li><li><p>RpcRegistry：维护DOMRpcService服务注册信息的Actor，启动Gossiper定期与其他节点交换注册信息，将本地服务新的变化同步给其他节点，并接收其他节点新的注册信息发送给RpcRegistrar刷新服务。</p></li><li><p>Gossiper：定期与其他节点交换注册信息，如果注册信息有变化则获取新的注册信息发送给RpcRegistry同步。</p></li><li><p>RpcRegistrar：接收RpcRegistry发送过来的远端节点的服务信息，调用本地的DOMRpcProviderService注册远端服务的代理，这样当本地需要使用这些服务时可以在本地DOMRpcService调用到这些服务的代理，将调用请求通过akka发送过去。</p></li></ul><h3 id="BA-RPC服务注册流程"><a href="#BA-RPC服务注册流程" class="headerlink" title="BA RPC服务注册流程"></a>BA RPC服务注册流程</h3><p>通过实现AbstractBindingAwareProvider可以获取到ProviderContext，通过ProviderContext可以注册BA RPC服务，ProviderContext则是调用RpcProviderRegistry服务实现BA RPC服务的注册。</p><h1 id="二、MD-SAL改进"><a href="#二、MD-SAL改进" class="headerlink" title="二、MD-SAL改进"></a>二、MD-SAL改进</h1><h2 id="1-异步RPC"><a href="#1-异步RPC" class="headerlink" title="1.异步RPC"></a>1.异步RPC</h2><p>通过Yang定义RPC生成Java接口都是返回Future对象的接口，即接口语义上由服务的提供方实现接口的异步调用，MD-SAL的RPC框架未实现接口的异步调用，但是实际在AC的服务实现中并未实现调用的异步执行，基本上都是在调用线程执行的操作然后返回ImmediateFuture，这样的服务实现在MD-SAL的RPC框架中存在两个问题：</p><ul><li>1、 调用本地的RPC服务以为返回的Future是异步的，实际上已经同步执行完。</li><li>2、 远程调用请求都是有RpcInvoker来处理，这是个Actor，内部请求都是单线程处理的，调用RPC服务实现成同步执行会导致所有的远程调用变成串行的，远程调用吞吐量会非常低。</li></ul><p>因此改造了RPC的调用，增加了异步调用机制，大致方案是通过定制的类似ODL ProviderContext的Activator在注册异步服务时为异步服务创建并关联一个独立的akka Routor，定制ODL RPC的框架代码，在存在关联的akka Routor时将请求发送给该Routor处理从而实现同步的服务实现转异步。调用流程如下：</p><p><img data-src="/img/in-post/1578029343307.png" alt=""></p><h2 id="2-路由增量同步"><a href="#2-路由增量同步" class="headerlink" title="2.路由增量同步"></a>2.路由增量同步</h2><p>MD-SAL RPC框架通过Gossip实现各节点服务信息的最终一致性，原生ODL的Gossip机制先广播各个节点服务信息的version，如果某个节点发现它缓存的其中一个节点的服务信息version较低时再发送请求获取该节点的全量服务信息进行同步。具体路由增量同步的详细优化见下一篇博客。</p>]]></content>
       
       
       <categories>
           
-          <category> NLP </category>
+          <category> opendaylight </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> 随机梯度下降 </tag>
+            <tag> odl </tag>
             
-            <tag> 有监督 </tag>
-            
-            <tag> 线性回归 </tag>
+            <tag> rpc </tag>
             
         </tags>
       
@@ -655,6 +626,35 @@
             <tag> 并发框架 </tag>
             
             <tag> Executor </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>【NLP】一、线性回归与随机梯度下降法</title>
+      <link href="/2019/11/27/NLP-Gradient-Descent/"/>
+      <url>/2019/11/27/NLP-Gradient-Descent/</url>
+      
+        <content type="html"><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p><p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p><p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p><p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p><h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p><p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p><p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p><h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p><p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p><h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p><p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p><p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p><h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p><p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p><p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p><p>即单个样本的最小问题转化为：</p><p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p><p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p><p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p><p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p><h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p><h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p><p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p><ul><li><p>步骤一、</p><p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p></li><li><p>步骤二、</p></li></ul><p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p><ul><li><p>步骤三、</p><p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p></li><li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p></li></ul><h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p><p>其手动拟合的过程如下：</p><p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p><h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p><ul><li><p><strong>目标定义</strong></p><p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p></li><li><p><strong>求解过程</strong></p><p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p></li></ul><h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p><p>将上文提到的代价函数带入随机梯度下降的公式中：</p><p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p><p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p><p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p><p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p><p>慢慢拟合</p><p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p><p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p><p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol><li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p></li><li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p></li><li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p><p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p></li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> NLP </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 随机梯度下降 </tag>
+            
+            <tag> 有监督 </tag>
+            
+            <tag> 线性回归 </tag>
             
         </tags>
       
@@ -1473,6 +1473,35 @@
     
     
     <entry>
+      <title>【目录】</title>
+      <link href="/2019/03/04/2019-3-04-java-concurrency-catalog/"/>
+      <url>/2019/03/04/2019-3-04-java-concurrency-catalog/</url>
+      
+        <content type="html"><![CDATA[<h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><p>Java并发编程的博客主要分为一下五大主题：</p><h2 id="基本概念篇"><a href="#基本概念篇" class="headerlink" title="基本概念篇"></a>基本概念篇</h2><p>3.6 认识线程：讲下线程定义、优势，线程基本使用（创建、启动、执行）。</p><p>3.7 控制线程：操控线程的基本方法。</p><p>并发概念：这篇要分为好多个小专题来讲，主要会讲下</p><ul><li>3.8 线程的3个特征</li><li>3.9 内存模型  </li><li>3.10 互斥锁</li><li>3.11 线程的生命周期、线程数计算、执行原理</li><li>3.12 安全性</li><li>3.13 活跃性问题</li><li>3.14 性能问题</li><li>3.15 管程</li></ul><h2 id="线程之间的协作"><a href="#线程之间的协作" class="headerlink" title="线程之间的协作"></a>线程之间的协作</h2><ul><li>3.16 wait，notify、notifyAll</li><li>3.17 阻塞队列控制协作</li><li>3.18 管程Mointor（Lock&amp;Condition、synchronized）</li><li>3.19 信号量Semaphore</li><li>3.20 CountdownLatch</li><li>3.21 CyclicBarrier</li><li>3.22 Phaser</li><li>3.23 Exchanger</li><li>3.24 死锁</li></ul><h2 id="线程之间的互斥"><a href="#线程之间的互斥" class="headerlink" title="线程之间的互斥"></a>线程之间的互斥</h2><p>互斥主要是为了保证线程执行的正确性或者叫做安全性，一般采用有锁和无锁的方案。</p><ul><li>有锁：讲下synchronized、Lock、读写锁<ul><li>3.25 synchronzied</li><li>3.26 Lock，读写锁</li></ul></li><li>无锁：不变模式、可见保证volatile、原子保证Atomic相关。<ul><li>3.27 final模式</li><li>3.28 可见性volatile</li><li>3.29 原子Atomic</li></ul></li></ul><h2 id="线程之间的分工问题"><a href="#线程之间的分工问题" class="headerlink" title="线程之间的分工问题"></a>线程之间的分工问题</h2><p>主要会讲下并发线程中的并发设计模式。</p><ul><li>Executor与线程池</li><li>Fork/Join</li><li>Future</li><li>Guarded Susepension模式</li><li>Thread-Per-Message模式</li><li>生产者-消费者模式</li><li>Worker-Thread模式</li><li>两阶段终止模式</li></ul><h2 id="并发线程工具类"><a href="#并发线程工具类" class="headerlink" title="并发线程工具类"></a>并发线程工具类</h2><p>这个主题主要继续深入讲解各个并发工具的使用和原理，并会有锁侧重的分析这些并发工具类的源码。</p><ul><li><p>3.30 Lock</p></li><li><p>3.31 Semaphore</p></li><li><p>4.1 ReadWriteLock</p></li><li><p>4.2 原子类</p></li><li><p>4.3 Executor与线程池、阻塞队列</p></li><li><p>4.4 Future</p></li><li><p>4.5 Fork/Join</p></li><li><p>4.6 并发容器</p></li><li><p>4.7 CountDownLatch&amp;CyclicBarrier</p></li><li><p>4.8 CountDownLatch</p></li><li><p>4.9 StampedLock</p></li><li><p>4.10 CompletableFuture</p></li><li><p>4.11 CompletionService</p><p>等。</p></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> Java </category>
+          
+          <category> 并发编程 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> java </tag>
+            
+            <tag> 并发 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>【基本概念篇】一、认识进程与线程</title>
       <link href="/2019/03/04/2019-3-06-java-concurrency-system/"/>
       <url>/2019/03/04/2019-3-06-java-concurrency-system/</url>
@@ -1496,35 +1525,6 @@
             <tag> 进程 </tag>
             
             <tag> 线程 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>【目录】</title>
-      <link href="/2019/03/04/2019-3-04-java-concurrency-catalog/"/>
-      <url>/2019/03/04/2019-3-04-java-concurrency-catalog/</url>
-      
-        <content type="html"><![CDATA[<h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><p>Java并发编程的博客主要分为一下五大主题：</p><h2 id="基本概念篇"><a href="#基本概念篇" class="headerlink" title="基本概念篇"></a>基本概念篇</h2><p>3.6 认识线程：讲下线程定义、优势，线程基本使用（创建、启动、执行）。</p><p>3.7 控制线程：操控线程的基本方法。</p><p>并发概念：这篇要分为好多个小专题来讲，主要会讲下</p><ul><li>3.8 线程的3个特征</li><li>3.9 内存模型  </li><li>3.10 互斥锁</li><li>3.11 线程的生命周期、线程数计算、执行原理</li><li>3.12 安全性</li><li>3.13 活跃性问题</li><li>3.14 性能问题</li><li>3.15 管程</li></ul><h2 id="线程之间的协作"><a href="#线程之间的协作" class="headerlink" title="线程之间的协作"></a>线程之间的协作</h2><ul><li>3.16 wait，notify、notifyAll</li><li>3.17 阻塞队列控制协作</li><li>3.18 管程Mointor（Lock&amp;Condition、synchronized）</li><li>3.19 信号量Semaphore</li><li>3.20 CountdownLatch</li><li>3.21 CyclicBarrier</li><li>3.22 Phaser</li><li>3.23 Exchanger</li><li>3.24 死锁</li></ul><h2 id="线程之间的互斥"><a href="#线程之间的互斥" class="headerlink" title="线程之间的互斥"></a>线程之间的互斥</h2><p>互斥主要是为了保证线程执行的正确性或者叫做安全性，一般采用有锁和无锁的方案。</p><ul><li>有锁：讲下synchronized、Lock、读写锁<ul><li>3.25 synchronzied</li><li>3.26 Lock，读写锁</li></ul></li><li>无锁：不变模式、可见保证volatile、原子保证Atomic相关。<ul><li>3.27 final模式</li><li>3.28 可见性volatile</li><li>3.29 原子Atomic</li></ul></li></ul><h2 id="线程之间的分工问题"><a href="#线程之间的分工问题" class="headerlink" title="线程之间的分工问题"></a>线程之间的分工问题</h2><p>主要会讲下并发线程中的并发设计模式。</p><ul><li>Executor与线程池</li><li>Fork/Join</li><li>Future</li><li>Guarded Susepension模式</li><li>Thread-Per-Message模式</li><li>生产者-消费者模式</li><li>Worker-Thread模式</li><li>两阶段终止模式</li></ul><h2 id="并发线程工具类"><a href="#并发线程工具类" class="headerlink" title="并发线程工具类"></a>并发线程工具类</h2><p>这个主题主要继续深入讲解各个并发工具的使用和原理，并会有锁侧重的分析这些并发工具类的源码。</p><ul><li><p>3.30 Lock</p></li><li><p>3.31 Semaphore</p></li><li><p>4.1 ReadWriteLock</p></li><li><p>4.2 原子类</p></li><li><p>4.3 Executor与线程池、阻塞队列</p></li><li><p>4.4 Future</p></li><li><p>4.5 Fork/Join</p></li><li><p>4.6 并发容器</p></li><li><p>4.7 CountDownLatch&amp;CyclicBarrier</p></li><li><p>4.8 CountDownLatch</p></li><li><p>4.9 StampedLock</p></li><li><p>4.10 CompletableFuture</p></li><li><p>4.11 CompletionService</p><p>等。</p></li></ul>]]></content>
-      
-      
-      <categories>
-          
-          <category> Java </category>
-          
-          <category> 并发编程 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> java </tag>
-            
-            <tag> 并发 </tag>
             
         </tags>
       

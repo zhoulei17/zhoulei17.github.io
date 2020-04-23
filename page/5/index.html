@@ -1479,7 +1479,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/03/04/2019-3-06-java-concurrency-system/">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/03/04/2019-3-04-java-concurrency-catalog/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar2.png">
@@ -1493,7 +1493,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/03/04/2019-3-06-java-concurrency-system/" class="post-title-link" itemprop="url">【基本概念篇】一、认识进程与线程</a>
+            <a href="/2019/03/04/2019-3-04-java-concurrency-catalog/" class="post-title-link" itemprop="url">【目录】</a>
         </h2>
 
         <div class="post-meta">
@@ -1527,7 +1527,7 @@
             </span>
 
           
-            <span id="/2019/03/04/2019-3-06-java-concurrency-system/" class="post-meta-item leancloud_visitors" data-flag-title="【基本概念篇】一、认识进程与线程" title="阅读次数">
+            <span id="/2019/03/04/2019-3-04-java-concurrency-catalog/" class="post-meta-item leancloud_visitors" data-flag-title="【目录】" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -1542,8 +1542,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2019/03/04/2019-3-06-java-concurrency-system/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/03/04/2019-3-06-java-concurrency-system/" itemprop="commentCount"></span>
+    <a title="valine" href="/2019/03/04/2019-3-04-java-concurrency-catalog/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/03/04/2019-3-04-java-concurrency-catalog/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -1553,14 +1553,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6.1k</span>
+              <span>901</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>1 分钟</span>
             </span>
 
         </div>
@@ -1572,104 +1572,35 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>总结Java线程基本概念之前，首先先来了解下操作系统层面的进程与线程的相关知识</p>
-<h1 id="进程管理和调度"><a href="#进程管理和调度" class="headerlink" title="进程管理和调度"></a>进程管理和调度</h1><h2 id="CPU的构成与基本工作方式"><a href="#CPU的构成与基本工作方式" class="headerlink" title="CPU的构成与基本工作方式"></a>CPU的构成与基本工作方式</h2><ul>
-<li><p>CPU由<strong>运算器</strong>、<strong>控制器</strong>、一系列的<strong>寄存器以及高速缓存</strong>构成。</p>
-<p>运算器：主要负责指令中的算术和逻辑运算、是计算机的核心。</p>
-<p>控制器：主要负责控制程序运行的流程，包括取指令、维护CPU状态、CPU与内存的交互等。</p>
-<p>寄存器：主要负责指令在CPU内部处理的过程中暂存数据、地址以及指令信息的存储指令。</p>
-<p>寄存器有两类：<strong>用户可见寄存器</strong>、控制寄存器。</p>
-<p>其中用户可见寄存器是高级语言编译器通过算法分配使用的，以减少程序访问主存次数。</p>
-<p>控制寄存器用来控制处理器的操作，由OS的特权代码使用，以控制其它程序的执行。</p>
-</li>
-<li><p><strong>用户可见寄存器：包括通用寄存器、数据寄存器、地址寄存器</strong></p>
+          <h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><p>Java并发编程的博客主要分为一下五大主题：</p>
+<h2 id="基本概念篇"><a href="#基本概念篇" class="headerlink" title="基本概念篇"></a>基本概念篇</h2><p>3.6 认识线程：讲下线程定义、优势，线程基本使用（创建、启动、执行）。</p>
+<p>3.7 控制线程：操控线程的基本方法。</p>
+<p>并发概念：这篇要分为好多个小专题来讲，主要会讲下</p>
 <ul>
-<li>数据寄存器：主要用来存放操作数</li>
-<li>地址寄存器：简单来讲是用来存储数据和指令的物理地址、线性地址或者有效地址，用来某种特定方式的寻址。</li>
-<li>I/O地址寄存器</li>
-<li>I/O缓冲寄存器</li>
+<li>3.8 线程的3个特征</li>
+<li>3.9 内存模型  </li>
+<li>3.10 互斥锁</li>
+<li>3.11 线程的生命周期、线程数计算、执行原理</li>
+<li>3.12 安全性</li>
+<li>3.13 活跃性问题</li>
+<li>3.14 性能问题</li>
+<li>3.15 管程</li>
 </ul>
-</li>
-<li><p>控制寄存器</p>
-<p>控制寄存器主要有：程序计数器PC，指令寄存器IR，程序状态字PSW，中断寄存器，存储器和I/O模块控制的寄存器，因为高级语言（Java）运行时不直接参与这块的运算，因此不细讲。</p>
-</li>
-<li><p>高速缓存（内、外）：处于CPU和物理内存之间一般由控制器的内存管理单元（MMU：Memory Mangement Unit）管理，访问速度快鱼内存、低于寄存器。利用程序局部性原理使得高速指令处理和低速内存访问得以匹配，从而提高CPU效率。</p>
-</li>
+<h2 id="线程之间的协作"><a href="#线程之间的协作" class="headerlink" title="线程之间的协作"></a>线程之间的协作</h2><ul>
+<li>3.16 wait，notify、notifyAll</li>
+<li>3.17 阻塞队列控制协作</li>
+<li>3.18 管程Mointor（Lock&amp;Condition、synchronized）</li>
+<li>3.19 信号量Semaphore</li>
+<li>3.20 CountdownLatch</li>
+<li>3.21 CyclicBarrier</li>
+<li>3.22 Phaser</li>
+<li>3.23 Exchanger</li>
+<li>3.24 死锁</li>
 </ul>
-<h2 id="进程的定义"><a href="#进程的定义" class="headerlink" title="进程的定义"></a>进程的定义</h2><p>Process(“任务”task或活动active)，进程是具有独立功能的程序关于某个数据集合上的一次运行活动，是系统进行资源分配、调度和保护的独立单位。</p>
-<ul>
-<li><p>进程有什么用？为什么要引入进程概念？</p>
-<p>原因1.为了刻画系统的动态性，发挥系统的并发性，提高系统的资源利用率。</p>
-<p>原因2.它能解决系统的“共享性”，正确描述程序执行状态。一一种“可再入”、“可再用”的程序。</p>
-</li>
-<li><p>进程的状态和转换</p>
-<ul>
-<li><p>三种进程状态：运行态、就绪态、等待态</p>
-<ul>
-<li><p>就绪-&gt;运行：调度程序选择一个新的程序运行</p>
-</li>
-<li><p>运行-&gt;就绪：</p>
-<p>运行进程用完了时间片</p>
-<p>运行进程被中断，因为高一优先级进程处于就绪状态</p>
-</li>
-<li><p>运行-&gt;等待</p>
-<p>当一进程必须等待时</p>
-<p>OS尚未完成服务</p>
-<p>对一资源的访问尚不能进行</p>
-<p>初始化I/O且必须等待结果</p>
-<p>等待某一进程提供输入</p>
-</li>
-<li><p>等待-&gt;就绪</p>
-<p>当所等待的事件发生时</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>五种进程状态：增加 创建状态、终止状态</p>
-<p>NULL-&gt;新建态：创建一个子进程</p>
-<p>新建态-&gt;就绪态：系统完成了进程创建操作，且当前系统的性能和内存的容量均允许。</p>
-<p>运行态-&gt;终止态：一个进程到达自然结束点，或者出现无法克服的错误，或被操作系统终结，或被其他有终止权的进程所终结。</p>
-<p>终止态-&gt;NULL：完成善后操作。</p>
-<p>就绪态-&gt;终止态：某些操作系统允许父进程终结子进程。</p>
-<p>等待态-&gt;终止态：某些操作系统允许父进程终结子进程。</p>
-</li>
-<li><p>七种进程状态：增加 “挂起”、“激活”状态</p>
-<ul>
-<li><p>为什么要有挂起状态？</p>
-<p>由于进程的不断创建，系统资源已不能满足进程运行的要求，就必须把某些进程挂起，对换到磁盘镜像区中，暂时不参与进程调度，起到平滑系统操作负载的目的。</p>
-</li>
-<li><p>“挂起”：把一个进程从内存转到外存可能有以下几种情况：</p>
-<p>阻塞-&gt;阻塞挂起：没有进程处于就绪状或就绪进程要求更多内存资源时，发生这种转换，以提交新进程或运行就绪进程。</p>
-<p>就绪-&gt;就绪挂起：当有高优先级阻塞（系统认为很快就绪）进程和低优先级就绪就绪进程时，系统选择挂起低优先级就绪进程。</p>
-<p>运行-&gt;就绪挂起：对<strong>抢占式</strong>系统，当<strong>高优先级</strong>阻塞挂起进程因事件出现而进入就绪挂起时，系统可能会把运行进程转到就绪挂起状态。</p>
-</li>
-<li><p>激活：把一个进程从外存转到内存，可能有以下几种情况：</p>
-<p>就绪挂起-&gt;就绪：没有就绪进程或挂起就绪进程优先级高于就绪进程时，发生转换。</p>
-<p>阻塞挂起-&gt;阻塞：当一个进程释放足够内存时，系统会把一个高优先级阻塞挂起（系统认为会很快出现所等待的事件）进程转换为阻塞状态。</p>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="进程控制块"><a href="#进程控制块" class="headerlink" title="进程控制块"></a>进程控制块</h2><p>PBC是系统为了控制和管理进程设置的一个专门的数据结构，用来记录进程的外部特征，描述进程运动变化的过程。PBC是系统感知进程存在的唯一标志。一个进程与一个PCB是一一对应的。PBC主要有如下构成：</p>
-<ol>
-<li><p>进程描述信息</p>
-<p>进程描述符、进程名、用户标识符、进程组关系</p>
-</li>
-<li><p>进程控制信息</p>
-<p>当前状态、优先级、代码执行入口、程序的外存地址、运行统计信息（执行时间、页面调度）、进程间同步和通信、阻塞原因、进程的队列指针、进程的消息队列指针</p>
-</li>
-<li><p>所拥有的资源和使用情况</p>
-<p>虚拟地址空间的现状、打开文件列表</p>
-</li>
-<li><p>CPU现场保护信息</p>
-<p>寄存器值（通用、程序计数器PC、状态PSW，地址包括栈指针）</p>
-<p>指向赋予该进程段/页表的指针</p>
-</li>
-</ol>
+<h2 id="线程之间的互斥"><a href="#线程之间的互斥" class="headerlink" title="线程之间的互斥"></a>线程之间的互斥</h2>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2019/03/04/2019-3-06-java-concurrency-system/#more" rel="contents">
+              <a class="btn" href="/2019/03/04/2019-3-04-java-concurrency-catalog/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
