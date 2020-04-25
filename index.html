@@ -309,6 +309,134 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/04/25/solr-solrcloud%E2%80%94index/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/25/solr-solrcloud%E2%80%94index/" class="post-title-link" itemprop="url">【Solr】-【SolrCloud】分布式索引</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-25 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-25T00:00:00+08:00">2020-04-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-26 01:57:23" itemprop="dateModified" datetime="2020-04-26T01:57:23+08:00">2020-04-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Solr/" itemprop="url" rel="index"><span itemprop="name">Solr</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/04/25/solr-solrcloud%E2%80%94index/" class="post-meta-item leancloud_visitors" data-flag-title="【Solr】-【SolrCloud】分布式索引" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/04/25/solr-solrcloud%E2%80%94index/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/04/25/solr-solrcloud%E2%80%94index/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>SloudCloud中shard中的索引与单机中的索引文档是一样的结构，且一个shard的多个replicas理想状态下是完全一样的。从客户端角度看，在访问单机索引或分布式索引客户端是不感知的。从Solr服务器角度看，原来单机的索引被分割为多个shard索引目录，就单个shard来说，都是一个完整的索引结果，都可以单独访问。</p>
+<p>SolrCloud中分布式索引的总体目标是能够把文档发送到集群的的任何节点上，并且能把文档在正确的分片中被索引。此外，SolrCloud的分布式索引目的在于，能够避免单点故障，达到高可用。</p>
+<h1 id="文档的分片"><a href="#文档的分片" class="headerlink" title="文档的分片"></a>文档的分片</h1><p>当Solr索引新文档时，需要将其分配到一个分片上。Solr使用<strong>文档管理器</strong>组件来确认文档应当被分到哪个分片上。SolrCloud支持两种文档路由策略：</p>
+<ul>
+<li>compositeID(默认)</li>
+<li>隐式路由。用户可以自定义路由策略。</li>
+</ul>
+<img data-src="/img/in-post/image-20200426015707997.png" alt="image-20200426015707997" style="zoom: 50%;">
+
+<p>查看/clusterstate.json，可以看到笔者所在公司collection由16个shard组成。每个分片会分配一个32位的散列值，如上图，shar1的散列区间是80000000-8fffffff，而shard2的散列区间是90000000-9fffffff(十六进制数)。系统在每个分片之间均分这32位散列值区间。</p>
+<p>默认的compositeID路由器会计算出文档里唯一ID字段的数值散列值，并将文档分配给哈希值区间包含计算得到的哈希值的分片。每个发送给SolrCloud的文档都必须具有唯一的文档ID号。</p>
+<p>（注：这种Hash算法的源码为：</p>
+<p><code>HashBasedRouter</code>，使用了一种称为<code>murmurhash3_x86_32</code>的hash算法。有兴趣的同学，可以自行扩展阅读源码。）</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/04/25/solr-solrcloud%E2%80%94index/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/04/25/solr-solrcloud%E2%80%94search/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -399,136 +527,6 @@
 
       
           
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/04/25/solr-solrcloud%E2%80%94index/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/04/25/solr-solrcloud%E2%80%94index/" class="post-title-link" itemprop="url">【Solr】-【SolrCloud】分布式索引</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-04-25 00:00:00" itemprop="dateCreated datePublished" datetime="2020-04-25T00:00:00+08:00">2020-04-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-04-26 01:49:28" itemprop="dateModified" datetime="2020-04-26T01:49:28+08:00">2020-04-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Solr/" itemprop="url" rel="index"><span itemprop="name">Solr</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2020/04/25/solr-solrcloud%E2%80%94index/" class="post-meta-item leancloud_visitors" data-flag-title="【Solr】-【SolrCloud】分布式索引" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2020/04/25/solr-solrcloud%E2%80%94index/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/04/25/solr-solrcloud%E2%80%94index/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.3k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>SloudCloud中shard中的索引与单机中的索引文档是一样的结构，且一个shard的多个replicas理想状态下是完全一样的。从客户端角度看，在访问单机索引或分布式索引客户端是不感知的。从Solr服务器角度看，原来单机的索引被分割为多个shard索引目录，就单个shard来说，都是一个完整的索引结果，都可以单独访问。</p>
-<p>SolrCloud中分布式索引的总体目标是能够把文档发送到集群的的任何节点上，并且能把文档在正确的分片中被索引。此外，SolrCloud的分布式索引目的在于，能够避免单点故障，达到高可用。</p>
-<h1 id="文档的分片"><a href="#文档的分片" class="headerlink" title="文档的分片"></a>文档的分片</h1><p>当Solr索引新文档时，需要将其分配到一个分片上。Solr使用<strong>文档管理器</strong>组件来确认文档应当被分到哪个分片上。SolrCloud支持两种文档路由策略：</p>
-<ul>
-<li>compositeID(默认)</li>
-<li>隐式路由。用户可以自定义路由策略。</li>
-</ul>
-<img data-src="../../../../tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425195812464.png" alt="image-20200425195812464" style="zoom:50%;">
-
-
-
-<p>查看/clusterstate.json，可以看到笔者所在公司collection由16个shard组成。每个分片会分配一个32位的散列值，如上图，shar1的散列区间是80000000-8fffffff，而shard2的散列区间是90000000-9fffffff(十六进制数)。系统在每个分片之间均分这32位散列值区间。</p>
-<p>默认的compositeID路由器会计算出文档里唯一ID字段的数值散列值，并将文档分配给哈希值区间包含计算得到的哈希值的分片。每个发送给SolrCloud的文档都必须具有唯一的文档ID号。</p>
-<p>（注：这种Hash算法的源码为：</p>
-<p><code>HashBasedRouter</code>，使用了一种称为<code>murmurhash3_x86_32</code>的hash算法。有兴趣的同学，可以自行扩展阅读源码。）</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/04/25/solr-solrcloud%E2%80%94index/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
       
     </div>
 
