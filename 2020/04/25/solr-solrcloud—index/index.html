@@ -28,9 +28,9 @@
 <meta property="og:description" content="SloudCloud中shard中的索引与单机中的索引文档是一样的结构，且一个shard的多个replicas理想状态下是完全一样的。从客户端角度看，在访问单机索引或分布式索引客户端是不感知的。从Solr服务器角度看，原来单机的索引被分割为多个shard索引目录，就单个shard来说，都是一个完整的索引结果，都可以单独访问。 SolrCloud中分布式索引的总体目标是能够把文档发送到集群的的任何节">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="2tongtong.cn/tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425195812464.png">
-<meta property="og:image" content="2tongtong.cn/tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425205722515.png">
+<meta property="og:image" content="/img/in-post/image-20200426014919722.png">
 <meta property="article:published_time" content="2020-04-24T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-04-25T17:43:32.843Z">
+<meta property="article:modified_time" content="2020-04-25T17:49:28.899Z">
 <meta property="article:author" content="Zhou Lei">
 <meta property="article:tag" content="Solr">
 <meta property="article:tag" content="Search">
@@ -231,7 +231,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-04-26 01:43:32" itemprop="dateModified" datetime="2020-04-26T01:43:32+08:00">2020-04-26</time>
+                <time title="修改时间：2020-04-26 01:49:28" itemprop="dateModified" datetime="2020-04-26T01:49:28+08:00">2020-04-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -307,7 +307,7 @@
 <p>如上图，如果当前这份文档唯一ID字段的散列值是80000001(十六进制)，那这份文档会被分配到shard1。</p>
 <p>关于文档ID的散列值如何计算的问题，可以看我括号注明的Solr源码。这个散列函数的目标（基本上所有的散列的函数都是）：第一、必须要要块，因为在分布式Solr中，确定将文档分配到哪个分片是非常基本的操作；第二、应该把文档在分片之间平均分配。如果不平均分配，很可能这个shard就会出现查询瓶颈，这样总的查询时间就会延长。</p>
 <h1 id="添加文档到分布式索引"><a href="#添加文档到分布式索引" class="headerlink" title="添加文档到分布式索引"></a>添加文档到分布式索引</h1><p>介绍下，如何把文档添加到索引中，这是理解SolrCloud中其他类型的更新请求工作原理的基础。下面画了SolrCloud中分布式文档的索引过程。</p>
-<img data-src="../../../../tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425205722515.png" alt="image-20200425205722515" style="zoom:50%;" />
+<img data-src="/img/in-post/image-20200426014919722.png" alt="image-20200426014919722" style="zoom:50%;" />
 
 <h2 id="步骤1：使用CloudSolrClient发送更新请求"><a href="#步骤1：使用CloudSolrClient发送更新请求" class="headerlink" title="步骤1：使用CloudSolrClient发送更新请求"></a>步骤1：使用CloudSolrClient发送更新请求</h2><p>首先CloudSolrClient连接到ZooKeeper上以获取集群的当前状态。即，索引客户端知道集群里哪个节点是Leader，以及每个节点的状态。在客户端中生成请求时会判断当前集群状态。</p>
 <p>CloudSolrClient获取集群状态有两个好处：</p>
@@ -400,12 +400,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/04/25/solr-solrcloud%E2%80%94search/" rel="prev" title="【Solr】-【SolrCloud】分布式搜索">
-      <i class="fa fa-chevron-left"></i> 【Solr】-【SolrCloud】分布式搜索
+    <a href="/2020/04/13/lucene-search-collector4/" rel="prev" title="【Lucene】-【Search】查询原理一、Query及其各种实现">
+      <i class="fa fa-chevron-left"></i> 【Lucene】-【Search】查询原理一、Query及其各种实现
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/04/25/solr-solrcloud/" rel="next" title="【Solr】-【SolrCloud】SolrCloud核心概念">
-      【Solr】-【SolrCloud】SolrCloud核心概念 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/04/25/solr-solrcloud%E2%80%94search/" rel="next" title="【Solr】-【SolrCloud】分布式搜索">
+      【Solr】-【SolrCloud】分布式搜索 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>

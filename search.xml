@@ -24,7 +24,7 @@
 <p>为了说明代表是如何选择的，我们来举一个场景作为例子说明：</p>
 <p>假设，一个分片(shard)有4个副本(replicas)，它们同时加入集群，需要选择其中一个副本作为代表。</p>
 <p>4个节点中的第1个注册的节点应该被选为分片代表。在后台，Solr使用ZoooKeeper的序列标志跟踪各节点各自注册成为代表候选人的顺序。序列标志以原子方式递增，所以有客户端试图同时增加序列，也不会造成什么影响。</p>
-<img data-src="../../../../tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425165755608.png" alt="image-20200425165755608" style="zoom:50%;" /> 
+<img data-src="/img/in-post/image-20200426015339058.png" alt="image-20200426015339058" style="zoom: 50%;" />
 
 <p>如上图，我们有16个shard，每个shard有1个replicas。如图，/shard1/election下的数据节点(znode)就表示每个shard有1个个replicas，红框为序列标志。（此处只有1个replicas，如果有2个replicas，下面一个序列号就是递增的）</p>
 <ul>
@@ -35,6 +35,19 @@
 </li>
 </ul>
 <h1 id="SolrCloud的有关配置"><a href="#SolrCloud的有关配置" class="headerlink" title="SolrCloud的有关配置"></a>SolrCloud的有关配置</h1><h2 id="solr-xml"><a href="#solr-xml" class="headerlink" title="solr.xml"></a>solr.xml</h2>]]></content>
+      <categories>
+        <category>Solr</category>
+      </categories>
+      <tags>
+        <tag>Solr</tag>
+        <tag>Search</tag>
+        <tag>SolrCloud</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Solr】-【SolrCloud】分布式搜索</title>
+    <url>/2020/04/25/solr-solrcloud%E2%80%94search/</url>
+    <content><![CDATA[]]></content>
       <categories>
         <category>Solr</category>
       </categories>
@@ -65,7 +78,7 @@
 <p>如上图，如果当前这份文档唯一ID字段的散列值是80000001(十六进制)，那这份文档会被分配到shard1。</p>
 <p>关于文档ID的散列值如何计算的问题，可以看我括号注明的Solr源码。这个散列函数的目标（基本上所有的散列的函数都是）：第一、必须要要块，因为在分布式Solr中，确定将文档分配到哪个分片是非常基本的操作；第二、应该把文档在分片之间平均分配。如果不平均分配，很可能这个shard就会出现查询瓶颈，这样总的查询时间就会延长。</p>
 <h1 id="添加文档到分布式索引"><a href="#添加文档到分布式索引" class="headerlink" title="添加文档到分布式索引"></a>添加文档到分布式索引</h1><p>介绍下，如何把文档添加到索引中，这是理解SolrCloud中其他类型的更新请求工作原理的基础。下面画了SolrCloud中分布式文档的索引过程。</p>
-<img data-src="../../../../tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425205722515.png" alt="image-20200425205722515" style="zoom:50%;" />
+<img data-src="/img/in-post/image-20200426014919722.png" alt="image-20200426014919722" style="zoom:50%;" />
 
 <h2 id="步骤1：使用CloudSolrClient发送更新请求"><a href="#步骤1：使用CloudSolrClient发送更新请求" class="headerlink" title="步骤1：使用CloudSolrClient发送更新请求"></a>步骤1：使用CloudSolrClient发送更新请求</h2><p>首先CloudSolrClient连接到ZooKeeper上以获取集群的当前状态。即，索引客户端知道集群里哪个节点是Leader，以及每个节点的状态。在客户端中生成请求时会判断当前集群状态。</p>
 <p>CloudSolrClient获取集群状态有两个好处：</p>
@@ -119,19 +132,6 @@
 </ul>
 <p>大多数情况下，都不需要担心这些过程，因为节点能够将索引状态和分片代表作比较，自动启用合适的处理程序处理。这也可以保证，可以在任何时间将副本添加到集群里，因为它能自己从分片哪里获取完整的索引。</p>
 ]]></content>
-      <categories>
-        <category>Solr</category>
-      </categories>
-      <tags>
-        <tag>Solr</tag>
-        <tag>Search</tag>
-        <tag>SolrCloud</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【Solr】-【SolrCloud】分布式搜索</title>
-    <url>/2020/04/25/solr-solrcloud%E2%80%94search/</url>
-    <content><![CDATA[]]></content>
       <categories>
         <category>Solr</category>
       </categories>
@@ -2685,86 +2685,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
-    <title>【索引文件】.nvd、.nvm文件</title>
-    <url>/2020/01/31/lucene-indexfile-nvd-nvm/</url>
-    <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
-<h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
-<p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
-<p><img data-src="/img/in-post/1-20200201134606149.png" alt=""></p>
-<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt=""></p>
-<ul>
-<li><p><strong>FieldData</strong></p>
-<p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
-<p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
-<ul>
-<li><p><strong>DocsWithFieldData</strong></p>
-<p><img data-src="/img/in-post/3.png" alt=""></p>
-<p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
-<ul>
-<li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
-</li>
-<li><p>numDocsWithValue == maxDoc</p>
-<p>maxDoc表示当前处理的文档个数，这种情况说明所有文档都包含当前域。<br>DocsWithFieldData无数据，通过nvm文件中同样存放固定值来描述当前情况。<br>在本文中,域”author”属于此情况。</p>
-</li>
-<li><p>numDocsWithValue &lt; maxDoc</p>
-<p>这种情况说明并不是所有的文档都包含当前域，所以需要存储所有包含当前域的文档号。</p>
-<p>使用IndexedDISI类来实现对文档号docID的存储，IndexedDISI类随后文章中再总结。</p>
-<p>在索引阶段不同的添加document的方式会有不同数据结构的nvd文件产生，导致生成索引跟查询的性能各不相同。 在本文的例子中，域”content”、”attachment”的DocsWithFieldData属于当前情况。</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><strong>NormsData</strong></li>
-</ul>
-<p>  <img data-src="/img/in-post/4.png" alt=""></p>
-<ul>
-<li>Value</li>
-</ul>
-<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img data-src="/img/in-post/5.png" alt=""></p>
-<ul>
-<li><p><strong>FieldNumber</strong></p>
-<p>域的编号，用来唯一标识一种域</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>DocsWithFieldAddress &amp;&amp; DocsWithFieldLength</strong></p>
-<p>如果numDocWithValue == maxDoc 或者 numDocWithValue == 0 , 那么DocWithFieldAddress跟DocsWithFieldLength会被设置为固定值。否则这两个值作为索引去映射nvd中的一块数据区域。</p>
-</li>
-</ul>
-<p>  <img data-src="/img/in-post/6.png" alt=""></p>
-<ul>
-<li><p><strong>NumDocsWithField</strong></p>
-<p>NumDocsWithField描述了包含当前域的文档个数。</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>BytesPernNorm</strong></p>
-<p>找出当前域在所有所属文档中的最大和最小的两个标准化值来判断存储一个标准化值最大需要的字节数，这里还是处于优化索引空间目的。由于最小值可能是负数，所以不能仅仅靠最大值判断标准化值需要的字节数。比如最小值min为-130（需要2个字节），最大值max 5(需要1个字节)，那测试需要根据min来决定需要字节的个数。</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>NormsAddress</strong></p>
-<p>NormsAddress作为索引映射nvd中一块数据区域，这块数据区域即当前域所在文档中的标准化值。</p>
-</li>
-</ul>
-<p>  <img data-src="/img/in-post/7.png" alt=""></p>
-<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img data-src="/img/in-post/8.png" alt=""></p>
-<h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
-<p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>索引文件</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【索引文件】.pos、.pay文件</title>
     <url>/2020/01/31/lucene-indexfile-pos-pay/</url>
     <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
@@ -2847,6 +2767,86 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
 <h2 id="多个域的pay文件的数据结构"><a href="#多个域的pay文件的数据结构" class="headerlink" title="多个域的pay文件的数据结构"></a>多个域的pay文件的数据结构</h2><p><img data-src="/img/in-post/6-20200201164502459.png" alt=""></p>
 <h2 id="多个域的pos文件的数据结构"><a href="#多个域的pos文件的数据结构" class="headerlink" title="多个域的pos文件的数据结构"></a>多个域的pos文件的数据结构</h2><p><img data-src="/img/in-post/7-20200201164528840.png" alt=""></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>.pos 、.pay、.doc、.tim 、.tip文件都是在<a href="https://www.amazingkoala.com.cn/Lucene/Index/2019/0716/74.html" target="_blank" rel="noopener">flush</a>阶段通过读取倒排表一起生成的，另外.doc跟.pos、.pay文件还有映射关系，后续总结.doc文件会涉及。</p>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>索引文件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【索引文件】.nvd、.nvm文件</title>
+    <url>/2020/01/31/lucene-indexfile-nvd-nvm/</url>
+    <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
+<h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
+<p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
+<p><img data-src="/img/in-post/1-20200201134606149.png" alt=""></p>
+<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt=""></p>
+<ul>
+<li><p><strong>FieldData</strong></p>
+<p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
+<p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
+<ul>
+<li><p><strong>DocsWithFieldData</strong></p>
+<p><img data-src="/img/in-post/3.png" alt=""></p>
+<p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
+<ul>
+<li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
+</li>
+<li><p>numDocsWithValue == maxDoc</p>
+<p>maxDoc表示当前处理的文档个数，这种情况说明所有文档都包含当前域。<br>DocsWithFieldData无数据，通过nvm文件中同样存放固定值来描述当前情况。<br>在本文中,域”author”属于此情况。</p>
+</li>
+<li><p>numDocsWithValue &lt; maxDoc</p>
+<p>这种情况说明并不是所有的文档都包含当前域，所以需要存储所有包含当前域的文档号。</p>
+<p>使用IndexedDISI类来实现对文档号docID的存储，IndexedDISI类随后文章中再总结。</p>
+<p>在索引阶段不同的添加document的方式会有不同数据结构的nvd文件产生，导致生成索引跟查询的性能各不相同。 在本文的例子中，域”content”、”attachment”的DocsWithFieldData属于当前情况。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>NormsData</strong></li>
+</ul>
+<p>  <img data-src="/img/in-post/4.png" alt=""></p>
+<ul>
+<li>Value</li>
+</ul>
+<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img data-src="/img/in-post/5.png" alt=""></p>
+<ul>
+<li><p><strong>FieldNumber</strong></p>
+<p>域的编号，用来唯一标识一种域</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>DocsWithFieldAddress &amp;&amp; DocsWithFieldLength</strong></p>
+<p>如果numDocWithValue == maxDoc 或者 numDocWithValue == 0 , 那么DocWithFieldAddress跟DocsWithFieldLength会被设置为固定值。否则这两个值作为索引去映射nvd中的一块数据区域。</p>
+</li>
+</ul>
+<p>  <img data-src="/img/in-post/6.png" alt=""></p>
+<ul>
+<li><p><strong>NumDocsWithField</strong></p>
+<p>NumDocsWithField描述了包含当前域的文档个数。</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>BytesPernNorm</strong></p>
+<p>找出当前域在所有所属文档中的最大和最小的两个标准化值来判断存储一个标准化值最大需要的字节数，这里还是处于优化索引空间目的。由于最小值可能是负数，所以不能仅仅靠最大值判断标准化值需要的字节数。比如最小值min为-130（需要2个字节），最大值max 5(需要1个字节)，那测试需要根据min来决定需要字节的个数。</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>NormsAddress</strong></p>
+<p>NormsAddress作为索引映射nvd中一块数据区域，这块数据区域即当前域所在文档中的标准化值。</p>
+</li>
+</ul>
+<p>  <img data-src="/img/in-post/7.png" alt=""></p>
+<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img data-src="/img/in-post/8.png" alt=""></p>
+<h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
+<p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
 ]]></content>
       <categories>
         <category>Lucene</category>
@@ -3398,6 +3398,62 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
+    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
+    <url>/2019/11/27/ODL-mdsal-codereview/</url>
+    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
+<p>说明：</p>
+<ul>
+<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
+<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
+</ul>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
+</ul>
+<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
+<ul>
+<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
+</ul>
+<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
+<ul>
+<li><p>说明：</p>
+<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
+<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
+<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
+<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
+<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
+<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
+<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
+</li>
+</ul>
+<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
+</ul>
+<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
+<ul>
+<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>opendaylight</category>
+      </categories>
+      <tags>
+        <tag>odl</tag>
+        <tag>rpc</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【opendaylight】——MD-SAL RPC源码概览</title>
     <url>/2019/11/27/ODL-RPC-module/</url>
     <content><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
@@ -3474,59 +3530,85 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
-    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
-    <url>/2019/11/27/ODL-mdsal-codereview/</url>
-    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
-<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
-<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
-<p>说明：</p>
+    <title>【NLP】一、线性回归与随机梯度下降法</title>
+    <url>/2019/11/27/NLP-Gradient-Descent/</url>
+    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
+<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
+<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
+<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
+<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
+<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
+<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
+<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
+<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
+<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
+<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
+<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
+<p>即单个样本的最小问题转化为：</p>
+<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
+<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
+<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
+<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
+<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
+<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
+<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
 <ul>
-<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
-<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
-</ul>
-<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
-</ul>
-<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
-<ul>
-<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
-</ul>
-<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
-<ul>
-<li><p>说明：</p>
-<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
-<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
-<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
-<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
-<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
-<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
-<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
+<li><p>步骤一、</p>
+<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
+</li>
+<li><p>步骤二、</p>
 </li>
 </ul>
-<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
 <ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
+<li><p>步骤三、</p>
+<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
+</li>
+<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
+</li>
 </ul>
-<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
+<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
+<p>其手动拟合的过程如下：</p>
+<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
+<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
 <ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
+<li><p><strong>目标定义</strong></p>
+<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
+</li>
+<li><p><strong>求解过程</strong></p>
+<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
+</li>
 </ul>
-<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
-<ul>
-<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
-</ul>
+<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
+<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
+<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
+<p>慢慢拟合</p>
+<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
+<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
+<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
+<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
+</li>
+<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
+</li>
+<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
+<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
+</li>
+</ol>
 ]]></content>
       <categories>
-        <category>opendaylight</category>
+        <category>NLP</category>
       </categories>
       <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
+        <tag>随机梯度下降</tag>
+        <tag>有监督</tag>
+        <tag>线性回归</tag>
       </tags>
   </entry>
   <entry>
@@ -3636,88 +3718,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
         <tag>java</tag>
         <tag>并发框架</tag>
         <tag>Executor</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【NLP】一、线性回归与随机梯度下降法</title>
-    <url>/2019/11/27/NLP-Gradient-Descent/</url>
-    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
-<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
-<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
-<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
-<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
-<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
-<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
-<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
-<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
-<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
-<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
-<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
-<p>即单个样本的最小问题转化为：</p>
-<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
-<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
-<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
-<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
-<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
-<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
-<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
-<ul>
-<li><p>步骤一、</p>
-<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
-</li>
-<li><p>步骤二、</p>
-</li>
-</ul>
-<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
-<ul>
-<li><p>步骤三、</p>
-<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
-</li>
-<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
-</li>
-</ul>
-<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
-<p>其手动拟合的过程如下：</p>
-<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
-<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
-<ul>
-<li><p><strong>目标定义</strong></p>
-<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
-</li>
-<li><p><strong>求解过程</strong></p>
-<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
-</li>
-</ul>
-<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
-<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
-<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
-<p>慢慢拟合</p>
-<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
-<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
-<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
-<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
-</li>
-<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
-</li>
-<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
-<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>NLP</category>
-      </categories>
-      <tags>
-        <tag>随机梯度下降</tag>
-        <tag>有监督</tag>
-        <tag>线性回归</tag>
       </tags>
   </entry>
   <entry>
@@ -10747,9 +10747,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
-        <tag>LinkedList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
+        <tag>LinkedList</tag>
       </tags>
   </entry>
   <entry>
@@ -11110,9 +11110,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
+        <tag>ArrayList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
-        <tag>ArrayList</tag>
       </tags>
   </entry>
   <entry>
