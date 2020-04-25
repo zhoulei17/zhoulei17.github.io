@@ -1,178 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector</title>
-    <url>/2020/04/13/lucene-search-yuanli1/</url>
-    <content><![CDATA[<p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
-<p>在上一篇Collector(二)的文章中，介绍了<code>TopDocsCollector</code>的其中一个子类<code>TopScoreDocCollector</code>收集器，以及<code>TopScoreDocCollector</code>的两个子类<code>SimpleTopScoreDocCollector</code>、<code>PagingTopScoreDocCollector</code>，它们的排序规则是“先打分、后文档号”。</p>
-<p>这次，介绍<code>TopDocsCollector</code>的另外一个子类<code>TopFieldCollector</code>，它的排序规则是“先域比较（FieldComparator），后文档号”。</p>
+    <title>【Solr】-【SolrCloud】SolrCloud核心概念</title>
+    <url>/2020/04/25/solr-solrcloud/</url>
+    <content><![CDATA[<h1 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h1><h2 id="core"><a href="#core" class="headerlink" title="core"></a>core</h2><h2 id="collection"><a href="#collection" class="headerlink" title="collection"></a>collection</h2><p>SolrCloud使用集合这个概念来描述多个Solr实例的索引分割。</p>
+<h2 id="shard"><a href="#shard" class="headerlink" title="shard"></a>shard</h2><h2 id="replic"><a href="#replic" class="headerlink" title="replic"></a>replic</h2><h2 id="master-slave"><a href="#master-slave" class="headerlink" title="master-slave"></a>master-slave</h2><h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><p>ZK提供Solr集中化的配置管理、集群状态管理和选主（分片代表,leader）的作用。</p>
+<p>Solr创建的watcher会更新/clusterstate.json 这个znode节点，已便集群状态改变时通知其他所有节点。</p>
+<h2 id="如何选择分片代表"><a href="#如何选择分片代表" class="headerlink" title="如何选择分片代表"></a>如何选择分片代表</h2><h3 id="分工"><a href="#分工" class="headerlink" title="分工"></a>分工</h3><p><strong>针对索引更新：</strong></p>
+<p><strong>分片代表</strong>负责接收更新请求，并将这些更新请求协调分配至各个副本。具体来说，分片代表负责以下几项额外的更新请求，副本无法负责这些请求：</p>
 <ul>
-<li>先域比较（FieldComparator）：根据文档（Document）中的排序域（SortField）的阈值进行排序。</li>
-<li>后文档号：由于文档号是唯一的，当无法通过域比较来获得顺序关系时，可以再通过文档号进行排序，文档号越小，排名越靠前。</li>
+<li>为分片接收更新请求。</li>
+<li>在更新后的文档上增加<strong><em>version</em></strong>字段的值，并将之执行乐观锁定。</li>
+<li>将文档写入更新日志。</li>
+<li>以并行方式将更新请求发送给所有副本并且封锁，直到收到响应。</li>
 </ul>
-<p>下面通过一个例子先介绍怎么使用TopFieldCollector，然后再来介绍排序的原理。</p>
-<p>在搜索阶段如果使用了域排序，那么Lucene默认使用的是<code>TopFieldCollector</code>。</p>
-<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><h2 id="索引代码"><a href="#索引代码" class="headerlink" title="索引代码"></a>索引代码</h2><pre><code class="java">    //0
-    Document doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a b&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);
+<p><strong>针对查询：</strong></p>
+<p>在处理查询请求时，分片代表没有额外的工作。每个分片的主机都可以充当分片代表的角色，其他主机自然就是副本了。与副本一样，分片代表也可以参与到分布式查询（这个跟主从架构不一样）。</p>
+<p>在<strong>主从架构</strong>中，主节点只负责索引，而从节点负责执行查询。</p>
+<h3 id="设计思路"><a href="#设计思路" class="headerlink" title="设计思路"></a>设计思路</h3><p>在了解如何确定分片代表之前，我们要搞清楚选择分片的目的是什么？</p>
+<p>SolrCloud的设计目的在于，让分片里的任何主机都能充当代表，并且能够选择新的代表。我们不应该也不用关注分片里的哪个节点是当前代表，也不要尝试控制它。在大多数情况下，分片代表仅仅是一个实现的细节问题，对怎么设置和操作集群是没有什么影响的。</p>
+<h3 id="分片代表选择"><a href="#分片代表选择" class="headerlink" title="分片代表选择"></a>分片代表选择</h3><p>选择最初的代表和在当前代表出现故障时自动选择一个新的代表。对于代表的选择需要<strong>集中控制</strong>，不希望出现同一个分片里的两台主机(对应两个replicas)都是代表的情况。</p>
+<p>在我们了解的一些分布式系统中，有的代表（leader）是通过leader和follow之间通过协同一致性算法进行选择，比如我们耳熟能详的<a href="http://thesecretlivesofdata.com/raft/" target="_blank" rel="noopener"><strong>Raft算法</strong></a>、<strong>Paxos</strong>等。现在我们有了Zookeeper分布式协调器这个现现成的解决方案，就可以进行集中的控制。</p>
+<p>为了说明代表是如何选择的，我们来举一个场景作为例子说明：</p>
+<p>假设，一个分片(shard)有4个副本(replicas)，它们同时加入集群，需要选择其中一个副本作为代表。</p>
+<p>4个节点中的第1个注册的节点应该被选为分片代表。在后台，Solr使用ZoooKeeper的序列标志跟踪各节点各自注册成为代表候选人的顺序。序列标志以原子方式递增，所以有客户端试图同时增加序列，也不会造成什么影响。</p>
+<img data-src="../../../../tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425165755608.png" alt="image-20200425165755608" style="zoom:50%;" /> 
 
-    //1
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;b&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,-1));
-    indexWriter.addDocument(doc);
-
-    //2
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;c b&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,4));
-    indexWriter.addDocument(doc);
-
-    //3
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,1));
-    indexWriter.addDocument(doc);
-
-    //4
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);
-
-    //5
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
-    indexWriter.addDocument(doc);
-
-    indexWriter.commit();
-    indexWriter.close();
-</code></pre>
-<h2 id="查询代码"><a href="#查询代码" class="headerlink" title="查询代码"></a>查询代码</h2><pre><code class="java">  public void test() {
-
-    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
-    builder.setMinimumNumberShouldMatch(2);
-
-    SortField sortField = new SortedNumericSortField(&quot;sortByNumber&quot;, SortField.Type.LONG);
-    Sort sort = new Sort(sortField);
-
-    searchBySort(builder.build(), 10, sort);
-    //search(builder.build(), 10);
-  }</code></pre>
-<p>Sort可以在查询时指定(IndexSearcher)，也可以在在Index阶段设置如：</p>
-<pre><code class="java">    IndexWriterConfig iwc = new IndexWriterConfig(new MockAnalyzer(random()));
-    Sort indexSort = new Sort(new SortedNumericSortField(&quot;foo&quot;, SortField.Type.LONG));
-    iwc.setIndexSort(indexSort);</code></pre>
+<p>如上图，我们有16个shard，每个shard有1个replicas。如图，/shard1/election下的数据节点(znode)就表示每个shard有1个个replicas，红框为序列标志。（此处只有1个replicas，如果有2个replicas，下面一个序列号就是递增的）</p>
 <ul>
-<li><p>SortedNumericSortField：根据文档（document)中NumericDocValues域的阈值进行排序，如果文档没有这个域，那么阈值视为0。</p>
+<li><p>序列号最小的节点会胜出，成为分片代表。</p>
 </li>
-<li><p>如上面的索引代码，文档1和文档4没有这个域，那么就按照文档号排序。查询排序代码排序结果为：</p>
-<img data-src="/img/in-post/image-20200406230101284.png" alt="image-20200406230101284" style="zoom: 50%;" />
-
-
-
+<li><p>如果当前代表处故障的话，会发生什么呢？</p>
+<p>这种情况需要选出新的代表，索引才能继续进行。事实证明，候选序列中下一个状态良好的节点会成为代表。（关于代表故障如何转移的细节，可以阅读<a href="http://zookeeper.apache.org/doc/r3.5.7/recipes.html" target="_blank" rel="noopener">ZooKeeper的文档</a>）</p>
 </li>
 </ul>
-<h1 id="排序类型选择"><a href="#排序类型选择" class="headerlink" title="排序类型选择"></a>排序类型选择</h1><p><strong>上面除了可以使用<code>NumericDocValue</code>类型索引字段然后使用SortedNumericSortField进行Numeric类型排序检索，还可以使用<code>SortedSetSortField</code>String类型排序字段。</strong></p>
-<pre><code class="java">    //4
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
-    indexWriter.addDocument(doc);
-
-    //5
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
-    indexWriter.addDocument(doc);
-
-
-    //6
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;a&quot;)));//MIN
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;h&quot;)));//MIDDLE_MAX
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;f&quot;)));//MIDDLE_MIN
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;y&quot;)));//MAX
-    indexWriter.addDocument(doc);
-
-    //7
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;c&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;i&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;e&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;z&quot;)));
-    indexWriter.addDocument(doc);
-
-    //8
-    doc = new Document();
-    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;b&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;j&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;d&quot;)));
-    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;x&quot;)));</code></pre>
-<p>然后使用<strong>查询代码</strong>为：</p>
-<pre><code class="java">    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
-    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
-    builder.setMinimumNumberShouldMatch(2);
-
-    SortField sortField = new SortedSetSortField(&quot;sortByString&quot;, false , SortedSetSelector.Type.MIN);
-    Sort sort = new Sort(sortField);
-
-    searchBySort(builder.build(), 10, sort);</code></pre>
-<p>默认从小到大输出，结果为：</p>
-<p><img data-src="/img/in-post/image-20200406232808460.png" alt="image-20200406232808460"></p>
-<h2 id="SortedSetSelector-Type"><a href="#SortedSetSelector-Type" class="headerlink" title="SortedSetSelector.Type"></a>SortedSetSelector.Type</h2><p>reverse设置false，按照从小到大排序，反之true是从大到小排序。</p>
-<p>除了上面使用的<code>SortedSetSelector.Type.MIN</code>，还有<img data-src="/img/in-post/image-20200406231935935.png" alt="image-20200406231935935"></p>
-<p><code>MIDDLE_MAX</code></p>
-<p><code>MIDDLE_MIN</code></p>
-<p><code>MAX</code></p>
-<p>下面介绍下这四种类型</p>
-<ul>
-<li><p><code>MIN</code>：选择域值最小的进行排序，如上面文档6、7、8 会使用a c b作为排序条件，即结果：</p>
-<p>4-&gt;5-&gt;6-&gt;8-&gt;7（4、5该域为null，默认按照文档号排序）</p>
-</li>
-<li><p><code>MAX</code>：选择域值最大的进行排序，如上面的文档6、7、8会使用y z x作为排序条件，即结果：</p>
-<p>4-&gt;5-&gt;8-&gt;6-&gt;7</p>
-</li>
-<li><p><code>MIDDLE_MIN</code>：选择中间域值，如果域值个数为偶数个，那么中间域值有两个，则取<strong>较小值</strong>。如上面的6、7、8 会使用f e d作为排序条件。结果为：</p>
-<p>4-&gt;5-&gt;8-&gt;7-&gt;6</p>
-</li>
-<li><p><code>MIDLE_MAX</code>：参考MIDDLE_MIN就是取中间两个的较大值作为排序条件了。具体不赘述了。</p>
-</li>
-</ul>
-<p>刚刚讲了<strong><code>SortedNumericSortField</code></strong>和<strong><code>SortedSetSortField</code></strong>都可以在索引阶段设置多个具有相同域名的不通值，用法跟<strong><code>SortedSetSortField</code></strong>是一样的，就不赘述了。</p>
-<p>接下来看下根据过滤(filtering)规则，接着介绍TopFieldCollector的两个子类：</p>
-<ul>
-<li><p>SimpleFieldCollector：无过滤规则</p>
-</li>
-<li><p>PagingFieldCollector：有过滤规则，具体内容在下文展开</p>
-</li>
-</ul>
-<h1 id="SimpleFieldCollector"><a href="#SimpleFieldCollector" class="headerlink" title="SimpleFieldCollector"></a>SimpleFieldCollector</h1><p>它的collect的方法流程图如下：</p>
-<img data-src="/img/in-post/image-20200406233905182.png" alt="image-20200406233905182" style="zoom:45%;" />
-
-
-
-
-
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>下一篇Collector（四）继续</p>
-]]></content>
+<h1 id="SolrCloud的有关配置"><a href="#SolrCloud的有关配置" class="headerlink" title="SolrCloud的有关配置"></a>SolrCloud的有关配置</h1><h2 id="solr-xml"><a href="#solr-xml" class="headerlink" title="solr.xml"></a>solr.xml</h2>]]></content>
       <categories>
-        <category>Lucene</category>
+        <category>Solr</category>
       </categories>
       <tags>
+        <tag>Solr</tag>
         <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>Collector</tag>
+        <tag>SolrCloud</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Solr】-【SolrCloud】分布式索引</title>
+    <url>/2020/04/25/solr-solrcloud%E2%80%94index/</url>
+    <content><![CDATA[<p>SloudCloud中shard中的索引与单机中的索引文档是一样的结构，且一个shard的多个replicas理想状态下是完全一样的。从客户端角度看，在访问单机索引或分布式索引客户端是不感知的。从Solr服务器角度看，原来单机的索引被分割为多个shard索引目录，就单个shard来说，都是一个完整的索引结果，都可以单独访问。</p>
+<p>SolrCloud中分布式索引的总体目标是能够把文档发送到集群的的任何节点上，并且能把文档在正确的分片中被索引。此外，SolrCloud的分布式索引目的在于，能够避免单点故障，达到高可用。</p>
+<h1 id="文档的分片"><a href="#文档的分片" class="headerlink" title="文档的分片"></a>文档的分片</h1><p>当Solr索引新文档时，需要将其分配到一个分片上。Solr使用<strong>文档管理器</strong>组件来确认文档应当被分到哪个分片上。SolrCloud支持两种文档路由策略：</p>
+<ul>
+<li>compositeID(默认)</li>
+<li>隐式路由。用户可以自定义路由策略。</li>
+</ul>
+<img data-src="../../../../tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425195812464.png" alt="image-20200425195812464" style="zoom:50%;" />
+
+
+
+<p>查看/clusterstate.json，可以看到笔者所在公司collection由16个shard组成。每个分片会分配一个32位的散列值，如上图，shar1的散列区间是80000000-8fffffff，而shard2的散列区间是90000000-9fffffff(十六进制数)。系统在每个分片之间均分这32位散列值区间。</p>
+<p>默认的compositeID路由器会计算出文档里唯一ID字段的数值散列值，并将文档分配给哈希值区间包含计算得到的哈希值的分片。每个发送给SolrCloud的文档都必须具有唯一的文档ID号。</p>
+<p>（注：这种Hash算法的源码为：</p>
+<p><code>HashBasedRouter</code>，使用了一种称为<code>murmurhash3_x86_32</code>的hash算法。有兴趣的同学，可以自行扩展阅读源码。）</p>
+<p>如上图，如果当前这份文档唯一ID字段的散列值是80000001(十六进制)，那这份文档会被分配到shard1。</p>
+<p>关于文档ID的散列值如何计算的问题，可以看我括号注明的Solr源码。这个散列函数的目标（基本上所有的散列的函数都是）：第一、必须要要块，因为在分布式Solr中，确定将文档分配到哪个分片是非常基本的操作；第二、应该把文档在分片之间平均分配。如果不平均分配，很可能这个shard就会出现查询瓶颈，这样总的查询时间就会延长。</p>
+<h1 id="添加文档到分布式索引"><a href="#添加文档到分布式索引" class="headerlink" title="添加文档到分布式索引"></a>添加文档到分布式索引</h1><p>介绍下，如何把文档添加到索引中，这是理解SolrCloud中其他类型的更新请求工作原理的基础。下面画了SolrCloud中分布式文档的索引过程。</p>
+<img data-src="../../../../tech_accumulating/blog/zhoulei17.github.io/img/in-post/image-20200425205722515.png" alt="image-20200425205722515" style="zoom:50%;" />
+
+<h2 id="步骤1：使用CloudSolrClient发送更新请求"><a href="#步骤1：使用CloudSolrClient发送更新请求" class="headerlink" title="步骤1：使用CloudSolrClient发送更新请求"></a>步骤1：使用CloudSolrClient发送更新请求</h2><p>首先CloudSolrClient连接到ZooKeeper上以获取集群的当前状态。即，索引客户端知道集群里哪个节点是Leader，以及每个节点的状态。在客户端中生成请求时会判断当前集群状态。</p>
+<p>CloudSolrClient获取集群状态有两个好处：</p>
+<ol>
+<li>更新请求在被路由到副本之前一定会被路由给分片的代表，所以不如直接发请求给分片代表。</li>
+<li>可以提供基本的负载均衡和客户端重试机制。如果客户端应用程序正在索引文档，一个节点崩溃了，CloudSolrClient会从ZK得到通知，该节点不可用，然后就会停止向该节点发送请求（从负载均衡列表中删除）。如果崩溃的节点是代表，那么CloudSolrClient会受到选择新分片代表的通知。以后通知能收到的原因是，CloudSolrClient已经在ZK的/clusterstate.json和live_nodes znode节点注册了watcher监听。</li>
+</ol>
+<h2 id="步骤2：将文档分配给正确的分片"><a href="#步骤2：将文档分配给正确的分片" class="headerlink" title="步骤2：将文档分配给正确的分片"></a>步骤2：将文档分配给正确的分片</h2><p>CloudSolrClient需要使用文档路由来确定将文档发送到哪个分片上。源码见方法：</p>
+<pre><code class="java">  public Map&lt;String,LBHttpSolrClient.Req&gt; getRoutes(DocRouter router,
+      DocCollection col, Map&lt;String,List&lt;String&gt;&gt; urlMap,
+      ModifiableSolrParams params, String idField) 
+  {
+
+  }</code></pre>
+<p>一旦分片被选中，并会走客户端负载均衡选出serverUrl，并使用原HttpSolrClient 发送请求。</p>
+<p>单个文档添加的过程非常简单。但是，如果添加到CloudSolrClient中文档是如何分发的？</p>
+<p>会把该批次的文档分解成shard数批次，比如我们的shard是16，那么这篇文档被分解为16批次，然后使用文档路由的计算方法把每一篇文档分解到对应的16个批次的其中一个去。最后，再将自批次发送给各个正确的分片代表。</p>
+<h2 id="步骤3：shard代表分配版本ID号"><a href="#步骤3：shard代表分配版本ID号" class="headerlink" title="步骤3：shard代表分配版本ID号"></a>步骤3：shard代表分配版本ID号</h2><p>在将文档发送给副本之前，分片代表会在本地索引文档。这是为了把文档转送给副本之前，使用更新日志验证文档并确保文档是安全持久的存储了。此外代表会给每个文档分配一个版本号。对现存文档，代表会将文档的当前版本与版本号作对比，以支持乐观锁定的过程。</p>
+<h2 id="步骤4：将请求转发给副本"><a href="#步骤4：将请求转发给副本" class="headerlink" title="步骤4：将请求转发给副本"></a>步骤4：将请求转发给副本</h2><p>一旦文档通过验证并且给分配了版本号。代表就会决定哪些副本是OK的，并多线程的把更新请求发送给每个副本。对于任何更新请求，都可能会有一些副本处于脱机或宕机状态。代表在发送文件时并不关心副本发生了啥情况，因为代表能够使用恢复程序对没有发送成功的文档进行修复。</p>
+<p>还有一种情况，代表也会把更新请求发送给那些还在恢复状态的副本。处在恢复状态的副本节点在恢复运行过程中会把更新请求写到自己的更新事务日志里面去。</p>
+<h2 id="步骤5：确认写操作成功"><a href="#步骤5：确认写操作成功" class="headerlink" title="步骤5：确认写操作成功"></a>步骤5：确认写操作成功</h2><p>一旦代表收到了来自所有活跃和恢复进程中的副本的确认，它就会把确认返回给索引客户端。只要分片里面至少还有一个活跃的副本，Solr就会持续地接收更新请求。然而，<strong>这种方法更偏向于写操作的可用性</strong>，虽然有可能会<strong>以失去一致性</strong>为代价。在<strong>包含Solr-4.9之后的版本</strong>，用执行QUORUM（关于QUORUM问题，网上有很多介绍，比如<a href="https://www.cnblogs.com/hapjin/p/5626889.html" target="_blank" rel="noopener">这篇</a>）机制以便接受：</p>
+<pre><code class="java">SOLR-5468: Allow a client application to request the minium achieved
+  replication factor for an update request (single or batch) by sending
+  an optional parameter &quot;min_rf&quot;. (Timothy Potter)</code></pre>
+<p>比起写操作的可用性，这种可选方法更加注重一致性。如果写操作不能被分片里的大部分副本接受，那么写操作就会失败。</p>
+<p>在假设场景中，如果一个分片只有一个活跃副本，写操作就会失败，因为在只有两个副本的分片中，1个节点不能表示大多数。如果分片被复制到三个节点上，其中一个节点出现了故障，那么写操作会成功（大于3分之2）。</p>
+<p>当然，在服务器段引起写操作失败知会把问题带给客户端，但至少可以避免掉代表和副本之间不一致的可能。</p>
+<p>这也说明了，在构建分布式的系统中，在写操作的可用性和一致性上会存在权衡取舍。</p>
+<h2 id="提交"><a href="#提交" class="headerlink" title="提交"></a>提交</h2><p>除非文件被提交了，否则在搜索结果里是看不到它们的。在分布式式搜索中，当提交请求发送给任何节点时，系统会将提交请求转发给集群里的搜索节点，以便顺利提交每个分片。</p>
+<p>简单说，在需要打开新的SolrIndexSearcher时，客户端应用程序代码应该发送硬提交请求，SolrCloud会将提交请求传播给集群里的所有节点。</p>
+<h1 id="近实时搜索（NRT）"><a href="#近实时搜索（NRT）" class="headerlink" title="近实时搜索（NRT）"></a>近实时搜索（NRT）</h1><p>引用网上的一句话：</p>
+<blockquote>
+<p>如果不学习近实时搜索（NRT），那么对于SolrCloud的理解就是不完整的，因为它是SolrCloud设计背后的主要驱动之一。</p>
+</blockquote>
+<p>近实时搜索能够使文件在被索引之后的数秒内就出现在搜索结果中。Solr提供软提交机制实现近实时搜索，可以避免硬提交高昂的操作成本，比如把存储在内存的文件写入词频。</p>
+<p>在上文中介绍了，分片代码在对索引客户端程序做响应之前，会将更新请求转发给所有副本。这可以确保所有分片产生一致的搜索结果。</p>
+<p>这也说明了，此设计决定把更新发送给所有副本在很大程度上依赖了近实时搜索的支持。</p>
+<p>相反，主从系统里面不能支持近实时搜索，这是因为近实时搜索的目的是使文档在被添加到索引之后的大约一秒钟内就能搜到。基于主从系统的复制操作依赖将整个片段从主节点复制到从节点。如果Solr必须每秒都讲片段复制到从节点上，搜索性能就会简练很多个小片段，查询性能就会大大受到影响。</p>
+<h2 id="软提交"><a href="#软提交" class="headerlink" title="软提交"></a>软提交</h2><p>由于软提交的成本更低，所以每隔几秒钟就可以发起一个软提交，这样就可以在近实时搜搜中看到新近被搜索的文件。然后在某个时间点还是要执行硬提交，确保索引永久持久化。</p>
+<p>当提交软提交时，Solr必须打开新的搜索器，让软提交的文档在搜索结果可见。这就意味，SOLR还必须让所有缓存与软提交带来的改变保持一致。</p>
+<p>在软提交之后打开新的搜索器，Solr会对缓存进行预热，执行在solrconfig.xml中配置好的预热查询。</p>
+<p>因此，缓存预热设置和预热查询的执行速度必须比执行软提交的速度更快。如果每隔两秒钟执行一次软提交，那么预热查询和缓存自动预热的完成就不应该超过两秒，否则会打开太多的搜索器被打开，这会导致后期提交失败。</p>
+<p>还有个关键点是，执行软提交时，需要为近实时搜索恰当地调整缓存和预热查询的配置。</p>
+<p>近实时搜索，为什么这么强大的功能，但并不是说一定要将它与SOLRCLOUD一块使用。不使用软提交，近实时搜索也完全可以接受。</p>
+<p>使用软提交的的缺点之一，就是缓存经常会失效。</p>
+<h1 id="Solr如何对代表和副本保持同步"><a href="#Solr如何对代表和副本保持同步" class="headerlink" title="Solr如何对代表和副本保持同步"></a>Solr如何对代表和副本保持同步</h1><p>在设计和运行大型分布式系统时，节点出现故障本就是普遍现象。当节点出现故障时，只需要简单使用复制操作来保护系统，无须购买昂贵的机器和容错硬件。此外，还需要升级SOLR，修复错误和增加新功能，或修改JVM。最坏的情况是，集群中随时都可能出现宕机或者脱机。不过SolrCloud可能搞定：</p>
+<p>SolrCloud提供了两种基本的恢复方案：<strong>对等同步(peer sync)</strong>和<strong>快照复制(snapshot replication)</strong>。根据在节点脱机状态下错过了多少更新请求（增加、删除和更新），这两个方案的恢复过程是由差异的：</p>
+<ul>
+<li><strong>对等同步</strong>——如果故障时间短，并且处于恢复状态的节点只错过了少数的更新请求，那么节点就会从分片代表的更新日志中获取更新请求。目前错过更新请求的上限硬编码为100。如果错过的数量超过这个限制，恢复节点将从分片代表哪里获取完整的索引快照。</li>
+<li><strong>快照复制</strong>——如果一节点较长时间处于脱机状态，导致它不能与分片代表保持同步，那么它会使用Solr的基于HTTP的复制操作，基于索引的快照进行恢复。</li>
+</ul>
+<p>大多数情况下，都不需要担心这些过程，因为节点能够将索引状态和分片代表作比较，自动启用合适的处理程序处理。这也可以保证，可以在任何时间将副本添加到集群里，因为它能自己从分片哪里获取完整的索引。</p>
+]]></content>
+      <categories>
+        <category>Solr</category>
+      </categories>
+      <tags>
+        <tag>Solr</tag>
+        <tag>Search</tag>
+        <tag>SolrCloud</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Solr】-【SolrCloud】分布式搜索</title>
+    <url>/2020/04/25/solr-solrcloud%E2%80%94search/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>Solr</category>
+      </categories>
+      <tags>
+        <tag>Solr</tag>
+        <tag>Search</tag>
+        <tag>SolrCloud</tag>
       </tags>
   </entry>
   <entry>
@@ -596,6 +562,181 @@ public void test2() {
       </tags>
   </entry>
   <entry>
+    <title>【Lucene】-【Search】Collector（四）TopDocsCollector及其子类TopFieldCollector</title>
+    <url>/2020/04/13/lucene-search-yuanli1/</url>
+    <content><![CDATA[<p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
+<p>在上一篇Collector(二)的文章中，介绍了<code>TopDocsCollector</code>的其中一个子类<code>TopScoreDocCollector</code>收集器，以及<code>TopScoreDocCollector</code>的两个子类<code>SimpleTopScoreDocCollector</code>、<code>PagingTopScoreDocCollector</code>，它们的排序规则是“先打分、后文档号”。</p>
+<p>这次，介绍<code>TopDocsCollector</code>的另外一个子类<code>TopFieldCollector</code>，它的排序规则是“先域比较（FieldComparator），后文档号”。</p>
+<ul>
+<li>先域比较（FieldComparator）：根据文档（Document）中的排序域（SortField）的阈值进行排序。</li>
+<li>后文档号：由于文档号是唯一的，当无法通过域比较来获得顺序关系时，可以再通过文档号进行排序，文档号越小，排名越靠前。</li>
+</ul>
+<p>下面通过一个例子先介绍怎么使用TopFieldCollector，然后再来介绍排序的原理。</p>
+<p>在搜索阶段如果使用了域排序，那么Lucene默认使用的是<code>TopFieldCollector</code>。</p>
+<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><h2 id="索引代码"><a href="#索引代码" class="headerlink" title="索引代码"></a>索引代码</h2><pre><code class="java">    //0
+    Document doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a b&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    //1
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;b&quot;, Field.Store.YES));
+    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,-1));
+    indexWriter.addDocument(doc);
+
+    //2
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;c b&quot;, Field.Store.YES));
+    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,4));
+    indexWriter.addDocument(doc);
+
+    //3
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
+    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,1));
+    indexWriter.addDocument(doc);
+
+    //4
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    //5
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
+    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
+    indexWriter.addDocument(doc);
+
+    indexWriter.commit();
+    indexWriter.close();
+</code></pre>
+<h2 id="查询代码"><a href="#查询代码" class="headerlink" title="查询代码"></a>查询代码</h2><pre><code class="java">  public void test() {
+
+    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
+    builder.setMinimumNumberShouldMatch(2);
+
+    SortField sortField = new SortedNumericSortField(&quot;sortByNumber&quot;, SortField.Type.LONG);
+    Sort sort = new Sort(sortField);
+
+    searchBySort(builder.build(), 10, sort);
+    //search(builder.build(), 10);
+  }</code></pre>
+<p>Sort可以在查询时指定(IndexSearcher)，也可以在在Index阶段设置如：</p>
+<pre><code class="java">    IndexWriterConfig iwc = new IndexWriterConfig(new MockAnalyzer(random()));
+    Sort indexSort = new Sort(new SortedNumericSortField(&quot;foo&quot;, SortField.Type.LONG));
+    iwc.setIndexSort(indexSort);</code></pre>
+<ul>
+<li><p>SortedNumericSortField：根据文档（document)中NumericDocValues域的阈值进行排序，如果文档没有这个域，那么阈值视为0。</p>
+</li>
+<li><p>如上面的索引代码，文档1和文档4没有这个域，那么就按照文档号排序。查询排序代码排序结果为：</p>
+<img data-src="/img/in-post/image-20200406230101284.png" alt="image-20200406230101284" style="zoom: 50%;" />
+
+
+
+</li>
+</ul>
+<h1 id="排序类型选择"><a href="#排序类型选择" class="headerlink" title="排序类型选择"></a>排序类型选择</h1><p><strong>上面除了可以使用<code>NumericDocValue</code>类型索引字段然后使用SortedNumericSortField进行Numeric类型排序检索，还可以使用<code>SortedSetSortField</code>String类型排序字段。</strong></p>
+<pre><code class="java">    //4
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;h c e&quot;, Field.Store.YES));
+    indexWriter.addDocument(doc);
+
+    //5
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
+    doc.add(new NumericDocValuesField(&quot;sortByNumber&quot;,3));
+    indexWriter.addDocument(doc);
+
+
+    //6
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;a&quot;)));//MIN
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;h&quot;)));//MIDDLE_MAX
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;f&quot;)));//MIDDLE_MIN
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;y&quot;)));//MAX
+    indexWriter.addDocument(doc);
+
+    //7
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;c&quot;)));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;i&quot;)));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;e&quot;)));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;z&quot;)));
+    indexWriter.addDocument(doc);
+
+    //8
+    doc = new Document();
+    doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;b&quot;)));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;j&quot;)));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;d&quot;)));
+    doc.add(new SortedSetDocValuesField(&quot;sortByString&quot;,new BytesRef(&quot;x&quot;)));</code></pre>
+<p>然后使用<strong>查询代码</strong>为：</p>
+<pre><code class="java">    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.SHOULD);
+    builder.setMinimumNumberShouldMatch(2);
+
+    SortField sortField = new SortedSetSortField(&quot;sortByString&quot;, false , SortedSetSelector.Type.MIN);
+    Sort sort = new Sort(sortField);
+
+    searchBySort(builder.build(), 10, sort);</code></pre>
+<p>默认从小到大输出，结果为：</p>
+<p><img data-src="/img/in-post/image-20200406232808460.png" alt="image-20200406232808460"></p>
+<h2 id="SortedSetSelector-Type"><a href="#SortedSetSelector-Type" class="headerlink" title="SortedSetSelector.Type"></a>SortedSetSelector.Type</h2><p>reverse设置false，按照从小到大排序，反之true是从大到小排序。</p>
+<p>除了上面使用的<code>SortedSetSelector.Type.MIN</code>，还有<img data-src="/img/in-post/image-20200406231935935.png" alt="image-20200406231935935"></p>
+<p><code>MIDDLE_MAX</code></p>
+<p><code>MIDDLE_MIN</code></p>
+<p><code>MAX</code></p>
+<p>下面介绍下这四种类型</p>
+<ul>
+<li><p><code>MIN</code>：选择域值最小的进行排序，如上面文档6、7、8 会使用a c b作为排序条件，即结果：</p>
+<p>4-&gt;5-&gt;6-&gt;8-&gt;7（4、5该域为null，默认按照文档号排序）</p>
+</li>
+<li><p><code>MAX</code>：选择域值最大的进行排序，如上面的文档6、7、8会使用y z x作为排序条件，即结果：</p>
+<p>4-&gt;5-&gt;8-&gt;6-&gt;7</p>
+</li>
+<li><p><code>MIDDLE_MIN</code>：选择中间域值，如果域值个数为偶数个，那么中间域值有两个，则取<strong>较小值</strong>。如上面的6、7、8 会使用f e d作为排序条件。结果为：</p>
+<p>4-&gt;5-&gt;8-&gt;7-&gt;6</p>
+</li>
+<li><p><code>MIDLE_MAX</code>：参考MIDDLE_MIN就是取中间两个的较大值作为排序条件了。具体不赘述了。</p>
+</li>
+</ul>
+<p>刚刚讲了<strong><code>SortedNumericSortField</code></strong>和<strong><code>SortedSetSortField</code></strong>都可以在索引阶段设置多个具有相同域名的不通值，用法跟<strong><code>SortedSetSortField</code></strong>是一样的，就不赘述了。</p>
+<p>接下来看下根据过滤(filtering)规则，接着介绍TopFieldCollector的两个子类：</p>
+<ul>
+<li><p>SimpleFieldCollector：无过滤规则</p>
+</li>
+<li><p>PagingFieldCollector：有过滤规则，具体内容在下文展开</p>
+</li>
+</ul>
+<h1 id="SimpleFieldCollector"><a href="#SimpleFieldCollector" class="headerlink" title="SimpleFieldCollector"></a>SimpleFieldCollector</h1><p>它的collect的方法流程图如下：</p>
+<img data-src="/img/in-post/image-20200406233905182.png" alt="image-20200406233905182" style="zoom:45%;" />
+
+
+
+
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>下一篇Collector（四）继续</p>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>Collector</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【Lucene】-【Search】Collector（三）TopDocsCollector及其子类TopFieldCollector</title>
     <url>/2020/04/08/lucene-search-collector3/</url>
     <content><![CDATA[<p><img data-src="/img/in-post/Collector-5579809.png" alt="Collector"></p>
@@ -987,18 +1128,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
 <h1 id="q与fq的主要流程图"><a href="#q与fq的主要流程图" class="headerlink" title="q与fq的主要流程图"></a>q与fq的主要流程图</h1><img data-src="/img/in-post/image-20200401013329206.png" alt="image-20200401013329206" style="zoom:150%;" />
 
 ]]></content>
-      <categories>
-        <category>Solr</category>
-      </categories>
-      <tags>
-        <tag>Solr</tag>
-        <tag>Search</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【Solr】SolrCloud</title>
-    <url>/2020/03/31/solr-solrcloud/</url>
-    <content><![CDATA[<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="SolrCloud"><a href="#SolrCloud" class="headerlink" title="SolrCloud"></a>SolrCloud</h1>]]></content>
       <categories>
         <category>Solr</category>
       </categories>
@@ -10618,9 +10747,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
+        <tag>LinkedList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
-        <tag>LinkedList</tag>
       </tags>
   </entry>
   <entry>
@@ -10981,9 +11110,9 @@ Exiting via while() test</code></pre>
       </categories>
       <tags>
         <tag>java</tag>
-        <tag>ArrayList</tag>
         <tag>Collection</tag>
         <tag>集合</tag>
+        <tag>ArrayList</tag>
       </tags>
   </entry>
   <entry>

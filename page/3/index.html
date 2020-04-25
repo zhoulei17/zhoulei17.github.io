@@ -121,12 +121,12 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">61</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">63</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">62</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">63</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -187,6 +187,288 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/12/23/java-concurrency-container-ThreadPool/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/23/java-concurrency-container-ThreadPool/" class="post-title-link" itemprop="url">【并发容器和框架】三、Java线程池的实现原理和使用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-12-23T00:00:00+08:00">2019-12-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-22 18:09:36" itemprop="dateModified" datetime="2020-03-22T18:09:36+08:00">2020-03-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/12/23/java-concurrency-container-ThreadPool/" class="post-meta-item leancloud_visitors" data-flag-title="【并发容器和框架】三、Java线程池的实现原理和使用" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/12/23/java-concurrency-container-ThreadPool/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/12/23/java-concurrency-container-ThreadPool/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="1-Java线程池的实现原理"><a href="#1-Java线程池的实现原理" class="headerlink" title="1. Java线程池的实现原理"></a>1. Java线程池的实现原理</h1><p>线程池是日常开发中使用最多的并发框架（虽然在高并发场景下有的线程池要慎用），几乎所有需要异步或者并发的执行任务的程序都可以使用线程池。总结下，可以带来3个好处。</p>
+<p>第一：降低资源消耗。通过重复利用已创建的线程降低线程创建和销毁造成的消耗。</p>
+<p>第二：提高响应速度。当任务到达时，任务可以不需要等线程创建就能立即执行。</p>
+<p>第三：提高线程的可管理性。无限制创建线程会消耗系统资源、降低系统稳定性，使用线程池可以进行统一分配、调优和监控。</p>
+<h2 id="1-1-线程池的实现原理"><a href="#1-1-线程池的实现原理" class="headerlink" title="1.1 线程池的实现原理"></a>1.1 线程池的实现原理</h2><p>当往线程池提交一个任务之后，线程池是如何处理这个任务的？下面来看线程池主要处理流程。</p>
+<h3 id="1-1-1-主要处理流程"><a href="#1-1-1-主要处理流程" class="headerlink" title="1.1.1 主要处理流程"></a>1.1.1 主要处理流程</h3><p><img data-src="/img/in-post/1574908942078.png" alt></p>
+<p>当提交一个新任务到线程池时，线程池的处理流程如下：</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/12/23/java-concurrency-container-ThreadPool/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/11/27/ODL-RPC-module/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/27/ODL-RPC-module/" class="post-title-link" itemprop="url">【opendaylight】——MD-SAL RPC源码概览</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-27 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-27T00:00:00+08:00">2019-11-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-22 09:06:59" itemprop="dateModified" datetime="2020-03-22T09:06:59+08:00">2020-03-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/opendaylight/" itemprop="url" rel="index"><span itemprop="name">opendaylight</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/11/27/ODL-RPC-module/" class="post-meta-item leancloud_visitors" data-flag-title="【opendaylight】——MD-SAL RPC源码概览" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2019/11/27/ODL-RPC-module/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2019/11/27/ODL-RPC-module/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
+<p><img data-src="/img/in-post/1578029090431.png" alt></p>
+<ul>
+<li><p>sal-core-api：定义了BI RPC服务的注册、调用接口。</p>
+</li>
+<li><p>sal-broker-impl：实现了BI RPC服务的注册、调用。</p>
+</li>
+<li><p>sal-binding-api：定义了BA RPC服务的注册、调用接口。</p>
+</li>
+<li><p>sal-binding-broker-impl：实现了BA RPC服务的注册、调用，实际的注册、调用操作都通过adapter将BA服务封装成BI服务代理到BI RPC服务中心。</p>
+</li>
+<li><p>sal-remoterpc-connector：实现了多个ODL节点中BI RPC服务信息的同步，以及跨进程的服务调用。</p>
+<h2 id="2-分模块实现"><a href="#2-分模块实现" class="headerlink" title="2.分模块实现"></a>2.分模块实现</h2><h3 id="BI-RPC和BA-RPC服务中心的实现"><a href="#BI-RPC和BA-RPC服务中心的实现" class="headerlink" title="BI RPC和BA RPC服务中心的实现"></a>BI RPC和BA RPC服务中心的实现</h3></li>
+</ul>
+<p><img data-src="/img/in-post/1578029209816.png" alt></p>
+<ul>
+<li><p>DOMRpcProviderService：定义了BI RPC服务的注册接口。</p>
+</li>
+<li><p>DOMRpcService：定义了BI RPC服务的调用和服务增删的监听接口。</p>
+</li>
+<li><p>DOMRpcAvailabilityListener：BI RPC服务新增和删除的监听接口。</p>
+</li>
+<li><p>DOMRpcRouter：实现了BI RPC服务的注册、调用和服务增加的监听回调。</p>
+</li>
+<li><p>RpcConsumerRegistry：定义了BA RPC服务的查询接口。</p>
+</li>
+<li><p>RouteChangePublisher：定义了BA RPC服务的变更监听接口。</p>
+</li>
+<li><p>RpcProviderRegistry：定义了BA RPC服务的注册接口。</p>
+</li>
+<li><p>BindingDOMRpcServiceAdapter：实现了BA RPC服务的查询，依赖DOMRpcService，将对BA RPC的调用转换为调用DOMRpcService。</p>
+</li>
+<li><p>BindingDOMRpcProviderServiceAdapter：依赖DOMRpcProviderService，将BA RPC封装为DOMRpcImplementation注册到DOMRpcProviderService。</p>
+</li>
+<li><p>HeliumRpcProviderRegistry：聚合BindingDOMRpcServiceAdapter</p>
+</li>
+<li><p>BindingDOMRpcProviderServiceAdapter提供完整的BA RPC服务的注册、查询功能。</p>
+</li>
+</ul>
+<h3 id="BI-RPC服务跨进程注册和调用的实现"><a href="#BI-RPC服务跨进程注册和调用的实现" class="headerlink" title="BI RPC服务跨进程注册和调用的实现"></a>BI RPC服务跨进程注册和调用的实现</h3><p><img data-src="/img/in-post/1578029278164.png" alt></p>
+<p>RPC跨进程注册和调用的主要类</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/11/27/ODL-RPC-module/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -1286,286 +1568,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/" class="post-title-link" itemprop="url">【线程互斥篇】六、无锁方案-原子操作的实现原理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-09-01 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-01T00:00:00+08:00">2019-09-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:55" itemprop="dateModified" datetime="2020-03-22T18:10:55+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/" class="post-meta-item leancloud_visitors" data-flag-title="【线程互斥篇】六、无锁方案-原子操作的实现原理" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>5.7k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="原子性问题"><a href="#原子性问题" class="headerlink" title="原子性问题"></a>原子性问题</h1><p>在计算机硬件优化导致的3大BUG源头中，其中有一大源头就是原子性的问题，见<a href="[http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug%E7%9A%84%E6%BA%90%E5%A4%B4%E4%BA%8C%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%B8%A6%E6%9D%A5%E7%9A%84%E5%8E%9F%E5%AD%90%E6%80%A7%E9%97%AE%E9%A2%98](http://zhoulei.site/2019/04/11/java-concurreny-concept-3Bug/#bug的源头二线程切换带来的原子性问题)">线程切换带来的原子性问题</a>，解决原子性问题的一大方案是<strong>1）有锁方案：synchronized或者互斥锁Lock</strong>，当然这种锁有一个缺陷：需要加锁、解锁、本身加锁、释放锁性能消耗大，而且拿不到锁的线程还会进入阻塞状态，进而触发线程切换，线程切换对性能的消耗也很大。</p>
-<p>当然还有一种<strong>2）无锁方案就是CAS自旋来实现变量的并发操作的原子操作</strong>。下面就来详细讲下CPU的原子操作并引入CAS指令到Java中来实现Java的原子操作，并且Java提供了Atomic包的多个原子操作的封装。</p>
-<p>下面这篇博客是要来说清楚Java解决原子性问题</p>
-<h1 id="原子操作的实现原理"><a href="#原子操作的实现原理" class="headerlink" title="原子操作的实现原理"></a>原子操作的实现原理</h1><h2 id="术语定义"><a href="#术语定义" class="headerlink" title="术语定义"></a>术语定义</h2><table>
-<thead>
-<tr>
-<th>术语名称</th>
-<th>解释</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>缓存行</td>
-<td>缓存的最小操作单元</td>
-</tr>
-<tr>
-<td>比较并交换</td>
-<td>CAS操作需要输入两个数值，一个旧值(期望操作前的值)和一个新值，在操作期间先比较旧值有没有发生变化，如果没有发生变化，才交换成新值，发生了则不交换</td>
-</tr>
-<tr>
-<td>CPU流水线</td>
-<td>CPU流水线的工作方式就像工业生产上的装配流水线，在CPU中由5<del>6个不同功能的电路单元组成一条指令处理流水线，然后将一条X86指令分成5</del>6步后再由这些电路单元分别执行，这样就能实现在一个CPU时钟周期完成一条指令，因此提高了CPU的运算速度。</td>
-</tr>
-<tr>
-<td>内存顺序冲突</td>
-<td>内存顺序冲突一般是由假共享引起的，假共享是指多个CPU同时修改同一个缓存行的不同部分而引起其中一个CPU的操作无效，当出现这个内存顺序冲突时，CPU必须清空流水线</td>
-</tr>
-</tbody></table>
-<h2 id="CPU如何实现原子操作"><a href="#CPU如何实现原子操作" class="headerlink" title="CPU如何实现原子操作"></a>CPU如何实现原子操作</h2><p>32位IA-32 CPU使用基于<strong>缓存加锁、总线加锁</strong>的方式实现多处理器之间的原子操作。</p>
-<ul>
-<li>首先处理器会自动保证基本的内存操作的原子性。处理器保证从系统内存中读取或者写入一个字节是原子的，意思是当一个处理器读取一个字节数，其他处理器不能访问这个字节的内存地址。</li>
-<li>Pentium 6和最新处理器能自动保证<strong>单</strong>处理器对同一个缓存行里进行16/32/64位的操作是原子的</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/09/01/2019-9-01-java-concurrency-mutex-atomic/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2019/08/23/2019-8-23-java-concurrency-mutex-final/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/08/23/2019-8-23-java-concurrency-mutex-final/" class="post-title-link" itemprop="url">【线程互斥篇】五、无锁方案-不可变性final与内存语义</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-08-23 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-23T00:00:00+08:00">2019-08-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-22 18:10:19" itemprop="dateModified" datetime="2020-03-22T18:10:19+08:00">2020-03-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">并发编程</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2019/08/23/2019-8-23-java-concurrency-mutex-final/" class="post-meta-item leancloud_visitors" data-flag-title="【线程互斥篇】五、无锁方案-不可变性final与内存语义" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2019/08/23/2019-8-23-java-concurrency-mutex-final/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2019/08/23/2019-8-23-java-concurrency-mutex-final/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2.4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="不可变性模型与final"><a href="#不可变性模型与final" class="headerlink" title="不可变性模型与final"></a>不可变性模型与final</h1><p>见<a href="https://zhoulei17.github.io/2019/05/15/java-concurreny-how-to-dev-objshare/" target="_blank" rel="noopener">并发线程共享变量的安全性问题</a>，前面讲了解决并发共享变量的问题除了采用互斥访问外使用volatile、原子类来解决可见性与原子等特定问题场景下的方案。其中，synchronized、lock方案是有锁方案，而volatile、Atomic方案为无锁方案，还有一种无锁方案是使用对象不可变特性避免线程不安全，也能在一定场景下解决并发线程安全问题。在这篇文章中的<a href="https://zhoulei17.github.io/2019/05/15/java-concurreny-how-to-dev-objshare/#4不变性final" target="_blank" rel="noopener">不变性章节</a>也说明了通过使对象不可变解决共享变量同步的问题。</p>
-<p>其中文章<a href="https://time.geekbang.org/column/article/92856" target="_blank" rel="noopener">利用不可变模式解决并发问题</a>通过例子很好的总结了final的应用。</p>
-<h1 id="final的内存语义"><a href="#final的内存语义" class="headerlink" title="final的内存语义"></a>final的内存语义</h1><p>和前面介绍的锁和volatile相比，对final域的读和写更像是普通的变量的变量访问。下面将介绍final域的内存语义。</p>
-<h2 id="final域的重排序规则"><a href="#final域的重排序规则" class="headerlink" title="final域的重排序规则"></a>final域的重排序规则</h2><p>对于final域，编译器和处理器要遵守两个重排序规则。</p>
-<ol>
-<li>在构造函数内对一个final域的写入，与随后对这个被构造对象的引用赋值给一个引用变量，这两个操作不能重排序。</li>
-<li>初次读一个包含final域的对象的引用，与随后初次读这个final域，这两个操作之间不能重排序。</li>
-</ol>
-<p>通过如下示例代码说明这两个规则：</p>
-<p><img data-src="/img/in-post/image-20190828002822718.png" alt></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/08/23/2019-8-23-java-concurrency-mutex-final/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1638,7 +1640,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">61</span>
+          <span class="site-state-item-count">63</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1651,7 +1653,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-count">63</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1713,13 +1715,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">275k</span>
+    <span title="站点总字数">280k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">4:10</span>
+    <span title="站点阅读时长">4:15</span>
 </div>
 
         
