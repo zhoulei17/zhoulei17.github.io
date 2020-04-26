@@ -20,18 +20,22 @@
     var CONFIG = {"hostname":"2tongtong.cn","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":25,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":true,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta property="og:type" content="article">
+  <meta name="description" content="源码入口为： SearchHandler跟单机Solr不同，SolrCloud模式下，必须查询所有的分片才能得得到完整得结果集合。查询结果集合里所有分片并创建统一结果集的过程称为分布式查询。 SolrCloud模式下，distrib参数默认为true。distrib参数设置false则禁用分布式查询，只能借助本地搜索执行查询。 多阶段查询流程  步骤1：客户端发送查询请求到任何节点当客户端应用程序">
+<meta property="og:type" content="article">
 <meta property="og:title" content="【Solr】-【SolrCloud】分布式搜索">
 <meta property="og:url" content="2tongtong.cn/2020/04/25/solr-solrcloud%E2%80%94search/index.html">
 <meta property="og:site_name" content="Z.L&#39;s blog">
+<meta property="og:description" content="源码入口为： SearchHandler跟单机Solr不同，SolrCloud模式下，必须查询所有的分片才能得得到完整得结果集合。查询结果集合里所有分片并创建统一结果集的过程称为分布式查询。 SolrCloud模式下，distrib参数默认为true。distrib参数设置false则禁用分布式查询，只能借助本地搜索执行查询。 多阶段查询流程  步骤1：客户端发送查询请求到任何节点当客户端应用程序">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="/img/in-post/image-20200426223554450.png">
 <meta property="article:published_time" content="2020-04-24T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-04-25T17:44:34.473Z">
+<meta property="article:modified_time" content="2020-04-26T14:36:15.284Z">
 <meta property="article:author" content="Zhou Lei">
 <meta property="article:tag" content="Solr">
 <meta property="article:tag" content="Search">
 <meta property="article:tag" content="SolrCloud">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="/img/in-post/image-20200426223554450.png">
 
 <link rel="canonical" href="2tongtong.cn/2020/04/25/solr-solrcloud%E2%80%94search/">
 
@@ -226,7 +230,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-04-26 01:44:34" itemprop="dateModified" datetime="2020-04-26T01:44:34+08:00">2020-04-26</time>
+                <time title="修改时间：2020-04-26 22:36:15" itemprop="dateModified" datetime="2020-04-26T22:36:15+08:00">2020-04-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -265,7 +269,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>0</span>
+              <span>1.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -284,7 +288,24 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <p>源码入口为：</p>
+<pre><code>SearchHandler</code></pre><p>跟单机Solr不同，SolrCloud模式下，必须查询所有的分片才能得得到完整得结果集合。查询结果集合里所有分片并创建统一结果集的过程称为<strong>分布式查询</strong>。</p>
+<p>SolrCloud模式下，distrib参数默认为true。distrib参数设置false则禁用分布式查询，只能借助本地搜索执行查询。</p>
+<h1 id="多阶段查询流程"><a href="#多阶段查询流程" class="headerlink" title="多阶段查询流程"></a>多阶段查询流程</h1><img data-src="/img/in-post/image-20200426223554450.png" alt="image-20200426223554450" style="zoom:50%;" />
+
+<h2 id="步骤1：客户端发送查询请求到任何节点"><a href="#步骤1：客户端发送查询请求到任何节点" class="headerlink" title="步骤1：客户端发送查询请求到任何节点"></a>步骤1：客户端发送查询请求到任何节点</h2><p>当客户端应用程序向集群中的任意节点发送查询请求时，分布式查询从这里开始。客户端发送请求的方式，可以使用负载均衡器将查询请求分配到集群中各个不同的节点上。也可以在代码中调用SolrJ，那么CloudSolrClient类就会充当一个简单分布式查询请求的负载均衡器。</p>
+<h2 id="步骤2：查询控制器接收请求"><a href="#步骤2：查询控制器接收请求" class="headerlink" title="步骤2：查询控制器接收请求"></a>步骤2：查询控制器接收请求</h2><p>分布式查询会发生在多个阶段。</p>
+<p>在第一次接收查询请求的节点叫<strong>查询控制器</strong>（或者也可以叫聚合器）它主要负责创建统一的结果集并且把结果返回给客户端。集群里的任意节点都可以充查询控制器。</p>
+<p>在SolrCloud中，查询控制器从ZooKeeper获取集群中所有其他节点的信息。但是，查询控制器不是每次接收查询请求都需要从ZooKeeper哪里获取集群状态，因为实时的去ZK中查性能不好。那么通过什么方法？每个节点都会对ZK的znode /clusterstate.json数据节点建立wathcer，如果ZK中保存的节点状态发生变更会通知watcher。</p>
+<p>很容易想到，如果有节点出故障的通知还没通知到订阅的watcher节点，而watcher节点已经发送了请求到这个故障节点上，应该怎么处理呢？</p>
+<p>Solr具有基本的容错能力，会把请求重新发送给同一个分片上的其他健康的replicas节点处理。</p>
+<h2 id="步骤3：第一阶段——查询阶段"><a href="#步骤3：第一阶段——查询阶段" class="headerlink" title="步骤3：第一阶段——查询阶段"></a>步骤3：第一阶段——查询阶段</h2><p>查询控制器会给每个分片发送一个非分布式查询（distrib=false），以确认匹配分片里的文档。控制器能通过ZooKeeper提供的集群信息来确定哪些节点参与查询。查询控制器使用SolrJ的API在所有分片上并行执行查询。则意味着，分片查询的响应时间瓶颈在最慢的那个分片的查询时间（这也是为什么要把文档平均分配到所有分片的原因）。</p>
+<p>在发送给每个分片的查询式只请求id字段和score字段。这样可以避免过早地读取存储字段。假设将页面大小10(rows=10)的查询发送给由10个分片组成的集群。因为每个分片识别10个文档，因此查询控制器就必须对多达100个文档合并和排序，以最终处理成10条结果。所以查询控制器会等到最后一个shard返回10个文档结果。</p>
+<h2 id="步骤4：第二阶段——获取字段阶段"><a href="#步骤4：第二阶段——获取字段阶段" class="headerlink" title="步骤4：第二阶段——获取字段阶段"></a>步骤4：第二阶段——获取字段阶段</h2><p>步骤3、一旦确定了最终匹配的文档，查询控制器就会把第二阶段查询发送给节点的子集获取查询请求中需要获取的其他指定字段。</p>
+<p>如果查询请求了rows=10，那么在获取字段阶段会请求10个文档。因为在步骤3中就已经知道了每个节点的所需文档。（如果仅仅需要的时文档ID和Score，就不需要获取额外字段的这个阶段了）只有需要返回包含文档的分片，才会接收到第二阶段的查询。例如，被确认的所有文档都来自于shard1，那么Solr将第二步查询只发送给shard1。</p>
+<p>如果查询时没有服务器托管分片的话，会发生什么？</p>
+<p>在查询阶段，查询控制器会尝试查询脱机的分片。就会导致请求失败，合并阶段无法完成，这是因为Solr默认不会对查询到的不完整结果集返回。可以通过设置<code>shards.tolerant=true</code>作为查询参数进行干预，表示可以接受不完整的结果。</p>
+
     </div>
 
     
@@ -391,6 +412,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#多阶段查询流程"><span class="nav-number">1.</span> <span class="nav-text">多阶段查询流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#步骤1：客户端发送查询请求到任何节点"><span class="nav-number">1.1.</span> <span class="nav-text">步骤1：客户端发送查询请求到任何节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#步骤2：查询控制器接收请求"><span class="nav-number">1.2.</span> <span class="nav-text">步骤2：查询控制器接收请求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#步骤3：第一阶段——查询阶段"><span class="nav-number">1.3.</span> <span class="nav-text">步骤3：第一阶段——查询阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#步骤4：第二阶段——获取字段阶段"><span class="nav-number">1.4.</span> <span class="nav-text">步骤4：第二阶段——获取字段阶段</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -481,13 +503,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">280k</span>
+    <span title="站点总字数">282k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">4:15</span>
+    <span title="站点阅读时长">4:16</span>
 </div>
 
         

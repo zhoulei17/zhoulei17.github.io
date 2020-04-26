@@ -129,7 +129,24 @@
   <entry>
     <title>【Solr】-【SolrCloud】分布式搜索</title>
     <url>/2020/04/25/solr-solrcloud%E2%80%94search/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>源码入口为：</p>
+<pre><code>SearchHandler</code></pre><p>跟单机Solr不同，SolrCloud模式下，必须查询所有的分片才能得得到完整得结果集合。查询结果集合里所有分片并创建统一结果集的过程称为<strong>分布式查询</strong>。</p>
+<p>SolrCloud模式下，distrib参数默认为true。distrib参数设置false则禁用分布式查询，只能借助本地搜索执行查询。</p>
+<h1 id="多阶段查询流程"><a href="#多阶段查询流程" class="headerlink" title="多阶段查询流程"></a>多阶段查询流程</h1><img data-src="/img/in-post/image-20200426223554450.png" alt="image-20200426223554450" style="zoom:50%;" />
+
+<h2 id="步骤1：客户端发送查询请求到任何节点"><a href="#步骤1：客户端发送查询请求到任何节点" class="headerlink" title="步骤1：客户端发送查询请求到任何节点"></a>步骤1：客户端发送查询请求到任何节点</h2><p>当客户端应用程序向集群中的任意节点发送查询请求时，分布式查询从这里开始。客户端发送请求的方式，可以使用负载均衡器将查询请求分配到集群中各个不同的节点上。也可以在代码中调用SolrJ，那么CloudSolrClient类就会充当一个简单分布式查询请求的负载均衡器。</p>
+<h2 id="步骤2：查询控制器接收请求"><a href="#步骤2：查询控制器接收请求" class="headerlink" title="步骤2：查询控制器接收请求"></a>步骤2：查询控制器接收请求</h2><p>分布式查询会发生在多个阶段。</p>
+<p>在第一次接收查询请求的节点叫<strong>查询控制器</strong>（或者也可以叫聚合器）它主要负责创建统一的结果集并且把结果返回给客户端。集群里的任意节点都可以充查询控制器。</p>
+<p>在SolrCloud中，查询控制器从ZooKeeper获取集群中所有其他节点的信息。但是，查询控制器不是每次接收查询请求都需要从ZooKeeper哪里获取集群状态，因为实时的去ZK中查性能不好。那么通过什么方法？每个节点都会对ZK的znode /clusterstate.json数据节点建立wathcer，如果ZK中保存的节点状态发生变更会通知watcher。</p>
+<p>很容易想到，如果有节点出故障的通知还没通知到订阅的watcher节点，而watcher节点已经发送了请求到这个故障节点上，应该怎么处理呢？</p>
+<p>Solr具有基本的容错能力，会把请求重新发送给同一个分片上的其他健康的replicas节点处理。</p>
+<h2 id="步骤3：第一阶段——查询阶段"><a href="#步骤3：第一阶段——查询阶段" class="headerlink" title="步骤3：第一阶段——查询阶段"></a>步骤3：第一阶段——查询阶段</h2><p>查询控制器会给每个分片发送一个非分布式查询（distrib=false），以确认匹配分片里的文档。控制器能通过ZooKeeper提供的集群信息来确定哪些节点参与查询。查询控制器使用SolrJ的API在所有分片上并行执行查询。则意味着，分片查询的响应时间瓶颈在最慢的那个分片的查询时间（这也是为什么要把文档平均分配到所有分片的原因）。</p>
+<p>在发送给每个分片的查询式只请求id字段和score字段。这样可以避免过早地读取存储字段。假设将页面大小10(rows=10)的查询发送给由10个分片组成的集群。因为每个分片识别10个文档，因此查询控制器就必须对多达100个文档合并和排序，以最终处理成10条结果。所以查询控制器会等到最后一个shard返回10个文档结果。</p>
+<h2 id="步骤4：第二阶段——获取字段阶段"><a href="#步骤4：第二阶段——获取字段阶段" class="headerlink" title="步骤4：第二阶段——获取字段阶段"></a>步骤4：第二阶段——获取字段阶段</h2><p>步骤3、一旦确定了最终匹配的文档，查询控制器就会把第二阶段查询发送给节点的子集获取查询请求中需要获取的其他指定字段。</p>
+<p>如果查询请求了rows=10，那么在获取字段阶段会请求10个文档。因为在步骤3中就已经知道了每个节点的所需文档。（如果仅仅需要的时文档ID和Score，就不需要获取额外字段的这个阶段了）只有需要返回包含文档的分片，才会接收到第二阶段的查询。例如，被确认的所有文档都来自于shard1，那么Solr将第二步查询只发送给shard1。</p>
+<p>如果查询时没有服务器托管分片的话，会发生什么？</p>
+<p>在查询阶段，查询控制器会尝试查询脱机的分片。就会导致请求失败，合并阶段无法完成，这是因为Solr默认不会对查询到的不完整结果集返回。可以通过设置<code>shards.tolerant=true</code>作为查询参数进行干预，表示可以接受不完整的结果。</p>
+]]></content>
       <categories>
         <category>Solr</category>
       </categories>
@@ -2683,6 +2700,86 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
+    <title>【索引文件】.nvd、.nvm文件</title>
+    <url>/2020/01/31/lucene-indexfile-nvd-nvm/</url>
+    <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
+<h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
+<p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
+<p><img data-src="/img/in-post/1-20200201134606149.png" alt=""></p>
+<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt=""></p>
+<ul>
+<li><p><strong>FieldData</strong></p>
+<p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
+<p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
+<ul>
+<li><p><strong>DocsWithFieldData</strong></p>
+<p><img data-src="/img/in-post/3.png" alt=""></p>
+<p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
+<ul>
+<li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
+</li>
+<li><p>numDocsWithValue == maxDoc</p>
+<p>maxDoc表示当前处理的文档个数，这种情况说明所有文档都包含当前域。<br>DocsWithFieldData无数据，通过nvm文件中同样存放固定值来描述当前情况。<br>在本文中,域”author”属于此情况。</p>
+</li>
+<li><p>numDocsWithValue &lt; maxDoc</p>
+<p>这种情况说明并不是所有的文档都包含当前域，所以需要存储所有包含当前域的文档号。</p>
+<p>使用IndexedDISI类来实现对文档号docID的存储，IndexedDISI类随后文章中再总结。</p>
+<p>在索引阶段不同的添加document的方式会有不同数据结构的nvd文件产生，导致生成索引跟查询的性能各不相同。 在本文的例子中，域”content”、”attachment”的DocsWithFieldData属于当前情况。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>NormsData</strong></li>
+</ul>
+<p>  <img data-src="/img/in-post/4.png" alt=""></p>
+<ul>
+<li>Value</li>
+</ul>
+<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img data-src="/img/in-post/5.png" alt=""></p>
+<ul>
+<li><p><strong>FieldNumber</strong></p>
+<p>域的编号，用来唯一标识一种域</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>DocsWithFieldAddress &amp;&amp; DocsWithFieldLength</strong></p>
+<p>如果numDocWithValue == maxDoc 或者 numDocWithValue == 0 , 那么DocWithFieldAddress跟DocsWithFieldLength会被设置为固定值。否则这两个值作为索引去映射nvd中的一块数据区域。</p>
+</li>
+</ul>
+<p>  <img data-src="/img/in-post/6.png" alt=""></p>
+<ul>
+<li><p><strong>NumDocsWithField</strong></p>
+<p>NumDocsWithField描述了包含当前域的文档个数。</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>BytesPernNorm</strong></p>
+<p>找出当前域在所有所属文档中的最大和最小的两个标准化值来判断存储一个标准化值最大需要的字节数，这里还是处于优化索引空间目的。由于最小值可能是负数，所以不能仅仅靠最大值判断标准化值需要的字节数。比如最小值min为-130（需要2个字节），最大值max 5(需要1个字节)，那测试需要根据min来决定需要字节的个数。</p>
+</li>
+</ul>
+<ul>
+<li><p><strong>NormsAddress</strong></p>
+<p>NormsAddress作为索引映射nvd中一块数据区域，这块数据区域即当前域所在文档中的标准化值。</p>
+</li>
+</ul>
+<p>  <img data-src="/img/in-post/7.png" alt=""></p>
+<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img data-src="/img/in-post/8.png" alt=""></p>
+<h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
+<p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>索引文件</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【索引文件】.pos、.pay文件</title>
     <url>/2020/01/31/lucene-indexfile-pos-pay/</url>
     <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
@@ -2765,86 +2862,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
 <h2 id="多个域的pay文件的数据结构"><a href="#多个域的pay文件的数据结构" class="headerlink" title="多个域的pay文件的数据结构"></a>多个域的pay文件的数据结构</h2><p><img data-src="/img/in-post/6-20200201164502459.png" alt=""></p>
 <h2 id="多个域的pos文件的数据结构"><a href="#多个域的pos文件的数据结构" class="headerlink" title="多个域的pos文件的数据结构"></a>多个域的pos文件的数据结构</h2><p><img data-src="/img/in-post/7-20200201164528840.png" alt=""></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>.pos 、.pay、.doc、.tim 、.tip文件都是在<a href="https://www.amazingkoala.com.cn/Lucene/Index/2019/0716/74.html" target="_blank" rel="noopener">flush</a>阶段通过读取倒排表一起生成的，另外.doc跟.pos、.pay文件还有映射关系，后续总结.doc文件会涉及。</p>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>索引文件</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【索引文件】.nvd、.nvm文件</title>
-    <url>/2020/01/31/lucene-indexfile-nvd-nvm/</url>
-    <content><![CDATA[<p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
-<h1 id="nvd、nvm文件"><a href="#nvd、nvm文件" class="headerlink" title="nvd、nvm文件"></a>nvd、nvm文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>nvd&amp;&amp;nvm用来存储域的标准化值（normalization values），这两个索引文件记录了每一篇文档中每一种域的标准化索引信息。在Lucene 7.5.0中，标准化值的计算实际就是统计一篇文档中某个域的域值，这个域值经过分词器处理后生成的term的个数，最后将term的个数通过intToByte4()的方法编码为一个byte类型的值。</p>
-<p>标准化的过程不作介绍，可以查看BM25Similarity的computeNorm()方法。我们可以自定义自己的Similarity来实现定制化的计算域的标准化值的逻辑。</p>
-<p><img data-src="/img/in-post/1-20200201134606149.png" alt=""></p>
-<h2 id="nvd的数据结构"><a href="#nvd的数据结构" class="headerlink" title="nvd的数据结构"></a>nvd的数据结构</h2><p><img data-src="/img/in-post/2.png" alt=""></p>
-<ul>
-<li><p><strong>FieldData</strong></p>
-<p>nvd文件在索引阶段按照添加域的顺序分块地存储每一种域的信息，FieldData描述了一种域的所有信息。</p>
-<p>在上面的例子中，一共有3个FieldData块，分别描述”content”、”author”、”attachment”三种域的信息。</p>
-<ul>
-<li><p><strong>DocsWithFieldData</strong></p>
-<p><img data-src="/img/in-post/3.png" alt=""></p>
-<p>DocsWithFieldData的数据结构根据包含当前域的文档个数numDocsWithValue分三种情况：</p>
-<ul>
-<li><p>numDocsWithValue == 0<br>DocWithFieldData无数据，通过nvm文件中存放固定值来描述当前情况。</p>
-</li>
-<li><p>numDocsWithValue == maxDoc</p>
-<p>maxDoc表示当前处理的文档个数，这种情况说明所有文档都包含当前域。<br>DocsWithFieldData无数据，通过nvm文件中同样存放固定值来描述当前情况。<br>在本文中,域”author”属于此情况。</p>
-</li>
-<li><p>numDocsWithValue &lt; maxDoc</p>
-<p>这种情况说明并不是所有的文档都包含当前域，所以需要存储所有包含当前域的文档号。</p>
-<p>使用IndexedDISI类来实现对文档号docID的存储，IndexedDISI类随后文章中再总结。</p>
-<p>在索引阶段不同的添加document的方式会有不同数据结构的nvd文件产生，导致生成索引跟查询的性能各不相同。 在本文的例子中，域”content”、”attachment”的DocsWithFieldData属于当前情况。</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><strong>NormsData</strong></li>
-</ul>
-<p>  <img data-src="/img/in-post/4.png" alt=""></p>
-<ul>
-<li>Value</li>
-</ul>
-<pre><code>Value为当前域在每一篇文档中的标准化值</code></pre><h2 id="nvm的数据结构"><a href="#nvm的数据结构" class="headerlink" title="nvm的数据结构"></a>nvm的数据结构</h2><p><img data-src="/img/in-post/5.png" alt=""></p>
-<ul>
-<li><p><strong>FieldNumber</strong></p>
-<p>域的编号，用来唯一标识一种域</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>DocsWithFieldAddress &amp;&amp; DocsWithFieldLength</strong></p>
-<p>如果numDocWithValue == maxDoc 或者 numDocWithValue == 0 , 那么DocWithFieldAddress跟DocsWithFieldLength会被设置为固定值。否则这两个值作为索引去映射nvd中的一块数据区域。</p>
-</li>
-</ul>
-<p>  <img data-src="/img/in-post/6.png" alt=""></p>
-<ul>
-<li><p><strong>NumDocsWithField</strong></p>
-<p>NumDocsWithField描述了包含当前域的文档个数。</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>BytesPernNorm</strong></p>
-<p>找出当前域在所有所属文档中的最大和最小的两个标准化值来判断存储一个标准化值最大需要的字节数，这里还是处于优化索引空间目的。由于最小值可能是负数，所以不能仅仅靠最大值判断标准化值需要的字节数。比如最小值min为-130（需要2个字节），最大值max 5(需要1个字节)，那测试需要根据min来决定需要字节的个数。</p>
-</li>
-</ul>
-<ul>
-<li><p><strong>NormsAddress</strong></p>
-<p>NormsAddress作为索引映射nvd中一块数据区域，这块数据区域即当前域所在文档中的标准化值。</p>
-</li>
-</ul>
-<p>  <img data-src="/img/in-post/7.png" alt=""></p>
-<h2 id="nvm和nvd的映射关系图"><a href="#nvm和nvd的映射关系图" class="headerlink" title="nvm和nvd的映射关系图"></a>nvm和nvd的映射关系图</h2><p><img data-src="/img/in-post/8.png" alt=""></p>
-<h2 id="集合图"><a href="#集合图" class="headerlink" title="集合图"></a>集合图</h2><p>把数据结构放在一起就是下面这样：</p>
-<p><img data-src="http://www.amazingkoala.com.cn/uploads/lucene/%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6/pos&&pay/5.png" alt=""></p>
 ]]></content>
       <categories>
         <category>Lucene</category>
@@ -3528,6 +3545,88 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
+    <title>【NLP】一、线性回归与随机梯度下降法</title>
+    <url>/2019/11/27/NLP-Gradient-Descent/</url>
+    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
+<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
+<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
+<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
+<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
+<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
+<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
+<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
+<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
+<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
+<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
+<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
+<p>即单个样本的最小问题转化为：</p>
+<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
+<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
+<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
+<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
+<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
+<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
+<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
+<ul>
+<li><p>步骤一、</p>
+<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
+</li>
+<li><p>步骤二、</p>
+</li>
+</ul>
+<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
+<ul>
+<li><p>步骤三、</p>
+<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
+</li>
+<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
+</li>
+</ul>
+<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
+<p>其手动拟合的过程如下：</p>
+<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
+<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
+<ul>
+<li><p><strong>目标定义</strong></p>
+<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
+</li>
+<li><p><strong>求解过程</strong></p>
+<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
+</li>
+</ul>
+<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
+<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
+<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
+<p>慢慢拟合</p>
+<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
+<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
+<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
+<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
+</li>
+<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
+</li>
+<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
+<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>NLP</category>
+      </categories>
+      <tags>
+        <tag>随机梯度下降</tag>
+        <tag>有监督</tag>
+        <tag>线性回归</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【并发容器和框架】四、Executor框架</title>
     <url>/2019/11/27/java-concurrency-container-Executor/</url>
     <content><![CDATA[<p>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
@@ -3634,88 +3733,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
         <tag>java</tag>
         <tag>并发框架</tag>
         <tag>Executor</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【NLP】一、线性回归与随机梯度下降法</title>
-    <url>/2019/11/27/NLP-Gradient-Descent/</url>
-    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
-<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
-<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
-<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
-<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
-<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
-<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
-<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
-<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
-<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
-<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
-<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
-<p>即单个样本的最小问题转化为：</p>
-<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
-<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
-<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
-<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
-<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
-<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
-<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
-<ul>
-<li><p>步骤一、</p>
-<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
-</li>
-<li><p>步骤二、</p>
-</li>
-</ul>
-<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
-<ul>
-<li><p>步骤三、</p>
-<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
-</li>
-<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
-</li>
-</ul>
-<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
-<p>其手动拟合的过程如下：</p>
-<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
-<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
-<ul>
-<li><p><strong>目标定义</strong></p>
-<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
-</li>
-<li><p><strong>求解过程</strong></p>
-<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
-</li>
-</ul>
-<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
-<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
-<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
-<p>慢慢拟合</p>
-<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
-<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
-<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
-<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
-</li>
-<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
-</li>
-<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
-<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>NLP</category>
-      </categories>
-      <tags>
-        <tag>随机梯度下降</tag>
-        <tag>有监督</tag>
-        <tag>线性回归</tag>
       </tags>
   </entry>
   <entry>
