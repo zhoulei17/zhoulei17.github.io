@@ -3,8 +3,113 @@
   <entry>
     <title>【Solr】-【SolrCloud】SolrCloud核心概念</title>
     <url>/2020/04/25/solr-solrcloud/</url>
-    <content><![CDATA[<h1 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h1><h2 id="core"><a href="#core" class="headerlink" title="core"></a>core</h2><h2 id="collection"><a href="#collection" class="headerlink" title="collection"></a>collection</h2><p>SolrCloud使用集合这个概念来描述多个Solr实例的索引分割。</p>
-<h2 id="shard"><a href="#shard" class="headerlink" title="shard"></a>shard</h2><h2 id="replic"><a href="#replic" class="headerlink" title="replic"></a>replic</h2><h2 id="master-slave"><a href="#master-slave" class="headerlink" title="master-slave"></a>master-slave</h2><h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><p>ZK提供Solr集中化的配置管理、集群状态管理和选主（分片代表,leader）的作用。</p>
+    <content><![CDATA[<h1 id="架构特性"><a href="#架构特性" class="headerlink" title="架构特性"></a>架构特性</h1><p>SolrCloud架构主要有5个主要特性：</p>
+<ul>
+<li>可扩展性</li>
+<li>高可用性</li>
+<li>一致性</li>
+<li>简单性</li>
+<li>灵活性</li>
+</ul>
+<h2 id="可扩展性"><a href="#可扩展性" class="headerlink" title="可扩展性"></a>可扩展性</h2><h3 id="扩展方法"><a href="#扩展方法" class="headerlink" title="扩展方法"></a>扩展方法</h3><p>扩容增加工作负载的处理能力，有两种方法可扩展：横向扩展、纵向扩展。</p>
+<ul>
+<li><p>纵向扩展：如，增加内容、升级CPU、使用固态加速I/O性能。</p>
+</li>
+<li><p>横向扩展：分片、复制。</p>
+<ul>
+<li><p>分片：<strong>主要是为了加速索引、加速索引优化、增大单shard索引容量、并行搜索、方便索引备份。等诸多好处。</strong></p>
+<ul>
+<li><p><strong>你分片可以把大型索引分割成多个小索引，放到不同的shard中。</strong></p>
+</li>
+<li><p><strong>允许用户同时操作多个shard索引，加快了索引和优化。</strong></p>
+</li>
+<li><p>多shard并行查，查完后再合并文档，一定程度上加快了搜索速度。</p>
+</li>
+<li><p>多个shard分割以后，同时备份也方便、更快。</p>
+</li>
+</ul>
+</li>
+<li><p>复制：主要是保证shard对应节点的可靠性、分担单节点复杂搜索压力，加快搜索。</p>
+<ul>
+<li><p>假如一个shard由10个副本组成，客户端同时有10个查询请求访问集群，（理想情况）每个副本都可以处理这个shard的查询。处理能力增加10倍。</p>
+</li>
+<li><p>多个副本起到了容灾容错的作用，一个副本挂了，其他副本还可以服务。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>一般横向扩展更受欢迎，因为更经济（比如亚马逊的EC2）。可以用多台配置没有那么高的机器并行处理请求充分榨干单机性能，组合达到的性能一般比同等能力的单机便宜。</p>
+<p>但是一味的通过横向加机器，等业务发展到一定程度也不一定能解决问题，因为一个是机器越来越多，管理起来也越来越困难，另外一个是业务复杂以后，本身单机性能也要够用（因为不能无限制扩机器且单请求也可能很复杂）。在复杂性、成本等因素下，横向与纵向的扩展方法需要综合考虑。</p>
+</li>
+</ul>
+<p>  同时为了到达，最优性能，撇开代码级别与业务级别的优化不讲，也需要有足够的内容将索引缓存在操作系统缓存中，还需要有足够内容来容纳JVM缓存、排序、分面。如果索引中可以搜索的数据需要有20GB，那也还需要8GB内存给JVM，总共要28GB内容。Solr很明显也是I/O密集型的应用（特别是索引文档时），需要性能更好的固态硬盘。</p>
+<h3 id="扩展策略"><a href="#扩展策略" class="headerlink" title="扩展策略"></a>扩展策略</h3><p>  详细略，这里截取《Solr实战》中提供的扩展策略。</p>
+  <img data-src="/img/in-post/image-20200428023159880.png" alt="image-20200428023159880" style="zoom: 50%;" />
+
+<h2 id="高可用性"><a href="#高可用性" class="headerlink" title="高可用性"></a>高可用性</h2><p>三”高“中（高可用、高可扩展、高性能），很重要的一点是，需要有良好的高可用性，如果系统一用就挂，那客户就跑光了。所以我们终极目标是实现零宕机，即使架构初期架构不成熟，也要把P1事故扼杀在开发阶段和线下，如果线上出现宕机，也需要马上恢复，实现用户的零感知。当然，是否具有高可用，有一部分也取决与经费投入。</p>
+<h3 id="高可用架构能力"><a href="#高可用架构能力" class="headerlink" title="高可用架构能力"></a>高可用架构能力</h3><p>高可用主要包含两个方面：</p>
+<ul>
+<li><p>关键业务不可用时快速回复的能力</p>
+<p>比如客户在线上进行正常的检索查询，比如不能因为单节点或集群出现不可抗故障，而酥手无策，我们需要快速恢复，将用户感知降到最小或者不感知。</p>
+</li>
+<li><p>数据冗余性：当节点故障或者磁盘出现故障时，索引数据出现了丢失，我们数据冗余性，冗余的数据可以快速迁移到服务中。</p>
+</li>
+</ul>
+<h3 id="高可用需要解决的故障"><a href="#高可用需要解决的故障" class="headerlink" title="高可用需要解决的故障"></a>高可用需要解决的故障</h3><p>在SolrCloud的分布式系统中，我们要考虑好以下4种故障：</p>
+<ol>
+<li>由于硬件故障和断网，影响集群中的节点或部分节点。</li>
+</ol>
+<p>一般来说会出现自己运维的机器中，云上机器由运行商去保证，不太可能会宕机(99…….9%不会)。</p>
+<ol start="2">
+<li><p>系统升级和维护，比如我们在发版时中断停机。</p>
+<p>笔者所在的公司，不会出现，因为当我们在发版线上时，我们会新开一套节点进行升级服务的发布，待发布完集群服务可用时，将ELB流量切到新机器，旧机器才会被释放。</p>
+</li>
+<li><p>系统负载较重，Solr集群处理不了后续查询请求或索引，Solr服务需要降级。</p>
+</li>
+<li><p>造成整个集群或数据中心脱机的灾难事故。</p>
+</li>
+</ol>
+<p><strong>3、4是笔者所在公司正在重点考虑的，因为做不好，很可能会发生造成不可挽回的损失。</strong></p>
+<p>SolrCloud可以对同一个数据中心的不同服务器进行故障转移和数据备份，这可以解决1、2、3的故障。<br>当出现4.这个问题时候，需要把Solr分配到其他位置上，即进行冷备份、温备、热备等集群容灾的恢复。</p>
+<h3 id="高可用的业务需求"><a href="#高可用的业务需求" class="headerlink" title="高可用的业务需求"></a>高可用的业务需求</h3><p>Solr中会进行两种大操作：创建索引、执行查询。</p>
+<h4 id="提供创建索引的高可用"><a href="#提供创建索引的高可用" class="headerlink" title="提供创建索引的高可用"></a>提供创建索引的高可用</h4><p>这两种都要具备高可用，且Solr本身能做到。</p>
+<p>比如，笔者所在的公司使用了SolrCloud的master-slave的集群模式。（即所谓的主从模式）</p>
+<ul>
+<li><p>master集群是<strong>tlog模式</strong>，确保了<strong>更新索引的一致性</strong>（针对一个shard来说，要么所有副本落盘成功，要么有一个副本更新失败，更新就失败了）。</p>
+</li>
+<li><p>master集群可以部署多个副本来支持数据冗余，确保了Solr可以不断接收索引更新请求，在当前master集群的leader挂掉以后，SolrCloud的master集群可以选择另外一个分片的代表来自动故障转移。</p>
+</li>
+</ul>
+<p>不过处于成本考虑，笔者所在公司，master只有一个副本，因此只需要保证单shard索引的成功与失败，这个也有tlog模式下的solr保证好了。</p>
+<h4 id="提供查询服务的高可用"><a href="#提供查询服务的高可用" class="headerlink" title="提供查询服务的高可用"></a>提供查询服务的高可用</h4><ul>
+<li>master-slave模型下，slave集群使用pull模式，定期从master中同步索引，其主要职责只要管对外提供查询服务即可。达到读写分离的目的。</li>
+<li>我们在slave集群中，启用了多个副本（中美分别为3个和6个）来支持不间断对外提供查询服务，如果有一个副本挂掉，查询请求可以自动转移到健康的副本中。</li>
+</ul>
+<p>当然这两种操作在进行时，对于上面提到的故障发生时需要解决到什么程度，这个要根据用户的接受度以及成本和领导的裁决进行取舍。</p>
+<h3 id="一个手动重启的点"><a href="#一个手动重启的点" class="headerlink" title="一个手动重启的点"></a>一个手动重启的点</h3><ul>
+<li><p>在我们的线上，开发同事遇到了两种操作万万要不得：</p>
+<ul>
+<li><p>把slave全部重启</p>
+<p>这种操作会导致master也挂掉，为什么呢？因为slave一旦全部重启，slave启动时，master正在进行的索引操作比如所有优化操作的数据变更会集体同时同步到slave集群中，这时候master收到的I/O压力是很大的。</p>
+<p>而这时候slave因为还没启动完，客户源源不断的查询请求会全部转发到master中，这时候master正在进行数据同步，是没有能力处理客户请求的，这时候master的心跳也会超时，master也会重启了。</p>
+</li>
+<li><p>master重启，之后slave重启</p>
+<p>slave重启时，会进行索引同步目标的确认，这时候master还没起来，slave没有到同步源，这时候slave重试几次后，就又开始重启了。</p>
+</li>
+</ul>
+</li>
+<li><p>我的建议</p>
+<p>假如我们在线上需要重启slave机器，可以通过滚动的方式重启，最大限度减少停机时间。</p>
+</li>
+</ul>
+<p>关于简单性主要体现在，Solr是通过ZooKeeper进行分布式协调和配置管理的，当我们需要变更集群配置、增加集群节点时我们只要往ZK上传一份配置即可。</p>
+<p>另外灵活性体现在，SOLRCLOUD可以自动扩容。具体来说，Solr可以添加更多的副本以增强查询处理的能力，也可以增加更多的shard来增强索引分片处理的能力。</p>
+<h1 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h1><h2 id="core"><a href="#core" class="headerlink" title="core"></a>core</h2><p>core对应一份或多份不同collection的完整的一个shard索引，是一个物理的运行实体，一台solr服务器可以托管1个或多个solr core。</p>
+<h2 id="collection"><a href="#collection" class="headerlink" title="collection"></a>collection</h2><p>SolrCloud使用集合这个概念用来描述多个节点对索引的分割。collection对应的每个分片托管在Solr内核中。</p>
+<h2 id="shard"><a href="#shard" class="headerlink" title="shard"></a>shard</h2><p>分片，将大索引拆分为多个shard分片，每个shard分片是完整的一份索引结构，主要提高索引速度，降低单索引的索引容量。</p>
+<h2 id="replicas"><a href="#replicas" class="headerlink" title="replicas"></a>replicas</h2><p>shard对应的副本，增强查询处理能力，提高容错和容灾能力，到达高可用。</p>
+<h2 id="master-slave"><a href="#master-slave" class="headerlink" title="master-slave"></a>master-slave</h2><p>主从结构solrcloud集群，master和slave可以分别是一个集群，进行读写分离。</p>
+<h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><p>ZK提供Solr集中化的配置管理、集群状态管理和选主（分片代表,leader）的作用。</p>
 <p>Solr创建的watcher会更新/clusterstate.json 这个znode节点，已便集群状态改变时通知其他所有节点。</p>
 <h2 id="如何选择分片代表"><a href="#如何选择分片代表" class="headerlink" title="如何选择分片代表"></a>如何选择分片代表</h2><h3 id="分工"><a href="#分工" class="headerlink" title="分工"></a>分工</h3><p><strong>针对索引更新：</strong></p>
 <p><strong>分片代表</strong>负责接收更新请求，并将这些更新请求协调分配至各个副本。具体来说，分片代表负责以下几项额外的更新请求，副本无法负责这些请求：</p>
@@ -34,13 +139,13 @@
 <p>这种情况需要选出新的代表，索引才能继续进行。事实证明，候选序列中下一个状态良好的节点会成为代表。（关于代表故障如何转移的细节，可以阅读<a href="http://zookeeper.apache.org/doc/r3.5.7/recipes.html" target="_blank" rel="noopener">ZooKeeper的文档</a>）</p>
 </li>
 </ul>
-<h1 id="SolrCloud的有关配置"><a href="#SolrCloud的有关配置" class="headerlink" title="SolrCloud的有关配置"></a>SolrCloud的有关配置</h1><h2 id="solr-xml"><a href="#solr-xml" class="headerlink" title="solr.xml"></a>solr.xml</h2>]]></content>
+]]></content>
       <categories>
         <category>Solr</category>
       </categories>
       <tags>
-        <tag>Solr</tag>
         <tag>Search</tag>
+        <tag>Solr</tag>
         <tag>SolrCloud</tag>
       </tags>
   </entry>
@@ -121,8 +226,8 @@
         <category>Solr</category>
       </categories>
       <tags>
-        <tag>Solr</tag>
         <tag>Search</tag>
+        <tag>Solr</tag>
         <tag>SolrCloud</tag>
       </tags>
   </entry>
@@ -151,8 +256,8 @@
         <category>Solr</category>
       </categories>
       <tags>
-        <tag>Solr</tag>
         <tag>Search</tag>
+        <tag>Solr</tag>
         <tag>SolrCloud</tag>
       </tags>
   </entry>
@@ -1147,8 +1252,8 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
         <category>Solr</category>
       </categories>
       <tags>
-        <tag>Solr</tag>
         <tag>Search</tag>
+        <tag>Solr</tag>
       </tags>
   </entry>
   <entry>
@@ -3545,88 +3650,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
-    <title>【NLP】一、线性回归与随机梯度下降法</title>
-    <url>/2019/11/27/NLP-Gradient-Descent/</url>
-    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
-<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
-<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
-<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
-<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
-<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
-<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
-<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
-<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
-<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
-<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
-<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
-<p>即单个样本的最小问题转化为：</p>
-<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
-<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
-<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
-<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
-<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
-<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
-<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
-<ul>
-<li><p>步骤一、</p>
-<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
-</li>
-<li><p>步骤二、</p>
-</li>
-</ul>
-<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
-<ul>
-<li><p>步骤三、</p>
-<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
-</li>
-<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
-</li>
-</ul>
-<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
-<p>其手动拟合的过程如下：</p>
-<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
-<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
-<ul>
-<li><p><strong>目标定义</strong></p>
-<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
-</li>
-<li><p><strong>求解过程</strong></p>
-<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
-</li>
-</ul>
-<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
-<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
-<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
-<p>慢慢拟合</p>
-<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
-<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
-<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
-<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
-</li>
-<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
-</li>
-<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
-<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>NLP</category>
-      </categories>
-      <tags>
-        <tag>随机梯度下降</tag>
-        <tag>有监督</tag>
-        <tag>线性回归</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【并发容器和框架】四、Executor框架</title>
     <url>/2019/11/27/java-concurrency-container-Executor/</url>
     <content><![CDATA[<p>上文讲了，如果为每个任务创建一个新线程来执行，线程的创建和销毁要消耗大量的计算资源。Java的线程既是工作单元，也是执行机制。从JDK 5开始，把工作单元和执行机制分离开来。工作单元包括Runnable和Callable，而执行机制由Executor框架提供。</p>
@@ -3733,6 +3756,88 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
         <tag>java</tag>
         <tag>并发框架</tag>
         <tag>Executor</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【NLP】一、线性回归与随机梯度下降法</title>
+    <url>/2019/11/27/NLP-Gradient-Descent/</url>
+    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
+<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
+<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
+<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
+<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
+<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
+<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
+<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
+<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
+<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
+<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
+<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
+<p>即单个样本的最小问题转化为：</p>
+<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
+<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
+<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
+<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
+<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
+<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
+<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
+<ul>
+<li><p>步骤一、</p>
+<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
+</li>
+<li><p>步骤二、</p>
+</li>
+</ul>
+<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
+<ul>
+<li><p>步骤三、</p>
+<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
+</li>
+<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
+</li>
+</ul>
+<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
+<p>其手动拟合的过程如下：</p>
+<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
+<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
+<ul>
+<li><p><strong>目标定义</strong></p>
+<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
+</li>
+<li><p><strong>求解过程</strong></p>
+<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
+</li>
+</ul>
+<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
+<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
+<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
+<p>慢慢拟合</p>
+<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
+<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
+<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
+<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
+</li>
+<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
+</li>
+<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
+<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>NLP</category>
+      </categories>
+      <tags>
+        <tag>随机梯度下降</tag>
+        <tag>有监督</tag>
+        <tag>线性回归</tag>
       </tags>
   </entry>
   <entry>

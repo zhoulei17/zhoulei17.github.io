@@ -222,7 +222,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-04-26 01:54:14" itemprop="dateModified" datetime="2020-04-26T01:54:14+08:00">2020-04-26</time>
+                <time title="修改时间：2020-04-28 03:40:20" itemprop="dateModified" datetime="2020-04-28T03:40:20+08:00">2020-04-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -261,14 +261,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.3k</span>
+              <span>4.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -280,9 +280,47 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h1><h2 id="core"><a href="#core" class="headerlink" title="core"></a>core</h2><h2 id="collection"><a href="#collection" class="headerlink" title="collection"></a>collection</h2><p>SolrCloud使用集合这个概念来描述多个Solr实例的索引分割。</p>
-<h2 id="shard"><a href="#shard" class="headerlink" title="shard"></a>shard</h2><h2 id="replic"><a href="#replic" class="headerlink" title="replic"></a>replic</h2><h2 id="master-slave"><a href="#master-slave" class="headerlink" title="master-slave"></a>master-slave</h2><h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><p>ZK提供Solr集中化的配置管理、集群状态管理和选主（分片代表,leader）的作用。</p>
-<p>Solr创建的watcher会更新/clusterstate.json 这个znode节点，已便集群状态改变时通知其他所有节点。</p>
+          <h1 id="架构特性"><a href="#架构特性" class="headerlink" title="架构特性"></a>架构特性</h1><p>SolrCloud架构主要有5个主要特性：</p>
+<ul>
+<li>可扩展性</li>
+<li>高可用性</li>
+<li>一致性</li>
+<li>简单性</li>
+<li>灵活性</li>
+</ul>
+<h2 id="可扩展性"><a href="#可扩展性" class="headerlink" title="可扩展性"></a>可扩展性</h2><h3 id="扩展方法"><a href="#扩展方法" class="headerlink" title="扩展方法"></a>扩展方法</h3><p>扩容增加工作负载的处理能力，有两种方法可扩展：横向扩展、纵向扩展。</p>
+<ul>
+<li><p>纵向扩展：如，增加内容、升级CPU、使用固态加速I/O性能。</p>
+</li>
+<li><p>横向扩展：分片、复制。</p>
+<ul>
+<li><p>分片：<strong>主要是为了加速索引、加速索引优化、增大单shard索引容量、并行搜索、方便索引备份。等诸多好处。</strong></p>
+<ul>
+<li><p><strong>你分片可以把大型索引分割成多个小索引，放到不同的shard中。</strong></p>
+</li>
+<li><p><strong>允许用户同时操作多个shard索引，加快了索引和优化。</strong></p>
+</li>
+<li><p>多shard并行查，查完后再合并文档，一定程度上加快了搜索速度。</p>
+</li>
+<li><p>多个shard分割以后，同时备份也方便、更快。</p>
+</li>
+</ul>
+</li>
+<li><p>复制：主要是保证shard对应节点的可靠性、分担单节点复杂搜索压力，加快搜索。</p>
+<ul>
+<li><p>假如一个shard由10个副本组成，客户端同时有10个查询请求访问集群，（理想情况）每个副本都可以处理这个shard的查询。处理能力增加10倍。</p>
+</li>
+<li><p>多个副本起到了容灾容错的作用，一个副本挂了，其他副本还可以服务。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>一般横向扩展更受欢迎，因为更经济（比如亚马逊的EC2）。可以用多台配置没有那么高的机器并行处理请求充分榨干单机性能，组合达到的性能一般比同等能力的单机便宜。</p>
+<p>但是一味的通过横向加机器，等业务发展到一定程度也不一定能解决问题，因为一个是机器越来越多，管理起来也越来越困难，另外一个是业务复杂以后，本身单机性能也要够用（因为不能无限制扩机器且单请求也可能很复杂）。在复杂性、成本等因素下，横向与纵向的扩展方法需要综合考虑。</p>
+</li>
+</ul>
+<p>  同时为了到达，最优性能，撇开代码级别与业务级别的优化不讲，也需要有足够的内容将索引缓存在操作系统缓存中，还需要有足够内容来容纳JVM缓存、排序、分面。如果索引中可以搜索的数据需要有20GB，那也还需要8GB内存给JVM，总共要28GB内容。Solr很明显也是I/O密集型的应用（特别是索引文档时），需要性能更好的固态硬盘。</p>
+<h3 id="扩展策略"><a href="#扩展策略" class="headerlink" title="扩展策略"></a>扩展策略</h3><p>  详细略，这里截取《Solr实战》中提供的扩展策略。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/04/25/solr-solrcloud/#more" rel="contents">
@@ -1718,13 +1756,13 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">282k</span>
+    <span title="站点总字数">285k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">4:16</span>
+    <span title="站点阅读时长">4:19</span>
 </div>
 
         
