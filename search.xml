@@ -1,6 +1,382 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>【Lucene】-【Search】谈谈BooleanQuery系列之BooleanQuery</title>
+    <url>/2020/05/06/lucene-search-BooleanQuery/</url>
+    <content><![CDATA[<p>之前在<a href="https://zhoulei.site/2020/04/13/lucene-search-collector4/" target="_blank" rel="noopener">查询原理一、Query及其各种实现</a>简单介绍到了BooleanQuery，这次我来按照BooleanQuery系列分三块详细介绍BooleanQuery相关的内容，主要包括：</p>
+<ul>
+<li>BooleanQuery<ul>
+<li>BooleanQuery的作用和数据结构</li>
+<li>BooleanQuery对不同Query逻辑操作组合的优化转换——rewrite操作。</li>
+<li>BoleanQuery createWeight方法创建BooleanWeight的过程。</li>
+</ul>
+</li>
+<li>BooleanWeight<ul>
+<li>这部分内容比较少，BooleanWeight的数据结构。</li>
+<li>通过BooleanWeight构建出BulkScorer，BulkScorer用于组合各个Query对应的Scorer打分器。</li>
+</ul>
+</li>
+<li>BooleanScorer<ul>
+<li>介绍BooleanScorer对应不同逻辑场景变形的不同Scorer组合的类型和算法。</li>
+</ul>
+</li>
+</ul>
+<h1 id="BooleanQuery介绍"><a href="#BooleanQuery介绍" class="headerlink" title="BooleanQuery介绍"></a>BooleanQuery介绍</h1><p>BooleanQuery用于逻辑组合Query的各个子Query实现，达到多样的搜索目的。</p>
+<h2 id="类结构"><a href="#类结构" class="headerlink" title="类结构"></a>类结构</h2><pre><code class="java">BooleanQuery extends Query implements Iterable&lt;BooleanClause&gt; {
+
+}</code></pre>
+<h2 id="BooleanQuery的子Query是BooleanCaluse"><a href="#BooleanQuery的子Query是BooleanCaluse" class="headerlink" title="BooleanQuery的子Query是BooleanCaluse"></a>BooleanQuery的子Query是BooleanCaluse</h2><ul>
+<li><p>BooleanCaluse是BooleanQuery的子Query的封装。</p>
+</li>
+<li><p>BooleanCaluse组成：</p>
+</li>
+</ul>
+<pre><code class="java">  private final Query query;
+
+  private final Occur occur;</code></pre>
+<p>其中Query表示BooleanQuery的子Query，Occur是Query的逻辑符。</p>
+<pre><code class="java">  /** Specifies how clauses are to occur in matching documents. */
+  public static enum Occur {
+
+    /** Use this operator for clauses that &lt;i&gt;must&lt;/i&gt; appear in the matching documents. */
+    MUST     { @Override public String toString() { return &quot;+&quot;; } },
+
+    /** Like {@link #MUST} except that these clauses do not participate in scoring. */
+    FILTER   { @Override public String toString() { return &quot;#&quot;; } },
+
+    /** Use this operator for clauses that &lt;i&gt;should&lt;/i&gt; appear in the 
+     * matching documents. For a BooleanQuery with no &lt;code&gt;MUST&lt;/code&gt; 
+     * clauses one or more &lt;code&gt;SHOULD&lt;/code&gt; clauses must match a document 
+     * for the BooleanQuery to match.
+     * @see BooleanQuery.Builder#setMinimumNumberShouldMatch
+     */
+    SHOULD   { @Override public String toString() { return &quot;&quot;;  } },
+
+    /** Use this operator for clauses that &lt;i&gt;must not&lt;/i&gt; appear in the matching documents.
+     * Note that it is not possible to search for queries that only consist
+     * of a &lt;code&gt;MUST_NOT&lt;/code&gt; clause. These clauses do not contribute to the
+     * score of documents. */
+    MUST_NOT { @Override public String toString() { return &quot;-&quot;; } };
+
+  }</code></pre>
+<ul>
+<li><p>MUST(+)</p>
+<p>满足查询要求的文档<strong>必须包含</strong>的关键字</p>
+</li>
+<li><p>FILTER(#)</p>
+<p>满足查询要求的文档<strong>必须包含</strong>的关键字，但是这个Query<strong>不参与打分</strong>。</p>
+</li>
+<li><p>SHOULD(“”)</p>
+<p>满足查询要求的文档包含一个或多个查询的关键字。</p>
+</li>
+<li><p>MUST_NOT(-)</p>
+<p>满足查询条件的文档必须不能包含的关键字。</p>
+</li>
+</ul>
+<h2 id="Builder构建和主要变量"><a href="#Builder构建和主要变量" class="headerlink" title="Builder构建和主要变量"></a>Builder构建和主要变量</h2><p>BooleanQuery使用Builder模式构建，自带Builder类。使用add添加BooleanClause或者Query+Occur。</p>
+<pre><code class="java">    public Builder add(BooleanClause clause) {
+      if (clauses.size() &gt;= maxClauseCount) {
+        throw new TooManyClauses();
+      }
+      clauses.add(clause);
+      return this;
+    }
+
+    /**
+     * Add a new clause to this {@link Builder}. Note that the order in which
+     * clauses are added does not have any impact on matching documents or query
+     * performance.
+     * @throws TooManyClauses if the new number of clauses exceeds the maximum clause number
+     */
+    public Builder add(Query query, Occur occur) {
+      return add(new BooleanClause(query, occur));
+    }
+
+    /** Create a new {@link BooleanQuery} based on the parameters that have
+     *  been set on this builder. */
+    public BooleanQuery build() {
+      return new BooleanQuery(minimumNumberShouldMatch, clauses.toArray(new BooleanClause[0]));
+    }</code></pre>
+<p>BooleanQuery的成员变量有：</p>
+<pre><code class="java">  private final int minimumNumberShouldMatch;
+  private final List&lt;BooleanClause&gt; clauses;              // used for toString() and getClauses()
+  private final Map&lt;Occur, Collection&lt;Query&gt;&gt; clauseSets; // used for equals/hashcode</code></pre>
+<ul>
+<li><p>minimumNumberShouldMatch </p>
+<p>BooleanQuery中OR逻辑中至少命中的个数。</p>
+</li>
+<li><p>clauses</p>
+<p>BooleanQuery的所有子Query</p>
+</li>
+<li><p>clauseSets</p>
+<p>用于子Query的去重合并</p>
+</li>
+</ul>
+<h2 id="组合查询"><a href="#组合查询" class="headerlink" title="组合查询"></a>组合查询</h2><pre><code class="java">    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    builder.add(new TermQuery(new Term(&quot;author&quot;, &quot;author3&quot;)), BooleanClause.Occur.FILTER);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;quick&quot;)), BooleanClause.Occur.MUST);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;fox&quot;)), BooleanClause.Occur.SHOULD);
+    builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;black&quot;)), BooleanClause.Occur.MUST_NOT);
+
+    builder.setMinimumNumberShouldMatch(1);
+    super.search(builder.build(), 10);</code></pre>
+<p>执行<code>builder.build().toString()</code>,打印出等价的query字符格式：</p>
+<p><code>(#author:author3 +content:quick content:fox -content:black)~1</code></p>
+<h1 id="第一步执行rewrite"><a href="#第一步执行rewrite" class="headerlink" title="第一步执行rewrite"></a>第一步执行rewrite</h1><h2 id="逻辑1：只有一个clause，直接返回"><a href="#逻辑1：只有一个clause，直接返回" class="headerlink" title="逻辑1：只有一个clause，直接返回"></a>逻辑1：只有一个clause，直接返回</h2><pre><code class="java">    // optimize 1-clause queries
+    if (clauses.size() == 1) {
+      BooleanClause c = clauses.get(0);
+      Query query = c.getQuery();
+      if (minimumNumberShouldMatch == 1 &amp;&amp; c.getOccur() == Occur.SHOULD) {
+        return query;
+      } else if (minimumNumberShouldMatch == 0) {
+        switch (c.getOccur()) {
+          case SHOULD:
+          case MUST:
+            return query;
+          case FILTER:
+            // no scoring clauses, so return a score of 0
+            return new BoostQuery(new ConstantScoreQuery(query), 0);
+          case MUST_NOT:
+            // no positive clauses
+            return new MatchNoDocsQuery(&quot;pure negative BooleanQuery&quot;);
+          default:
+            throw new AssertionError();
+        }
+      }
+    }</code></pre>
+<p>直接返回，不需要重写。</p>
+<h2 id="逻辑2：递归rewrite子query"><a href="#逻辑2：递归rewrite子query" class="headerlink" title="逻辑2：递归rewrite子query"></a>逻辑2：递归rewrite子query</h2><pre><code class="java">    // recursively rewrite
+    {
+      BooleanQuery.Builder builder = new BooleanQuery.Builder();
+      builder.setMinimumNumberShouldMatch(getMinimumNumberShouldMatch());
+      boolean actuallyRewritten = false;
+      for (BooleanClause clause : this) {
+        Query query = clause.getQuery();
+        Query rewritten = query.rewrite(reader);
+        if (rewritten != query) {
+          actuallyRewritten = true;
+        }
+        builder.add(rewritten, clause.getOccur());
+      }
+      if (actuallyRewritten) {
+        return builder.build();
+      }
+    }</code></pre>
+<p>子Query中出现TermQuery不需要rewrite。</p>
+<h2 id="逻辑3：删除重复FILTER和MUST"><a href="#逻辑3：删除重复FILTER和MUST" class="headerlink" title="逻辑3：删除重复FILTER和MUST"></a>逻辑3：删除重复FILTER和MUST</h2><pre><code class="java">    //逻辑三：删除重复的FILTER 和 MUST_NOT clauses
+    // remove duplicate FILTER and MUST_NOT clauses
+    {
+      int clauseCount = 0;
+      for (Collection&lt;Query&gt; queries : clauseSets.values()) {
+        clauseCount += queries.size();
+      }
+      if (clauseCount != clauses.size()) {
+        // since clauseSets implicitly deduplicates FILTER and MUST_NOT
+        // clauses, this means there were duplicates
+        BooleanQuery.Builder rewritten = new BooleanQuery.Builder();
+        rewritten.setMinimumNumberShouldMatch(minimumNumberShouldMatch);
+        for (Map.Entry&lt;Occur, Collection&lt;Query&gt;&gt; entry : clauseSets.entrySet()) {
+          final Occur occur = entry.getKey();
+          for (Query query : entry.getValue()) {
+            rewritten.add(query, occur);
+          }
+        }
+        return rewritten.build();
+      }
+    }</code></pre>
+<h2 id="逻辑4：检查MUST和MUST-NOT交叉"><a href="#逻辑4：检查MUST和MUST-NOT交叉" class="headerlink" title="逻辑4：检查MUST和MUST_NOT交叉"></a>逻辑4：检查MUST和MUST_NOT交叉</h2><p>检查MUST和MUST_NOT是否存在交叉，如果存在交叉或者MUST_NOT中存在MatchAllDocQuery，就返回MatchNoDocsQuery。</p>
+<pre><code class="java">    final Collection&lt;Query&gt; mustNotClauses = clauseSets.get(Occur.MUST_NOT);
+    if (!mustNotClauses.isEmpty()) {
+      final Predicate&lt;Query&gt; p = clauseSets.get(Occur.MUST)::contains;
+      if (mustNotClauses.stream().anyMatch(p.or(clauseSets.get(Occur.FILTER)::contains))) {
+        return new MatchNoDocsQuery(&quot;FILTER or MUST clause also in MUST_NOT&quot;);
+      }
+      if (mustNotClauses.contains(new MatchAllDocsQuery())) {
+        return new MatchNoDocsQuery(&quot;MUST_NOT clause is MatchAllDocsQuery&quot;);
+      }
+    }</code></pre>
+<h2 id="逻辑5：FILTER与MUST重合"><a href="#逻辑5：FILTER与MUST重合" class="headerlink" title="逻辑5：FILTER与MUST重合"></a>逻辑5：FILTER与MUST重合</h2><p>FILTER与MUST重合，删除FILTER的重合部分，返回。</p>
+<pre><code class="java">    if (clauseSets.get(Occur.MUST).size() &gt; 0 &amp;&amp; clauseSets.get(Occur.FILTER).size() &gt; 0) {
+      final Set&lt;Query&gt; filters = new HashSet&lt;Query&gt;(clauseSets.get(Occur.FILTER));
+      boolean modified = filters.remove(new MatchAllDocsQuery());
+      modified |= filters.removeAll(clauseSets.get(Occur.MUST));
+      if (modified) {
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        builder.setMinimumNumberShouldMatch(getMinimumNumberShouldMatch());
+        for (BooleanClause clause : clauses) {
+          if (clause.getOccur() != Occur.FILTER) {
+            builder.add(clause);
+          }
+        }
+        for (Query filter : filters) {
+          builder.add(filter, Occur.FILTER);
+        }
+        return builder.build();
+      }
+    }</code></pre>
+<h2 id="逻辑6：FILTER和SHOULD重合"><a href="#逻辑6：FILTER和SHOULD重合" class="headerlink" title="逻辑6：FILTER和SHOULD重合"></a>逻辑6：FILTER和SHOULD重合</h2><p>FILTER和SHOULD重合，将重合部分换成MUST，返回</p>
+<pre><code class="java">  if (clauseSets.get(Occur.SHOULD).size() &gt; 0 &amp;&amp; clauseSets.get(Occur.FILTER).size() &gt; 0) {
+      final Collection&lt;Query&gt; filters = clauseSets.get(Occur.FILTER);
+      final Collection&lt;Query&gt; shoulds = clauseSets.get(Occur.SHOULD);
+
+      Set&lt;Query&gt; intersection = new HashSet&lt;&gt;(filters);
+      intersection.retainAll(shoulds);
+
+      if (intersection.isEmpty() == false) {
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        int minShouldMatch = getMinimumNumberShouldMatch();
+
+        for (BooleanClause clause : clauses) {
+          if (intersection.contains(clause.getQuery())) {
+            if (clause.getOccur() == Occur.SHOULD) {
+              builder.add(new BooleanClause(clause.getQuery(), Occur.MUST));
+              minShouldMatch--;
+            }
+          } else {
+            builder.add(clause);
+          }
+        }
+
+        builder.setMinimumNumberShouldMatch(Math.max(0, minShouldMatch));
+        return builder.build();
+      }
+    }</code></pre>
+<h2 id="逻辑7：存在多个SHOULD，且SHOULD有重合"><a href="#逻辑7：存在多个SHOULD，且SHOULD有重合" class="headerlink" title="逻辑7：存在多个SHOULD，且SHOULD有重合"></a>逻辑7：存在多个SHOULD，且SHOULD有重合</h2><p>存在多个SHOULD，且SHOULD有重合，重合的SHOULD转换为BoostQuery并增加boost值，返回。</p>
+<pre><code class="java">    if (clauseSets.get(Occur.SHOULD).size() &gt; 0 &amp;&amp; minimumNumberShouldMatch &lt;= 1) {
+      Map&lt;Query, Double&gt; shouldClauses = new HashMap&lt;&gt;();
+      for (Query query : clauseSets.get(Occur.SHOULD)) {
+        double boost = 1;
+        while (query instanceof BoostQuery) {
+          BoostQuery bq = (BoostQuery) query;
+          boost *= bq.getBoost();
+          query = bq.getQuery();
+        }
+        shouldClauses.put(query, shouldClauses.getOrDefault(query, 0d) + boost);
+      }
+      if (shouldClauses.size() != clauseSets.get(Occur.SHOULD).size()) {
+        BooleanQuery.Builder builder = new BooleanQuery.Builder()
+            .setMinimumNumberShouldMatch(minimumNumberShouldMatch);
+        for (Map.Entry&lt;Query,Double&gt; entry : shouldClauses.entrySet()) {
+          Query query = entry.getKey();
+          float boost = entry.getValue().floatValue();
+          if (boost != 1f) {
+            query = new BoostQuery(query, boost);
+          }
+          builder.add(query, Occur.SHOULD);
+        }
+        for (BooleanClause clause : clauses) {
+          if (clause.getOccur() != Occur.SHOULD) {
+            builder.add(clause);
+          }
+        }
+        return builder.build();
+      }
+    }</code></pre>
+<h2 id="逻辑8：存在多个MUST，且MUST有重合"><a href="#逻辑8：存在多个MUST，且MUST有重合" class="headerlink" title="逻辑8：存在多个MUST，且MUST有重合"></a>逻辑8：存在多个MUST，且MUST有重合</h2><p>存在多个MUST，且MUST有重合，重合的MUST转换为BoostQuery并增加boost值</p>
+<pre><code class="java">    if (clauseSets.get(Occur.MUST).size() &gt; 0) {
+      Map&lt;Query, Double&gt; mustClauses = new HashMap&lt;&gt;();
+      for (Query query : clauseSets.get(Occur.MUST)) {
+        double boost = 1;
+        while (query instanceof BoostQuery) {
+          BoostQuery bq = (BoostQuery) query;
+          boost *= bq.getBoost();
+          query = bq.getQuery();
+        }
+        mustClauses.put(query, mustClauses.getOrDefault(query, 0d) + boost);
+      }
+      if (mustClauses.size() != clauseSets.get(Occur.MUST).size()) {
+        BooleanQuery.Builder builder = new BooleanQuery.Builder()
+            .setMinimumNumberShouldMatch(minimumNumberShouldMatch);
+        for (Map.Entry&lt;Query,Double&gt; entry : mustClauses.entrySet()) {
+          Query query = entry.getKey();
+          float boost = entry.getValue().floatValue();
+          if (boost != 1f) {
+            query = new BoostQuery(query, boost);
+          }
+          builder.add(query, Occur.MUST);
+        }
+        for (BooleanClause clause : clauses) {
+          if (clause.getOccur() != Occur.MUST) {
+            builder.add(clause);
+          }
+        }
+        return builder.build();
+      }
+    }</code></pre>
+<h2 id="逻辑9：一个MUST、一个或多个FILTER、且MUST是MatchAllDocsQuery"><a href="#逻辑9：一个MUST、一个或多个FILTER、且MUST是MatchAllDocsQuery" class="headerlink" title="逻辑9：一个MUST、一个或多个FILTER、且MUST是MatchAllDocsQuery"></a>逻辑9：一个MUST、一个或多个FILTER、且MUST是MatchAllDocsQuery</h2><p>一个MUST、一个或多个FILTER、且MUST是MatchAllDocsQuery，就把MatchAllDocsQuery转换成ConstantScoreQuery</p>
+<pre><code class="java">    // Rewrite queries whose single scoring clause is a MUST clause on a
+    // MatchAllDocsQuery to a ConstantScoreQuery
+    {
+      final Collection&lt;Query&gt; musts = clauseSets.get(Occur.MUST);
+      final Collection&lt;Query&gt; filters = clauseSets.get(Occur.FILTER);
+      if (musts.size() == 1
+          &amp;&amp; filters.size() &gt; 0) {
+        Query must = musts.iterator().next();
+        float boost = 1f;
+        if (must instanceof BoostQuery) {
+          BoostQuery boostQuery = (BoostQuery) must;
+          must = boostQuery.getQuery();
+          boost = boostQuery.getBoost();
+        }
+        if (must.getClass() == MatchAllDocsQuery.class) {
+          // our single scoring clause matches everything: rewrite to a CSQ on the filter
+          // ignore SHOULD clause for now
+          BooleanQuery.Builder builder = new BooleanQuery.Builder();
+          for (BooleanClause clause : clauses) {
+            switch (clause.getOccur()) {
+              case FILTER:
+              case MUST_NOT:
+                builder.add(clause);
+                break;
+              default:
+                // ignore
+                break;
+            }
+          }
+          Query rewritten = builder.build();
+          rewritten = new ConstantScoreQuery(rewritten);
+          if (boost != 1f) {
+            rewritten = new BoostQuery(rewritten, boost);
+          }
+
+          // now add back the SHOULD clauses
+          builder = new BooleanQuery.Builder()
+            .setMinimumNumberShouldMatch(getMinimumNumberShouldMatch())
+            .add(rewritten, Occur.MUST);
+          for (Query query : clauseSets.get(Occur.SHOULD)) {
+            builder.add(query, Occur.SHOULD);
+          }
+          rewritten = builder.build();
+          return rewritten;
+        }
+      }
+    }</code></pre>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>BooleanQuery的rewrite部分主要是对BooleanQuery中的子Query进行rewrite，并在rewrite的过程中，进行去重、Query合并的优化。</p>
+<p>下一篇介绍BooleanQuery的createWeight方法。</p>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>cache</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Lucene】-【Search】谈谈Lucene中的缓存-LRUQueryCache</title>
+    <url>/2020/05/06/lucene-search-LRUCache/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>cache</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【Solr】-【SolrCloud】SolrCloud核心概念</title>
     <url>/2020/04/25/solr-solrcloud/</url>
     <content><![CDATA[<h1 id="架构特性"><a href="#架构特性" class="headerlink" title="架构特性"></a>架构特性</h1><p>SolrCloud架构主要有5个主要特性：</p>
@@ -2068,7 +2444,8 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
 <p>简单起见，使用<code>Analyzer analyzer = new WhitespaceAnalyzer();</code>进行简单的空格分词，空格把一句话分词为一个个Term，如下：</p>
 <p><img data-src="/img/in-post/image-20200325233758673.png" alt="image-20200325233758673"></p>
 <p>映射到倒排表中，每个term对应的倒排表信息中存储的position信息如下：</p>
-<p><img data-src="/img/in-post/image-20200325234719671.png" alt="image-20200325234719671"></p>
+<img data-src="/img/in-post/image-20200325234719671.png" alt="image-20200325234719671" style="zoom:50%;" />
+
 <p>可知对应的词频为：</p>
 <p>freq(quick)=5、freq(fox)=5、freq(dog)=2。</p>
 <p>quick 、 fox 、dog分别对应posting[0] posting[2] posting[2]</p>
@@ -2123,37 +2500,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
         <tag>Search</tag>
         <tag>Lucene</tag>
         <tag>PhraseQuery</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【DocValues】一、SortedDocValues</title>
-    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
-    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
-<ul>
-<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
-<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
-</ul>
-<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
-<blockquote>
-<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
-<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
-<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
-</blockquote>
-<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
-<li>NumericDocValues</li>
-<li>SortedNumericDocValues</li>
-<li>SortedDocValues</li>
-<li>SortedSetDocValues</li>
-<li>BinaryDocValues</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Lucene</category>
-      </categories>
-      <tags>
-        <tag>Search</tag>
-        <tag>Lucene</tag>
-        <tag>DocValues</tag>
       </tags>
   </entry>
   <entry>
@@ -2469,6 +2815,37 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </categories>
       <tags>
         <tag>idea</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【DocValues】一、SortedDocValues</title>
+    <url>/2020/02/07/lucene-dv-SortedDocValues/</url>
+    <content><![CDATA[<h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
+<ul>
+<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
+<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
+</ul>
+<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
+<blockquote>
+<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
+<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
+<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
+</blockquote>
+<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
+<li>NumericDocValues</li>
+<li>SortedNumericDocValues</li>
+<li>SortedDocValues</li>
+<li>SortedSetDocValues</li>
+<li>BinaryDocValues</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Lucene</category>
+      </categories>
+      <tags>
+        <tag>Search</tag>
+        <tag>Lucene</tag>
+        <tag>DocValues</tag>
       </tags>
   </entry>
   <entry>
@@ -3518,6 +3895,62 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
+    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
+    <url>/2019/11/27/ODL-mdsal-codereview/</url>
+    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
+<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
+<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
+<p>说明：</p>
+<ul>
+<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
+<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
+</ul>
+<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
+</ul>
+<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
+<ul>
+<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
+</ul>
+<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
+<ul>
+<li><p>说明：</p>
+<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
+<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
+<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
+<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
+<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
+<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
+<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
+</li>
+</ul>
+<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
+<ul>
+<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
+</ul>
+<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
+<ul>
+<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
+</ul>
+<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
+<ul>
+<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>opendaylight</category>
+      </categories>
+      <tags>
+        <tag>odl</tag>
+        <tag>rpc</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【opendaylight】——MD-SAL RPC源码概览</title>
     <url>/2019/11/27/ODL-RPC-module/</url>
     <content><![CDATA[<h1 id="一、源码概览"><a href="#一、源码概览" class="headerlink" title="一、源码概览"></a>一、源码概览</h1><h2 id="1-总体模块概览"><a href="#1-总体模块概览" class="headerlink" title="1.总体模块概览"></a>1.总体模块概览</h2><p>OpenDaylight MD-SAL支持两种RPC服务，即BI RPC服务和BA RPC服务，在AC中常用的通过Yang定义RPC生成Java接口的方式是BA服务。在MD-SAL中服务的发现、注册都是基于BI服务来实现的，BA服务则统一转换成BI服务来处理。</p>
@@ -3594,59 +4027,85 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
       </tags>
   </entry>
   <entry>
-    <title>【opendaylight】——MD-SAL服务总线RPC服务源码分析</title>
-    <url>/2019/11/27/ODL-mdsal-codereview/</url>
-    <content><![CDATA[<h1 id="1、RPC服务简单介绍"><a href="#1、RPC服务简单介绍" class="headerlink" title="1、RPC服务简单介绍"></a>1、RPC服务简单介绍</h1><p>ODL平台下MD-SAL服务总线支持两类RPC服务的注册与调用，分别是Global RPC和Routed RPC，其中，Global RPC是一个控制器节点内部本进程内的调用，Routed RPC支持在控制器集群内部不同控制器节点之间跨进程调用(当然也支持同一进程内调用)，这两类RPC服务都需要注册到MD-SAL服务总线上，本文档主要总结这两类RPC服务是怎么注册到MD-SAL服务总线上以及从服务总线上获取服务调用接口的主要流程。</p>
-<p><img data-src="/img/in-post/1578029380086.png" alt=""></p>
-<h1 id="2、注册RPC服务（Global-RPC）"><a href="#2、注册RPC服务（Global-RPC）" class="headerlink" title="2、注册RPC服务（Global RPC）"></a>2、注册RPC服务（Global RPC）</h1><p><img data-src="/img/in-post/1578029399834.png" alt=""></p>
-<p>说明：</p>
+    <title>【NLP】一、线性回归与随机梯度下降法</title>
+    <url>/2019/11/27/NLP-Gradient-Descent/</url>
+    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
+<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
+<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
+<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
+<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
+<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
+<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
+<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
+<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
+<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
+<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
+<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
+<p>即单个样本的最小问题转化为：</p>
+<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
+<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
+<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
+<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
+<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
+<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
+<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
 <ul>
-<li>1、BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRpcImplementation(Class<T>,T)方法将服务注册到MD-SAL的服务总线上，所有的服务都会在BindingDOMRpcProviderServiceAdapter中创建出一个实现了DOMRpcImplementation接口的BindingDOMRpcImplementationAdapter实例，实例内部保存了接口实际注册的实例以及接口所有RPC方法对应的一个RpcMethodInvoker的Map(存储在AbstractMappedRpcInvoker中)，并将BindingDOMRpcImplementationAdapter实例添加到DOMRpcRouter中的DOMRpcRoutingTable内，存储在一个全局的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;中value对应的GlobalDOMRpcRoutingTableEntry中Map&lt;YangInstanceIdentifier, List<DOMRpcImplementation>&gt; 内的List<DOMRpcImplementation>&gt; 中(一个RPC接口可能被注册多次，一个RP接口也可能绑定多个YangInstanceIdentifier)。</li>
-<li>2、系统中之前未注册的RPC方法都会触发RpcListener的onRpcAvailable接口来将所有的RPC信息添加到本地的路由表信息(RpcRegistry中的localBucket)中，用于RPC集群节点之间的路由表信息同步。</li>
-</ul>
-<h1 id="3、注册RPC服务（Routed-RPC）"><a href="#3、注册RPC服务（Routed-RPC）" class="headerlink" title="3、注册RPC服务（Routed RPC）"></a>3、注册RPC服务（Routed RPC）</h1><p><img data-src="/img/in-post/1578029444552.png" alt=""></p>
-<ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的addRoutedRpcImplementation(Class<T>, T)方法添加Routed RPC的实现，在HeliumRpcProviderRegistry中会直接返回一个CompositeRoutedRpcRegistration的实例,实例内存储了注册的RPC接口的相关信息。</li>
-</ul>
-<p><img data-src="/img/in-post/1578029474636.png" alt=""></p>
-<ul>
-<li>说明：和Global RPC注册的流程类似，在DOMRpcRoutingTable中的Map&lt;SchemaPath, AbstractDOMRpcRoutingTableEntry&gt;的value为RoutedDOMRpcRoutingTableEntry，所有没有注册过的Routed RPC的路由表信息也会更新到RoutingTable中。</li>
-</ul>
-<h1 id="4、RPC集群内部路由表信息同步（Gossiper）"><a href="#4、RPC集群内部路由表信息同步（Gossiper）" class="headerlink" title="4、RPC集群内部路由表信息同步（Gossiper）"></a>4、RPC集群内部路由表信息同步（Gossiper）</h1><p><img data-src="/img/in-post/1578029504176.png" alt=""></p>
-<ul>
-<li><p>说明：</p>
-<p>①每个节点Gossiper创建时启动一个周期性给自己发送GossipTick消息的任务(延时1s，周期0.5s)(以节点A触发为例)；</p>
-<p>②节点A从本地的BucketStore获取本次存储的各个RPC集群节点最新的路由表的版本(每个节点有RPC注册时都会以注册时的时间戳更新各个节点的路由表版本)；</p>
-<p>③节点A将本地存储各个节点最新路由表版本发给RPC集群中任意一个节点(假设为节点B)；</p>
-<p>④节点B收到节点A发过来的路由表版本信息后，向自己的BucketStore获取节点B存储的各个集群节点的最新路由表信息；</p>
-<p>⑤节点B将自己存储的版本和节点A发过来的版本进行比较，对于节点B中存储着更新版本的节点，节点B向BucketStore获取自己存储的更新节点的路由表信息，节点B中存储的着旧版本的节点，将自己存储的版本发给A，由A再去比较，将更新的路由表再同步给自己；</p>
-<p>⑥节点B将自己存储的新版本的路由表发给节点A；</p>
-<p>⑦节点A将自己从节点B收到的路由表信息更新到自己存储的所有节点的路由表信息中去。</p>
+<li><p>步骤一、</p>
+<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
+</li>
+<li><p>步骤二、</p>
 </li>
 </ul>
-<h1 id="5、获取RPC服务"><a href="#5、获取RPC服务" class="headerlink" title="5、获取RPC服务"></a>5、获取RPC服务</h1><p><img data-src="/img/in-post/1578029520537.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
 <ul>
-<li>说明：BA方式启动时在onSessionInitiated中获取到ProviderContext，配置子系统启动时在createInstance中获取到RootBindingAwareBroker，其他业务通过调用对应的ProviderContext或者RootBindingAwareBroker的getRpcService(Class<T> service)从MD-SAL服务总线上获取接口服务实例。最终由BindingDOMRpcServiceAdapter来构造一个RpcServiceAdapter的实例，并由RpcServiceAdapter构造一个对应接口的动态代理作为属性存储下来，并返回生成的动态代理。RpcServiceAdapter的实例会存储在BindingDOMRpcServiceAdapter的一个高速缓存中，后面获取接口服务实例时先从缓存中获取，没有的话再构造。(Global RPC和Routed RPC获取服务的方式完全相同)。</li>
+<li><p>步骤三、</p>
+<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
+</li>
+<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
+</li>
 </ul>
-<h1 id="6、Global-RPC服务调用"><a href="#6、Global-RPC服务调用" class="headerlink" title="6、Global RPC服务调用"></a>6、Global RPC服务调用</h1><p><img data-src="/img/in-post/1578029543412.png" alt=""></p>
+<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
+<p>其手动拟合的过程如下：</p>
+<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
+<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
 <ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例，通过反射调用对应的接口。</li>
+<li><p><strong>目标定义</strong></p>
+<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
+</li>
+<li><p><strong>求解过程</strong></p>
+<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
+</li>
 </ul>
-<h1 id="7、Routed-RPC服务调用-注册服务节点调用"><a href="#7、Routed-RPC服务调用-注册服务节点调用" class="headerlink" title="7、Routed RPC服务调用 (注册服务节点调用)"></a>7、Routed RPC服务调用 (注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029563999.png" alt=""></p>
-<ul>
-<li>说明：从MD-SAL上获取到的RPC服务的动态代理，调用具体的RPC接口时会触发RpcServiceAdapter的invoke (final Object proxy, final Method method, final Object[] args)，后面依次找到注册到MD-SAL服务总线上的实际服务实例(在RoutedDOMRpcRoutingTableEntry中先判断本地是否注册过该接口，如果注册过，则直接调用本地的服务实例)，通过反射调用对应的接口。</li>
-</ul>
-<h1 id="8、Routed-RPC服务调用-非注册服务节点调用"><a href="#8、Routed-RPC服务调用-非注册服务节点调用" class="headerlink" title="8、Routed RPC服务调用 (非注册服务节点调用)"></a>8、Routed RPC服务调用 (非注册服务节点调用)</h1><p><img data-src="/img/in-post/1578029582983.png" alt=""></p>
-<ul>
-<li>和注册服务节点的区别在于：在RoutedDOMRpcRoutingTableEntry 中没有找到本地注册的服务实例，然后调用RemoteRpcImplementation，由 RemoteRpcImplementation 根据RPC的路由信息查找全局同步的路由表信息，找到注册服务节点的RpcBroker (actor)，通过akka的消息机制向找到的actor发送RPC调用消息，再由注册服务节点的RpcBroker 按相同的流程找到具体的实现来调用。</li>
-</ul>
+<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
+<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
+<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
+<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
+<p>慢慢拟合</p>
+<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
+<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
+<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
+<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
+</li>
+<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
+</li>
+<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
+<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
+</li>
+</ol>
 ]]></content>
       <categories>
-        <category>opendaylight</category>
+        <category>NLP</category>
       </categories>
       <tags>
-        <tag>odl</tag>
-        <tag>rpc</tag>
+        <tag>随机梯度下降</tag>
+        <tag>有监督</tag>
+        <tag>线性回归</tag>
       </tags>
   </entry>
   <entry>
@@ -3756,88 +4215,6 @@ builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), Boolean
         <tag>java</tag>
         <tag>并发框架</tag>
         <tag>Executor</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【NLP】一、线性回归与随机梯度下降法</title>
-    <url>/2019/11/27/NLP-Gradient-Descent/</url>
-    <content><![CDATA[<p>在NLP的学习中，我们了解熵、信息熵、交叉熵的基础概念，通过将熵（信息量的度量）的计算转换为概率模型的计算，然后介绍了在一些语料库中的样本中，计算出一些词与其他词同时出现在一个句子或者短语的概率，引入了N-gramm的概念，但是N个词的N-gramm的概率非常难以计算而且计算出的概率很小，因此一般使用bigram model计算（即认为当前词只与前面那个词相关）但这种方式相对不够精确。</p>
-<p>如果我们把一个词放在整改语料库里去看，并利用当前语料库的输入（one hot represetation）通过神经网络模型计算损失函数的最优解（参数众多），以此来预测其他词出现的情况，这里就会用到一个基础的线性回归的方法——随机梯度法的概念。神经网络是通用方法，而基础就是基于线性回归的方法，线性回归最基础的方法就是梯度下降，因此理解线性回归以及他的基本方法随机梯度下降非常重要。</p>
-<p>本篇文章就以机器学习中常用的线性回归的基本方法——随机梯度下降进行总结。</p>
-<p>下面就一个实际的线性回归问题：<strong>如何预测房价</strong>作为引入。</p>
-<h1 id="一、问题：如何预测房价？"><a href="#一、问题：如何预测房价？" class="headerlink" title="一、问题：如何预测房价？"></a>一、问题：如何预测房价？</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img data-src="/img/in-post/image-20200102230850144.png" alt=""></p>
-<p>已知一些面积对应的房价的样本数据，利用这些样本数据预测其他面积的房价。</p>
-<p>这是一个监督学习的例子，因为例子中每个点都有明确的“正确答案”，如1000平的房子在170W美金，预测出的某个平方的房子也一定有明确的价钱。同时这也是监督学习中典型的回归问题，输出是一个具体指（当然另外一种典型的监督学习问题是分类，用来预测离散值的输出）。</p>
-<h2 id="训练集"><a href="#训练集" class="headerlink" title="训练集"></a>训练集</h2><p><img data-src="/img/in-post/image-20200103005523817.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103005727295.png" alt=""></p>
-<h1 id="二、模型定义"><a href="#二、模型定义" class="headerlink" title="二、模型定义"></a>二、模型定义</h1><p><img data-src="/img/in-post/image-20200103005804747.png" alt=""></p>
-<p>可以用一个一元线性函数去拟合样本数据，利用拟合出的函数去预测其他未知数据。</p>
-<p><strong>具体怎么拟合呢？</strong>下面看看怎么实现。</p>
-<h1 id="三、如何实现"><a href="#三、如何实现" class="headerlink" title="三、如何实现"></a>三、如何实现</h1><p><img data-src="/img/in-post/image-20200103011806806.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011906592.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103011919467.png" alt=""></p>
-<p>即单个样本的最小问题转化为：</p>
-<p><img data-src="/img/in-post/image-20200103012030839.png" alt=""></p>
-<p>使此式的指最小，即通过假设函数h(x)计算出的值与实际样本中的y之间的差异最小的问题。</p>
-<p>对所有样本来说，假设样本有M个点，即求i=1到i=M样本的差值的平方和。</p>
-<p><img data-src="/img/in-post/image-20200103012351585.png" alt=""></p>
-<h1 id="四、定义代价函数"><a href="#四、定义代价函数" class="headerlink" title="四、定义代价函数"></a>四、定义代价函数</h1><p><img data-src="/img/in-post/image-20200103012500164.png" alt=""></p>
-<h1 id="五、代价函数的求解过程"><a href="#五、代价函数的求解过程" class="headerlink" title="五、代价函数的求解过程"></a>五、代价函数的求解过程</h1><h2 id="简化假设函数和代价函数求解"><a href="#简化假设函数和代价函数求解" class="headerlink" title="简化假设函数和代价函数求解"></a>简化假设函数和代价函数求解</h2><p><img data-src="/img/in-post/image-20200103012711613.png" alt=""></p>
-<p>先列出假设函数和代价函数的定义，目标是使代价函数的最小。为了方便计算我们使用右边的简化版进行手动推倒。</p>
-<ul>
-<li><p>步骤一、</p>
-<p><img data-src="/img/in-post/image-20200103012928258.png" alt=""></p>
-</li>
-<li><p>步骤二、</p>
-</li>
-</ul>
-<p><img data-src="/img/in-post/image-20200103012954273.png" alt=""></p>
-<ul>
-<li><p>步骤三、</p>
-<p><img data-src="/img/in-post/image-20200103013011186.png" alt=""></p>
-</li>
-<li><p>步骤四、五 发现计算出的代价函数值越来越大，即越来越不接近实际样本值。因此取步骤1的假设值。</p>
-</li>
-</ul>
-<h2 id="恢复两个参数的假设函数和代价函数的版本"><a href="#恢复两个参数的假设函数和代价函数的版本" class="headerlink" title="恢复两个参数的假设函数和代价函数的版本"></a>恢复两个参数的假设函数和代价函数的版本</h2><p><img data-src="/img/in-post/image-20200103013416357.png" alt=""></p>
-<p>其手动拟合的过程如下：</p>
-<p><img data-src="/img/in-post/image-20200103013441570.png" alt=""></p>
-<h1 id="六、随机梯度法"><a href="#六、随机梯度法" class="headerlink" title="六、随机梯度法"></a>六、随机梯度法</h1><p>上面讲了线性回归手动去尝试计算代价函数一次来求得假设函数的最优函数。实际在工程中是不可能没有规律的去尝试取不同的参数值计算的。必须满足一定的规律来求解，以保证收敛。</p>
-<ul>
-<li><p><strong>目标定义</strong></p>
-<p><img data-src="/img/in-post/image-20200103013855639.png" alt=""></p>
-</li>
-<li><p><strong>求解过程</strong></p>
-<p><img data-src="/img/in-post/image-20200103013918848.png" alt=""></p>
-</li>
-</ul>
-<h2 id="随机梯度下降的公式推导"><a href="#随机梯度下降的公式推导" class="headerlink" title="随机梯度下降的公式推导"></a>随机梯度下降的公式推导</h2><p><img data-src="/img/in-post/image-20200103014119287.png" alt=""></p>
-<p>将上文提到的代价函数带入随机梯度下降的公式中：</p>
-<p><img data-src="/img/in-post/image-20200103014153175.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014236092.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014342482.png" alt=""></p>
-<p><img data-src="/img/in-post/image-20200103014514092.png" alt=""></p>
-<p>慢慢拟合</p>
-<p><img data-src="/img/in-post/image-20200103014754500.png" alt=""></p>
-<p>最后找到全局最小值，假设函数得出的数据很好的收敛了房价的价格数据。</p>
-<p>得到了假设函数的参数后就可以使用实际的函数来预测房价了。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
-<li><p>线性回归问题实际就是求代价函数的问题，通过代价函数的最优化去拟合得出最合适的假设函数。</p>
-</li>
-<li><p>求解代价函数的典型方法和最常用的就有随机梯度下降法，本例中使用的随机梯度下降叫：<strong>Batch梯度下降</strong>：即使用所有的样本数据。</p>
-</li>
-<li><p>当然像这种简单的线性回归也可以使用正规方程组求解代价函数J的最小值。梯度下降适合更大的数据集。</p>
-<p>本文中也没有讲多元函数的随机梯度下降法。主要是通过简单的例子理解随机梯度下降。为理解神经网络以及在NPL中的相关应用做理论准备。</p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>NLP</category>
-      </categories>
-      <tags>
-        <tag>随机梯度下降</tag>
-        <tag>有监督</tag>
-        <tag>线性回归</tag>
       </tags>
   </entry>
   <entry>
@@ -6980,6 +7357,173 @@ class WaitPerson implements Runnable {
       </tags>
   </entry>
   <entry>
+    <title>【基本概念篇】十二、如何构建线程安全的对象——对象的共享</title>
+    <url>/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/</url>
+    <content><![CDATA[<p>当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。</p>
+<p>Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。</p>
+<p>可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的<strong>并发策略</strong>：</p>
+<ul>
+<li>不在线程之间共享该状态变量，也可以说<strong>无状态</strong>的对象的肯定是线程安全的</li>
+<li>将状态变量修改为<strong>不可变的变量</strong></li>
+<li>在访问状态变量时<strong>使用同步</strong></li>
+</ul>
+<p>之前总结了如何通过同步来避免多个线程同一时刻访问相同的数据。本篇文章主要讲：怎么共享和发布对象，从而使他们能够安全地被多个线程同时访问。即：</p>
+<ol>
+<li>一方面，我们不仅希望防止某个线程被正在使用对象状态而另一个线程同时修改状态。</li>
+<li>另一方面，我们还希望当一个线程修改了对象状态后，其他线程能够看到发生状态的变化。如果没有同步，就无法实现。</li>
+</ol>
+<p>关键字synchronized不仅仅可以实现原子性或者确定”临界区”，同时也能够实现共享对象的<strong>内存可见性</strong>。</p>
+<blockquote>
+<p>加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或者写操作的线程都必须在同一个锁上同步。</p>
+</blockquote>
+<p>除了synchronized实现的同步可见性方案，Java语言还提供一种稍弱的同步机制，即volatile变量，用来确保变量的更新操作通知到其他线程。</p>
+<h1 id="1-可见性-volatile"><a href="#1-可见性-volatile" class="headerlink" title="1. 可见性(volatile)"></a>1. 可见性(volatile)</h1><p>由于重排序，程序的执行结果往往让人产生错觉。</p>
+<h2 id="volatile变量"><a href="#volatile变量" class="headerlink" title="volatile变量"></a>volatile变量</h2><p>当把变量声明为volatile类型后，编译器与运行时都会注意到这个变量是共享的，因此不会将变量上的操作与其他内存操作一起重排序。volatile变量不会被缓存在寄存器或者本地内存中，因此在读取volatile类型的变量时总会返回最新写入的值。</p>
+<p>在访问volatile变量时不会执行加锁操作，因此也就不会使线程阻塞，因此volatile变量是一种比sychronized关键字更轻量级的同步。不建议过度依赖volatile变量提供的可见性，如果在代码中依赖volatile变量来控制状态可见性，通常比使用锁的代码更脆弱，也更难以理解。</p>
+<blockquote>
+<p>仅当volatile变量能够简化代码的实现以及对同步策略的验证时，才应该使用它们。如果在验证正确性需要对可见性进行复杂判断，那么就不要使用volatile变量。volatile变量的正确使用方式包括：</p>
+<ol>
+<li>确保它们自身状态的可见性。</li>
+<li>确保它们所引用对象的状态的</li>
+<li>标识一些重要的程序生命周期事件的发生(例如，初始化或关闭)</li>
+</ol>
+</blockquote>
+<p><strong>volatile的典型用法</strong>：检查某个状态标记以判断是否退出循环。</p>
+<pre><code class="java">volatile boolean asleep;
+...
+  while(!asleep)
+    countSomeSheep();</code></pre>
+<p>虽然volatile变量很方便，但也存在一些局限性。volatile变量通常用作某个操作完成、发生中断或者状态的标志。例如上面的asleep标志。尽管volatile变量也可以用于表示其他的状态信息，但使用时要注意，比如volatile语义不能确保递增操作(count++)的原子性，除非确保只有一个线程对变量执行写操作。(原子变量提供了”读—改—写”的原子操作)，并且常常用做一种”更好的volatile变量”。</p>
+<blockquote>
+<p>加锁机制既可以确保可见性又可以确保原子性，而volatile变量只能确保可见性。</p>
+</blockquote>
+<h2 id="volatile使用场景"><a href="#volatile使用场景" class="headerlink" title="volatile使用场景"></a>volatile使用场景</h2><p><strong>当且仅当满足以下条件时，才应该使用volatile变量</strong>：</p>
+<ul>
+<li>对变量的写入操作不依赖变量的当前值，或者你能够确保当前只有单个线程更新变量的值。</li>
+<li>该变量不会与其他状态一起纳入不变性条件中。</li>
+<li>在访问变量时不需要加锁。</li>
+</ul>
+<h1 id="2-发布和逸出-封装"><a href="#2-发布和逸出-封装" class="headerlink" title="2. 发布和逸出(封装)"></a>2. 发布和逸出(封装)</h1><ul>
+<li><p><strong>“发布”</strong>对象的意思指，使对象能够在当前作用域之外的代码中使用。</p>
+<p>例如，将一个指向该对象的引用保存到其他代码可以访问的地方，</p>
+<p>或者在某一个非私有的方法中返回该引用，或者将引用传递到其他类的方法中。</p>
+<p><strong>我们要确保对象及其内部状态不被发布</strong></p>
+</li>
+<li><p><strong>“逸出”</strong>的意思指，当某个不应该发布的对象被发布时称为”逸出”。</p>
+</li>
+</ul>
+<p>当发布的对象逸出以后，必须假设有某个类或线程可能会误用该对象。</p>
+<p>因此应该尽量使用<strong>封装</strong>：封装能够使得对程序的正确性进行分析变可能，并使得无意中破坏设计约束条件变得更难。</p>
+<p>另外一种发布对象或其内部状态机制就是发布一个<strong>内部类的实例</strong>。</p>
+<p>另外一个要注意的地方：</p>
+<blockquote>
+<p>不要在构造过程中使this引用逸出</p>
+</blockquote>
+<h1 id="3-线程封闭-无状态、ThreadLocal"><a href="#3-线程封闭-无状态、ThreadLocal" class="headerlink" title="3. 线程封闭(无状态、ThreadLocal)"></a>3. 线程封闭(无状态、ThreadLocal)</h1><p>一种避免同步的方式就是不共享数据，不共享数据的无状态对象肯定是线程安全的。称为<strong>线程封闭</strong>。</p>
+<p>常见的例子如：</p>
+<ul>
+<li><p>Swing通过将可视化组件和数据模型封装到Swing的事件分发线程中来实现线程安全。</p>
+</li>
+<li><p>还有如JDBC的Connection对象，线程从连接池中获得一个Connection对象，并且用该对象来处理请求，使用完后再讲对象返回给连接池。由于大多数(Servlet请求或EJB调用等)都是由单个线程采用同样的方式来处理，并且在Connection对象返回之前，连接池不会再将它分配给其他线程，因此这种连接管理模式在处理隐含地将Connection对象封闭在线程中。</p>
+</li>
+</ul>
+<p>Java提供<strong>局部变量</strong>和<strong>ThreadLocal类</strong>来帮助维持线程封闭性。下面来讲下：</p>
+<h2 id="Ad-hoc线程封闭"><a href="#Ad-hoc线程封闭" class="headerlink" title="Ad-hoc线程封闭"></a>Ad-hoc线程封闭</h2><p>Ad-hoc实际就是指，维护线程封闭性的职责完全交给程序来实现。Ad-hoc线程封闭是非常脆弱的，因为没有任何一种语言特性，例如可见修饰符或局部变量，能将对象封闭到目标线程上。事实上，对线程封闭对象的引用通常保存在公有变量上。</p>
+<p>在volatile变量行上存在一种特殊的线程封闭。只要你能确保只有<strong>单个线程</strong>对共享的volatile变量执行写入操作，那么就可以安全地在这些共享的volatile变量上执行”读取-修改-写入”的操作。这种情况下，相当于将修改操作封闭在单个线程中以防止发生<strong>竞态条件</strong>，并且volatile变量的可见性还确保了其他线程能看到最新的值。</p>
+<p>由于Ad-hoc线程封闭技术的脆弱性，因此在程序中尽量少用，在可能的情况下应该使用更强的线程封闭技术(例如下面要将讲的，栈封闭和ThreadLocal类)。</p>
+<h2 id="栈封闭"><a href="#栈封闭" class="headerlink" title="栈封闭"></a>栈封闭</h2><p>栈封闭是线程封闭的一种特例，在栈封闭中，<strong>只能通过局部变量才能访问对象</strong>。栈封闭（也被称为线程内部使用或者线程局部使用，不要与核心类库中的ThreadLocal混淆）比Ad-hoc线程封闭更易于维护，也更加健壮。</p>
+<h2 id="ThreadLocal类"><a href="#ThreadLocal类" class="headerlink" title="ThreadLocal类"></a>ThreadLocal类</h2><ul>
+<li><p>线程封闭性的一种更规范方法是使用ThreadLocal，这个类能使线程中的某个值与保存值的对象关联起来。</p>
+</li>
+<li><p>ThreadLocal提供get与set等访问接口或方法，为每个使用该变量的线程都保存一份独立的副本，因此get总是返回当前执行线程在调用set时设置的最新值。</p>
+</li>
+<li><p>ThreadLocal对象通常用于防止对可变的单实例对象(Singleton)或全局变量进行共享。例如，通过将JDBC的连接保存到ThreadLocal对象中，每个线程就会拥有属于自己的连接。</p>
+</li>
+</ul>
+<h1 id="4-不变性final"><a href="#4-不变性final" class="headerlink" title="4.不变性final"></a>4.不变性final</h1><p>上面讲了，解决同步问题的方法，主要有</p>
+<ol>
+<li>共享变量的volatile的声明，即禁用JVM对该变量的重排序立即对其他线程可见，</li>
+<li>注意共享变量的发布、避免共享变量逸出。</li>
+<li>通过线程封闭手段避免避免对象状态在多线程之间共享(通过局部变量的栈封闭、以及ThreadLocal的线程副本隔离)。</li>
+</ol>
+<p>下面来讲下，解决同步的另外一种手段，即 <strong>不变性</strong>。</p>
+<p>满足同步需求的另一种方法是使用不可变对象。很多与原子性、可见性相关的问题，例如得到失效数据、丢失更新或者观察到某个对象处于不一致的状态等等，都与多线程试图同时访问同一个可变的状态相关。如果对象的状态不会改变，那么这些问题与复杂性也就自然消失了。</p>
+<blockquote>
+<p>不可变对象一定是线程安全的。</p>
+</blockquote>
+<p><strong>不可变性不等于将对象中所有的域都声明为final类型，即使对象中所有的域都是final类型的，这个对象也仍然是可变的，因为在final类型的域中可以保存对可变对象的引用。</strong></p>
+<p>因此需要满足以下条件，对象才是不可变的：</p>
+<blockquote>
+<ul>
+<li>对象创建以后其状态就不能修改。</li>
+<li>对象的所有域都是final类型。</li>
+<li>对象是正确创建的(在对象的创建期间，this引用没有逸出)。</li>
+</ul>
+</blockquote>
+<h1 id="5-安全发布"><a href="#5-安全发布" class="headerlink" title="5.安全发布"></a>5.安全发布</h1><p>先看下面这个例子</p>
+<pre><code class="java">public Holder holder;
+
+public void initialize() {
+        holder = new Holder(42);
+}</code></pre>
+<p>由于存在可见性问题，其他线程看到的Holder对象将处于不一致的状态，即便在该对象的构造函数中已经正确地构建了不变性条件。这种不正确的发布导致其他线程看到尚未创建完成的对象。这就是<strong>在没有足够同步的情况下发布对象</strong>，不要这样做。</p>
+<h2 id="不可变对象与初始化安全性"><a href="#不可变对象与初始化安全性" class="headerlink" title="不可变对象与初始化安全性"></a>不可变对象与初始化安全性</h2><p>Java内存模型为不可变对象的共享提供了一种特殊的初始化安全性保证。</p>
+<p>已经知道，即使某个对象的引用对于其他线程是可见的，也并不意味着对象状态对于使用该对象的线程来说一定是可见的。为了确保对象状态能呈现出一致的视图，就必须使用同步。</p>
+<p>另一方面，即使在发布不可变对象的引用时没有使用同步，也仍然可以安全地访问该对象。为了维持这种初始化安全性保证，必须满足不可变性的所有需求：</p>
+<p>状态不可修改，所有域都是final类型，以及正确的构造过程。</p>
+<blockquote>
+<p><strong>任何线程都可以在不需要额外同步的情况下安全地访问不可变对象，即使在发布这些对象时没有使用同步。</strong></p>
+</blockquote>
+<p>但是，如果final类型的域指向的是可变对象，那么在访问这些域所指向的对象的状态时仍然需要同步。</p>
+<h2 id="安全发布的常用模式"><a href="#安全发布的常用模式" class="headerlink" title="安全发布的常用模式"></a>安全发布的常用模式</h2><p>如何确保使用对象的线程能够看到该对象处于已发布的状态。</p>
+<blockquote>
+<p>要安全地发布一个对象，对象的引用以及对象的状态必须同步对其他线程可见。一个正确构造的对象可以通过以下来安全地发布：</p>
+<ul>
+<li>在静态初始化函数中初始化一个对象引用。</li>
+<li>将对象的引用保存到volatile类型的域或者AtomicReferance对象中。</li>
+<li>将对象的引用保存到某个正确构造对象的final类型域中。</li>
+<li>将对象的引用保存到一个由锁保护的域中。</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>在线程安全容器内部的同步以为着，在将对象放到某个容器后，例如Vector或synchronizedList时，满足上面的”将对象的引用保存到一个由锁保护的域中”。即：</p>
+<p>线程A将对象X放入一个线程安全的容器，随后线程B读取这个对象，那么可以确保B看到A设置的X状态，即便在这段读/写X的应用程序代码中没有包含显式的同步。线程安全类包括：</p>
+<p>Hashtable、sychronizedMap或者ConcurrentHashMap</p>
+<p>Vector、CopyOnWriteArrayList、CopyOnWriteArrySet、synchronizedList或synchronizedSet</p>
+<p>BlockingQueue或ConcurrentLinkedQueue</p>
+<p>还有其他数据传递机制Future和Exchanger同样能实现安全发布。</p>
+</li>
+<li><p>静态初始化器由JVM在类的初始化阶段执行。由于在JVM内部存在着同步机制，因此通过这种方式初始化任何对象都可以被安全地发布。</p>
+</li>
+</ul>
+<h2 id="可变对象"><a href="#可变对象" class="headerlink" title="可变对象"></a>可变对象</h2><p>如果对象在构造后可以修改，那么安全发布只能确保”发布当时”状态的可见性。对于可变对象，不仅在发布对象时需要同步，而且在每次对象访问时同样需要同步来确保后续操作的可见性。要安全地共享可变对象，这些对象就必须被安全地发布，并且必须是线程安全的或者由某个锁保护起来。</p>
+<blockquote>
+<p>对象的发布需求取决于它的可变性：</p>
+<ul>
+<li>不可变对象可以通过任意机制来发布</li>
+<li>事实不可变对象必须通过安全方式来发布</li>
+<li>可变对象必须通过安全方式来发布，并且必须是线程安全的或者由某个锁保护起来</li>
+</ul>
+</blockquote>
+<h2 id="安全地共享对象"><a href="#安全地共享对象" class="headerlink" title="安全地共享对象"></a>安全地共享对象</h2><p>当获得对象的一个引用时，你需要知道这个引用上可以执行哪些操作。在使用它之前是否需要获得一个锁？是否可以修改它的状态或者只能读取它？许多并发错误都是由于没有理解共享对象的这些”既定规则”而导致的。当发布一个对象时，必须明确地说明对象的访问方式。</p>
+<blockquote>
+<p>在并发程序中使用和共享对象，可以使用一些实用的策略，包括：</p>
+<p><strong>线程封闭</strong>。线程封闭的对象只能由一个线程拥有，对象被封闭在该线程中，并且只能由这个线程修改。</p>
+<p><strong>只读共享</strong>。在没有额外同步的情况下，共享的只读对象可以由多个线程并发访问，但任何线程都不能修改它。共享的只读对象包括不可变对象和事实不可变对象。</p>
+<p><strong>线程安全共享</strong>。线层安全的对象在其内部实现同步，因此多个线程可以通过对象的公有接口来进行访问而不需要进一步的同步。</p>
+<p><strong>保护对象</strong>。被保护的对象只能通过持有特定的锁来访问。保护对象包括封装在其他线程安全对象中的对象，以及已发布的并且由某个特定锁保护的对象。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>并发</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【基本概念篇】十一、Java线程的状态和生命周期</title>
     <url>/2019/05/15/2019-5-15-java-concurreny-java-thread-status/</url>
     <content><![CDATA[<p>Java线程本质上就是操作系统的线程，它们是一一对应的。</p>
@@ -7199,173 +7743,6 @@ class WaitPerson implements Runnable {
         <tag>java</tag>
         <tag>并发</tag>
         <tag>生命周期</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【基本概念篇】十二、如何构建线程安全的对象——对象的共享</title>
-    <url>/2019/05/15/2019-5-22-java-concurreny-how-to-dev-objshare/</url>
-    <content><![CDATA[<p>当多个线程访问某个状态变量并且其中有一个线程是写操作时，必须采用同步机制来协同这些线程对变量的访问。</p>
-<p>Java中的主要同步机制是关键字synchronized，提供独占的加锁方式，当然”同步”这个术语还包括volatile、显式锁以及原子变量。</p>
-<p>可以总结，如果当多个线程访问同一个可变的状态变量时没有使用合适的同步，那么程序就会出错。有哪些方式可以修复的<strong>并发策略</strong>：</p>
-<ul>
-<li>不在线程之间共享该状态变量，也可以说<strong>无状态</strong>的对象的肯定是线程安全的</li>
-<li>将状态变量修改为<strong>不可变的变量</strong></li>
-<li>在访问状态变量时<strong>使用同步</strong></li>
-</ul>
-<p>之前总结了如何通过同步来避免多个线程同一时刻访问相同的数据。本篇文章主要讲：怎么共享和发布对象，从而使他们能够安全地被多个线程同时访问。即：</p>
-<ol>
-<li>一方面，我们不仅希望防止某个线程被正在使用对象状态而另一个线程同时修改状态。</li>
-<li>另一方面，我们还希望当一个线程修改了对象状态后，其他线程能够看到发生状态的变化。如果没有同步，就无法实现。</li>
-</ol>
-<p>关键字synchronized不仅仅可以实现原子性或者确定”临界区”，同时也能够实现共享对象的<strong>内存可见性</strong>。</p>
-<blockquote>
-<p>加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或者写操作的线程都必须在同一个锁上同步。</p>
-</blockquote>
-<p>除了synchronized实现的同步可见性方案，Java语言还提供一种稍弱的同步机制，即volatile变量，用来确保变量的更新操作通知到其他线程。</p>
-<h1 id="1-可见性-volatile"><a href="#1-可见性-volatile" class="headerlink" title="1. 可见性(volatile)"></a>1. 可见性(volatile)</h1><p>由于重排序，程序的执行结果往往让人产生错觉。</p>
-<h2 id="volatile变量"><a href="#volatile变量" class="headerlink" title="volatile变量"></a>volatile变量</h2><p>当把变量声明为volatile类型后，编译器与运行时都会注意到这个变量是共享的，因此不会将变量上的操作与其他内存操作一起重排序。volatile变量不会被缓存在寄存器或者本地内存中，因此在读取volatile类型的变量时总会返回最新写入的值。</p>
-<p>在访问volatile变量时不会执行加锁操作，因此也就不会使线程阻塞，因此volatile变量是一种比sychronized关键字更轻量级的同步。不建议过度依赖volatile变量提供的可见性，如果在代码中依赖volatile变量来控制状态可见性，通常比使用锁的代码更脆弱，也更难以理解。</p>
-<blockquote>
-<p>仅当volatile变量能够简化代码的实现以及对同步策略的验证时，才应该使用它们。如果在验证正确性需要对可见性进行复杂判断，那么就不要使用volatile变量。volatile变量的正确使用方式包括：</p>
-<ol>
-<li>确保它们自身状态的可见性。</li>
-<li>确保它们所引用对象的状态的</li>
-<li>标识一些重要的程序生命周期事件的发生(例如，初始化或关闭)</li>
-</ol>
-</blockquote>
-<p><strong>volatile的典型用法</strong>：检查某个状态标记以判断是否退出循环。</p>
-<pre><code class="java">volatile boolean asleep;
-...
-  while(!asleep)
-    countSomeSheep();</code></pre>
-<p>虽然volatile变量很方便，但也存在一些局限性。volatile变量通常用作某个操作完成、发生中断或者状态的标志。例如上面的asleep标志。尽管volatile变量也可以用于表示其他的状态信息，但使用时要注意，比如volatile语义不能确保递增操作(count++)的原子性，除非确保只有一个线程对变量执行写操作。(原子变量提供了”读—改—写”的原子操作)，并且常常用做一种”更好的volatile变量”。</p>
-<blockquote>
-<p>加锁机制既可以确保可见性又可以确保原子性，而volatile变量只能确保可见性。</p>
-</blockquote>
-<h2 id="volatile使用场景"><a href="#volatile使用场景" class="headerlink" title="volatile使用场景"></a>volatile使用场景</h2><p><strong>当且仅当满足以下条件时，才应该使用volatile变量</strong>：</p>
-<ul>
-<li>对变量的写入操作不依赖变量的当前值，或者你能够确保当前只有单个线程更新变量的值。</li>
-<li>该变量不会与其他状态一起纳入不变性条件中。</li>
-<li>在访问变量时不需要加锁。</li>
-</ul>
-<h1 id="2-发布和逸出-封装"><a href="#2-发布和逸出-封装" class="headerlink" title="2. 发布和逸出(封装)"></a>2. 发布和逸出(封装)</h1><ul>
-<li><p><strong>“发布”</strong>对象的意思指，使对象能够在当前作用域之外的代码中使用。</p>
-<p>例如，将一个指向该对象的引用保存到其他代码可以访问的地方，</p>
-<p>或者在某一个非私有的方法中返回该引用，或者将引用传递到其他类的方法中。</p>
-<p><strong>我们要确保对象及其内部状态不被发布</strong></p>
-</li>
-<li><p><strong>“逸出”</strong>的意思指，当某个不应该发布的对象被发布时称为”逸出”。</p>
-</li>
-</ul>
-<p>当发布的对象逸出以后，必须假设有某个类或线程可能会误用该对象。</p>
-<p>因此应该尽量使用<strong>封装</strong>：封装能够使得对程序的正确性进行分析变可能，并使得无意中破坏设计约束条件变得更难。</p>
-<p>另外一种发布对象或其内部状态机制就是发布一个<strong>内部类的实例</strong>。</p>
-<p>另外一个要注意的地方：</p>
-<blockquote>
-<p>不要在构造过程中使this引用逸出</p>
-</blockquote>
-<h1 id="3-线程封闭-无状态、ThreadLocal"><a href="#3-线程封闭-无状态、ThreadLocal" class="headerlink" title="3. 线程封闭(无状态、ThreadLocal)"></a>3. 线程封闭(无状态、ThreadLocal)</h1><p>一种避免同步的方式就是不共享数据，不共享数据的无状态对象肯定是线程安全的。称为<strong>线程封闭</strong>。</p>
-<p>常见的例子如：</p>
-<ul>
-<li><p>Swing通过将可视化组件和数据模型封装到Swing的事件分发线程中来实现线程安全。</p>
-</li>
-<li><p>还有如JDBC的Connection对象，线程从连接池中获得一个Connection对象，并且用该对象来处理请求，使用完后再讲对象返回给连接池。由于大多数(Servlet请求或EJB调用等)都是由单个线程采用同样的方式来处理，并且在Connection对象返回之前，连接池不会再将它分配给其他线程，因此这种连接管理模式在处理隐含地将Connection对象封闭在线程中。</p>
-</li>
-</ul>
-<p>Java提供<strong>局部变量</strong>和<strong>ThreadLocal类</strong>来帮助维持线程封闭性。下面来讲下：</p>
-<h2 id="Ad-hoc线程封闭"><a href="#Ad-hoc线程封闭" class="headerlink" title="Ad-hoc线程封闭"></a>Ad-hoc线程封闭</h2><p>Ad-hoc实际就是指，维护线程封闭性的职责完全交给程序来实现。Ad-hoc线程封闭是非常脆弱的，因为没有任何一种语言特性，例如可见修饰符或局部变量，能将对象封闭到目标线程上。事实上，对线程封闭对象的引用通常保存在公有变量上。</p>
-<p>在volatile变量行上存在一种特殊的线程封闭。只要你能确保只有<strong>单个线程</strong>对共享的volatile变量执行写入操作，那么就可以安全地在这些共享的volatile变量上执行”读取-修改-写入”的操作。这种情况下，相当于将修改操作封闭在单个线程中以防止发生<strong>竞态条件</strong>，并且volatile变量的可见性还确保了其他线程能看到最新的值。</p>
-<p>由于Ad-hoc线程封闭技术的脆弱性，因此在程序中尽量少用，在可能的情况下应该使用更强的线程封闭技术(例如下面要将讲的，栈封闭和ThreadLocal类)。</p>
-<h2 id="栈封闭"><a href="#栈封闭" class="headerlink" title="栈封闭"></a>栈封闭</h2><p>栈封闭是线程封闭的一种特例，在栈封闭中，<strong>只能通过局部变量才能访问对象</strong>。栈封闭（也被称为线程内部使用或者线程局部使用，不要与核心类库中的ThreadLocal混淆）比Ad-hoc线程封闭更易于维护，也更加健壮。</p>
-<h2 id="ThreadLocal类"><a href="#ThreadLocal类" class="headerlink" title="ThreadLocal类"></a>ThreadLocal类</h2><ul>
-<li><p>线程封闭性的一种更规范方法是使用ThreadLocal，这个类能使线程中的某个值与保存值的对象关联起来。</p>
-</li>
-<li><p>ThreadLocal提供get与set等访问接口或方法，为每个使用该变量的线程都保存一份独立的副本，因此get总是返回当前执行线程在调用set时设置的最新值。</p>
-</li>
-<li><p>ThreadLocal对象通常用于防止对可变的单实例对象(Singleton)或全局变量进行共享。例如，通过将JDBC的连接保存到ThreadLocal对象中，每个线程就会拥有属于自己的连接。</p>
-</li>
-</ul>
-<h1 id="4-不变性final"><a href="#4-不变性final" class="headerlink" title="4.不变性final"></a>4.不变性final</h1><p>上面讲了，解决同步问题的方法，主要有</p>
-<ol>
-<li>共享变量的volatile的声明，即禁用JVM对该变量的重排序立即对其他线程可见，</li>
-<li>注意共享变量的发布、避免共享变量逸出。</li>
-<li>通过线程封闭手段避免避免对象状态在多线程之间共享(通过局部变量的栈封闭、以及ThreadLocal的线程副本隔离)。</li>
-</ol>
-<p>下面来讲下，解决同步的另外一种手段，即 <strong>不变性</strong>。</p>
-<p>满足同步需求的另一种方法是使用不可变对象。很多与原子性、可见性相关的问题，例如得到失效数据、丢失更新或者观察到某个对象处于不一致的状态等等，都与多线程试图同时访问同一个可变的状态相关。如果对象的状态不会改变，那么这些问题与复杂性也就自然消失了。</p>
-<blockquote>
-<p>不可变对象一定是线程安全的。</p>
-</blockquote>
-<p><strong>不可变性不等于将对象中所有的域都声明为final类型，即使对象中所有的域都是final类型的，这个对象也仍然是可变的，因为在final类型的域中可以保存对可变对象的引用。</strong></p>
-<p>因此需要满足以下条件，对象才是不可变的：</p>
-<blockquote>
-<ul>
-<li>对象创建以后其状态就不能修改。</li>
-<li>对象的所有域都是final类型。</li>
-<li>对象是正确创建的(在对象的创建期间，this引用没有逸出)。</li>
-</ul>
-</blockquote>
-<h1 id="5-安全发布"><a href="#5-安全发布" class="headerlink" title="5.安全发布"></a>5.安全发布</h1><p>先看下面这个例子</p>
-<pre><code class="java">public Holder holder;
-
-public void initialize() {
-        holder = new Holder(42);
-}</code></pre>
-<p>由于存在可见性问题，其他线程看到的Holder对象将处于不一致的状态，即便在该对象的构造函数中已经正确地构建了不变性条件。这种不正确的发布导致其他线程看到尚未创建完成的对象。这就是<strong>在没有足够同步的情况下发布对象</strong>，不要这样做。</p>
-<h2 id="不可变对象与初始化安全性"><a href="#不可变对象与初始化安全性" class="headerlink" title="不可变对象与初始化安全性"></a>不可变对象与初始化安全性</h2><p>Java内存模型为不可变对象的共享提供了一种特殊的初始化安全性保证。</p>
-<p>已经知道，即使某个对象的引用对于其他线程是可见的，也并不意味着对象状态对于使用该对象的线程来说一定是可见的。为了确保对象状态能呈现出一致的视图，就必须使用同步。</p>
-<p>另一方面，即使在发布不可变对象的引用时没有使用同步，也仍然可以安全地访问该对象。为了维持这种初始化安全性保证，必须满足不可变性的所有需求：</p>
-<p>状态不可修改，所有域都是final类型，以及正确的构造过程。</p>
-<blockquote>
-<p><strong>任何线程都可以在不需要额外同步的情况下安全地访问不可变对象，即使在发布这些对象时没有使用同步。</strong></p>
-</blockquote>
-<p>但是，如果final类型的域指向的是可变对象，那么在访问这些域所指向的对象的状态时仍然需要同步。</p>
-<h2 id="安全发布的常用模式"><a href="#安全发布的常用模式" class="headerlink" title="安全发布的常用模式"></a>安全发布的常用模式</h2><p>如何确保使用对象的线程能够看到该对象处于已发布的状态。</p>
-<blockquote>
-<p>要安全地发布一个对象，对象的引用以及对象的状态必须同步对其他线程可见。一个正确构造的对象可以通过以下来安全地发布：</p>
-<ul>
-<li>在静态初始化函数中初始化一个对象引用。</li>
-<li>将对象的引用保存到volatile类型的域或者AtomicReferance对象中。</li>
-<li>将对象的引用保存到某个正确构造对象的final类型域中。</li>
-<li>将对象的引用保存到一个由锁保护的域中。</li>
-</ul>
-</blockquote>
-<ul>
-<li><p>在线程安全容器内部的同步以为着，在将对象放到某个容器后，例如Vector或synchronizedList时，满足上面的”将对象的引用保存到一个由锁保护的域中”。即：</p>
-<p>线程A将对象X放入一个线程安全的容器，随后线程B读取这个对象，那么可以确保B看到A设置的X状态，即便在这段读/写X的应用程序代码中没有包含显式的同步。线程安全类包括：</p>
-<p>Hashtable、sychronizedMap或者ConcurrentHashMap</p>
-<p>Vector、CopyOnWriteArrayList、CopyOnWriteArrySet、synchronizedList或synchronizedSet</p>
-<p>BlockingQueue或ConcurrentLinkedQueue</p>
-<p>还有其他数据传递机制Future和Exchanger同样能实现安全发布。</p>
-</li>
-<li><p>静态初始化器由JVM在类的初始化阶段执行。由于在JVM内部存在着同步机制，因此通过这种方式初始化任何对象都可以被安全地发布。</p>
-</li>
-</ul>
-<h2 id="可变对象"><a href="#可变对象" class="headerlink" title="可变对象"></a>可变对象</h2><p>如果对象在构造后可以修改，那么安全发布只能确保”发布当时”状态的可见性。对于可变对象，不仅在发布对象时需要同步，而且在每次对象访问时同样需要同步来确保后续操作的可见性。要安全地共享可变对象，这些对象就必须被安全地发布，并且必须是线程安全的或者由某个锁保护起来。</p>
-<blockquote>
-<p>对象的发布需求取决于它的可变性：</p>
-<ul>
-<li>不可变对象可以通过任意机制来发布</li>
-<li>事实不可变对象必须通过安全方式来发布</li>
-<li>可变对象必须通过安全方式来发布，并且必须是线程安全的或者由某个锁保护起来</li>
-</ul>
-</blockquote>
-<h2 id="安全地共享对象"><a href="#安全地共享对象" class="headerlink" title="安全地共享对象"></a>安全地共享对象</h2><p>当获得对象的一个引用时，你需要知道这个引用上可以执行哪些操作。在使用它之前是否需要获得一个锁？是否可以修改它的状态或者只能读取它？许多并发错误都是由于没有理解共享对象的这些”既定规则”而导致的。当发布一个对象时，必须明确地说明对象的访问方式。</p>
-<blockquote>
-<p>在并发程序中使用和共享对象，可以使用一些实用的策略，包括：</p>
-<p><strong>线程封闭</strong>。线程封闭的对象只能由一个线程拥有，对象被封闭在该线程中，并且只能由这个线程修改。</p>
-<p><strong>只读共享</strong>。在没有额外同步的情况下，共享的只读对象可以由多个线程并发访问，但任何线程都不能修改它。共享的只读对象包括不可变对象和事实不可变对象。</p>
-<p><strong>线程安全共享</strong>。线层安全的对象在其内部实现同步，因此多个线程可以通过对象的公有接口来进行访问而不需要进一步的同步。</p>
-<p><strong>保护对象</strong>。被保护的对象只能通过持有特定的锁来访问。保护对象包括封装在其他线程安全对象中的对象，以及已发布的并且由某个特定锁保护的对象。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
       </tags>
   </entry>
   <entry>
@@ -9355,99 +9732,6 @@ Exiting via while() test</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>【目录】</title>
-    <url>/2019/03/04/2019-3-04-java-concurrency-catalog/</url>
-    <content><![CDATA[<h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><p>Java并发编程的博客主要分为一下五大主题：</p>
-<h2 id="基本概念篇"><a href="#基本概念篇" class="headerlink" title="基本概念篇"></a>基本概念篇</h2><p>3.6 认识线程：讲下线程定义、优势，线程基本使用（创建、启动、执行）。</p>
-<p>3.7 控制线程：操控线程的基本方法。</p>
-<p>并发概念：这篇要分为好多个小专题来讲，主要会讲下</p>
-<ul>
-<li>3.8 线程的3个特征</li>
-<li>3.9 内存模型  </li>
-<li>3.10 互斥锁</li>
-<li>3.11 线程的生命周期、线程数计算、执行原理</li>
-<li>3.12 安全性</li>
-<li>3.13 活跃性问题</li>
-<li>3.14 性能问题</li>
-<li>3.15 管程</li>
-</ul>
-<h2 id="线程之间的协作"><a href="#线程之间的协作" class="headerlink" title="线程之间的协作"></a>线程之间的协作</h2><ul>
-<li>3.16 wait，notify、notifyAll</li>
-<li>3.17 阻塞队列控制协作</li>
-<li>3.18 管程Mointor（Lock&amp;Condition、synchronized）</li>
-<li>3.19 信号量Semaphore</li>
-<li>3.20 CountdownLatch</li>
-<li>3.21 CyclicBarrier</li>
-<li>3.22 Phaser</li>
-<li>3.23 Exchanger</li>
-<li>3.24 死锁</li>
-</ul>
-<h2 id="线程之间的互斥"><a href="#线程之间的互斥" class="headerlink" title="线程之间的互斥"></a>线程之间的互斥</h2><p>互斥主要是为了保证线程执行的正确性或者叫做安全性，一般采用有锁和无锁的方案。</p>
-<ul>
-<li>有锁：讲下synchronized、Lock、读写锁<ul>
-<li>3.25 synchronzied</li>
-<li>3.26 Lock，读写锁</li>
-</ul>
-</li>
-<li>无锁：不变模式、可见保证volatile、原子保证Atomic相关。<ul>
-<li>3.27 final模式</li>
-<li>3.28 可见性volatile</li>
-<li>3.29 原子Atomic</li>
-</ul>
-</li>
-</ul>
-<h2 id="线程之间的分工问题"><a href="#线程之间的分工问题" class="headerlink" title="线程之间的分工问题"></a>线程之间的分工问题</h2><p>主要会讲下并发线程中的并发设计模式。</p>
-<ul>
-<li>Executor与线程池</li>
-<li>Fork/Join</li>
-<li>Future</li>
-<li>Guarded Susepension模式</li>
-<li>Thread-Per-Message模式</li>
-<li>生产者-消费者模式</li>
-<li>Worker-Thread模式</li>
-<li>两阶段终止模式</li>
-</ul>
-<h2 id="并发线程工具类"><a href="#并发线程工具类" class="headerlink" title="并发线程工具类"></a>并发线程工具类</h2><p>这个主题主要继续深入讲解各个并发工具的使用和原理，并会有锁侧重的分析这些并发工具类的源码。</p>
-<ul>
-<li><p>3.30 Lock</p>
-</li>
-<li><p>3.31 Semaphore</p>
-</li>
-<li><p>4.1 ReadWriteLock</p>
-</li>
-<li><p>4.2 原子类</p>
-</li>
-<li><p>4.3 Executor与线程池、阻塞队列</p>
-</li>
-<li><p>4.4 Future</p>
-</li>
-<li><p>4.5 Fork/Join</p>
-</li>
-<li><p>4.6 并发容器</p>
-</li>
-<li><p>4.7 CountDownLatch&amp;CyclicBarrier</p>
-</li>
-<li><p>4.8 CountDownLatch</p>
-</li>
-<li><p>4.9 StampedLock</p>
-</li>
-<li><p>4.10 CompletableFuture</p>
-</li>
-<li><p>4.11 CompletionService</p>
-<p>等。</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>并发编程</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
-        <tag>并发</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【基本概念篇】一、认识进程与线程</title>
     <url>/2019/03/04/2019-3-06-java-concurrency-system/</url>
     <content><![CDATA[<p>总结Java线程基本概念之前，首先先来了解下操作系统层面的进程与线程的相关知识</p>
@@ -9745,6 +10029,99 @@ Exiting via while() test</code></pre>
         <tag>操作系统</tag>
         <tag>进程</tag>
         <tag>线程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【目录】</title>
+    <url>/2019/03/04/2019-3-04-java-concurrency-catalog/</url>
+    <content><![CDATA[<h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><p>Java并发编程的博客主要分为一下五大主题：</p>
+<h2 id="基本概念篇"><a href="#基本概念篇" class="headerlink" title="基本概念篇"></a>基本概念篇</h2><p>3.6 认识线程：讲下线程定义、优势，线程基本使用（创建、启动、执行）。</p>
+<p>3.7 控制线程：操控线程的基本方法。</p>
+<p>并发概念：这篇要分为好多个小专题来讲，主要会讲下</p>
+<ul>
+<li>3.8 线程的3个特征</li>
+<li>3.9 内存模型  </li>
+<li>3.10 互斥锁</li>
+<li>3.11 线程的生命周期、线程数计算、执行原理</li>
+<li>3.12 安全性</li>
+<li>3.13 活跃性问题</li>
+<li>3.14 性能问题</li>
+<li>3.15 管程</li>
+</ul>
+<h2 id="线程之间的协作"><a href="#线程之间的协作" class="headerlink" title="线程之间的协作"></a>线程之间的协作</h2><ul>
+<li>3.16 wait，notify、notifyAll</li>
+<li>3.17 阻塞队列控制协作</li>
+<li>3.18 管程Mointor（Lock&amp;Condition、synchronized）</li>
+<li>3.19 信号量Semaphore</li>
+<li>3.20 CountdownLatch</li>
+<li>3.21 CyclicBarrier</li>
+<li>3.22 Phaser</li>
+<li>3.23 Exchanger</li>
+<li>3.24 死锁</li>
+</ul>
+<h2 id="线程之间的互斥"><a href="#线程之间的互斥" class="headerlink" title="线程之间的互斥"></a>线程之间的互斥</h2><p>互斥主要是为了保证线程执行的正确性或者叫做安全性，一般采用有锁和无锁的方案。</p>
+<ul>
+<li>有锁：讲下synchronized、Lock、读写锁<ul>
+<li>3.25 synchronzied</li>
+<li>3.26 Lock，读写锁</li>
+</ul>
+</li>
+<li>无锁：不变模式、可见保证volatile、原子保证Atomic相关。<ul>
+<li>3.27 final模式</li>
+<li>3.28 可见性volatile</li>
+<li>3.29 原子Atomic</li>
+</ul>
+</li>
+</ul>
+<h2 id="线程之间的分工问题"><a href="#线程之间的分工问题" class="headerlink" title="线程之间的分工问题"></a>线程之间的分工问题</h2><p>主要会讲下并发线程中的并发设计模式。</p>
+<ul>
+<li>Executor与线程池</li>
+<li>Fork/Join</li>
+<li>Future</li>
+<li>Guarded Susepension模式</li>
+<li>Thread-Per-Message模式</li>
+<li>生产者-消费者模式</li>
+<li>Worker-Thread模式</li>
+<li>两阶段终止模式</li>
+</ul>
+<h2 id="并发线程工具类"><a href="#并发线程工具类" class="headerlink" title="并发线程工具类"></a>并发线程工具类</h2><p>这个主题主要继续深入讲解各个并发工具的使用和原理，并会有锁侧重的分析这些并发工具类的源码。</p>
+<ul>
+<li><p>3.30 Lock</p>
+</li>
+<li><p>3.31 Semaphore</p>
+</li>
+<li><p>4.1 ReadWriteLock</p>
+</li>
+<li><p>4.2 原子类</p>
+</li>
+<li><p>4.3 Executor与线程池、阻塞队列</p>
+</li>
+<li><p>4.4 Future</p>
+</li>
+<li><p>4.5 Fork/Join</p>
+</li>
+<li><p>4.6 并发容器</p>
+</li>
+<li><p>4.7 CountDownLatch&amp;CyclicBarrier</p>
+</li>
+<li><p>4.8 CountDownLatch</p>
+</li>
+<li><p>4.9 StampedLock</p>
+</li>
+<li><p>4.10 CompletableFuture</p>
+</li>
+<li><p>4.11 CompletionService</p>
+<p>等。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>并发</tag>
       </tags>
   </entry>
   <entry>
