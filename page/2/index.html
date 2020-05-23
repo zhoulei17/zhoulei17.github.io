@@ -121,12 +121,12 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">65</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">66</span></a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">64</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">65</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -187,6 +187,179 @@
             
 
   <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/04/01/lucene-search-must/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/01/lucene-search-must/" class="post-title-link" itemprop="url">【Lucene】-【Search】MUST原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-04-01 00:00:00 / 修改时间：22:30:02" itemprop="dateCreated datePublished" datetime="2020-04-01T00:00:00+08:00">2020-04-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/04/01/lucene-search-must/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】MUST原理" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/04/01/lucene-search-must/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/04/01/lucene-search-must/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文通过一个例子来介绍文档号合并的逻辑。源码实现为：</p>
+<p><strong>ConjunctionDISI</strong></p>
+<h1 id="索引代码"><a href="#索引代码" class="headerlink" title="索引代码"></a>索引代码</h1><pre><code class="java">
+Document doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;a&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+//1
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;b&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+
+//2
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;c b&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+//3
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;a c&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+//4
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;h&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+//5
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;c e&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+//6
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;c a&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+
+//7
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;f e&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+//8
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;a c d e c e&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+//9
+doc = new Document();
+doc.add(new TextField(&quot;content&quot;, &quot;a c e a b c&quot;, Field.Store.YES));
+indexWriter.addDocument(doc);
+
+indexWriter.commit();
+indexWriter.close();</code></pre>
+<h1 id="查询代码"><a href="#查询代码" class="headerlink" title="查询代码"></a>查询代码</h1><p>表示满足查询条件的文档<strong>必须</strong>至少包含“a” “b” “c” “e” 四个关键字。</p>
+<pre><code class="java">BooleanQuery.Builder builder = new BooleanQuery.Builder();
+builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;a&quot;)), BooleanClause.Occur.MUST);
+builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;b&quot;)), BooleanClause.Occur.MUST);
+builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;c&quot;)), BooleanClause.Occur.MUST);
+builder.add(new TermQuery(new Term(&quot;content&quot;, &quot;e&quot;)), BooleanClause.Occur.MUST);</code></pre>
+<h1 id="文档号合并"><a href="#文档号合并" class="headerlink" title="文档号合并"></a>文档号合并</h1><p>将包含各个关键字的文档分别放入到各自的数组中，数组元素是文档号。</p>
+<img data-src="/img/in-post/image-20200401222208403.png" alt="image-20200401222208403" style="zoom:50%;">
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/04/01/lucene-search-must/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
         
   
   
@@ -574,6 +747,174 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/03/29/lucene-search-phrase/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.png">
+      <meta itemprop="name" content="Zhou Lei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Z.L's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/29/lucene-search-phrase/" class="post-title-link" itemprop="url">【Lucene】-【Search】一文读懂Lucene PhraseQuery</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-29 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-29T00:00:00+08:00">2020-03-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-09 00:02:05" itemprop="dateModified" datetime="2020-05-09T00:02:05+08:00">2020-05-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/29/lucene-search-phrase/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】一文读懂Lucene PhraseQuery" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/29/lucene-search-phrase/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/29/lucene-search-phrase/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>15 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文介绍PhraseQuery的基本用法，为简单起见，只介绍slop=0的场景下的源码，主要是我了说明Luene的优化点和词频统计的算法。slop等于非0部分的算法后续再补充。也因为这是【search系列】的第一篇介绍query的文章，因此本文会把查询的流程和各个类初始化的过程也写了下来，方便其他query总结时参照。</p>
+<h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><p>直接给出笔者调试源码的demo：</p>
+<pre><code class="java">  private void doDemo() {
+    PhraseQuery.Builder builder = new PhraseQuery.Builder();
+    builder.add(new Term(&quot;content&quot;, &quot;quick&quot;), 1);
+    builder.add(new Term(&quot;content&quot;, &quot;fox&quot;), 2);
+    builder.add(new Term(&quot;content&quot;, &quot;dog&quot;), 3);
+
+
+    //builder.add(new Term(&quot;content&quot;, &quot;dog&quot;), 9);
+    //builder.setSlop(1);
+    //builder.add(new Term(&quot;content&quot;,&quot;a quick black fox&quot;));
+    Query query = builder.build();
+    // 返回Top5的结果
+    int resultTopN = 5;
+
+    ScoreDoc[] scoreDocs = new ScoreDoc[0];
+    try {
+      scoreDocs = searcher.search(query, resultTopN).scoreDocs;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    System.out.println(&quot;Total Result Number: &quot;+scoreDocs.length+&quot;&quot;);
+    for (int i = 0; i &lt; scoreDocs.length; i++) {
+      ScoreDoc scoreDoc = scoreDocs[i];
+      // 输出满足查询条件的 文档号
+      System.out.println(&quot;result&quot;+i+&quot;: 文档&quot;+scoreDoc.doc+&quot;&quot;);
+    }
+  }</code></pre>
+<h1 id="代码流程"><a href="#代码流程" class="headerlink" title="代码流程"></a>代码流程</h1><p>给出从输入到文档收集的总体流程，如果图片太小，请打开查看清晰大图。</p>
+<p><img data-src="/img/in-post/image-20200325224838395.png" alt="image-20200325224838395"></p>
+<p>总体流程：</p>
+<ol>
+<li><p>如果使用Solr的REST API请求，根据输入String解析由Solr的Parser类解析并构建出PhraseQuery。如果直接调用Lucene API，就直接构造PhraseQuery并初始化，其中输入position如果position[0]不等于0，就统一把position[]处理为以postion[0]=0为起始的poistion[]数组。</p>
+</li>
+<li><p>初始化PhraseWeight，目的主要是要初始化好BM25Similarity（当然也可以是其他Similarity）相关类为后续打分类做准备，以及在PhraseWeight内部构建好输入Phrase对应的每个Term对象对应的TermContext。</p>
+</li>
+<li><p>初始化PhraseScorer，目的主要有3个：</p>
+<ol>
+<li><p>构建出打分相关的对象。</p>
+</li>
+<li><p>以及打分中会用到的PhraseMatcher对象，PhraseMatcher对象用于在打分之前计算Phrase的词频。</p>
+</li>
+<li><p>对每个Term对应倒排表文档进行合并处理生成ConjuntionDISI对象（同时这也是一个DocIdIterator迭代器，保存了满足所有Term出现在当前字段的文档列表）并封装到TwoPhraseIterator中，这样在后续收集文档时就会在这个文档里面中迭代TwoPhraseIterator中的文档号。</p>
+</li>
+</ol>
+</li>
+<li><p>在步骤3中生成文档列表TwoPhraseIterator进行迭代文档号，通过PhraseMatcher子类，判断当前文档对应的字段对应的一批Term是否满足PhraseQuery中的Position要求，如果满足要求就统计词频。</p>
+<p>统计词频后，使用步骤3中的PhraseScorer进行打分，并使用LeafCollector封装的文档队列进行TOP排序或者其他类似collector类型的收集处理，收集好文档返回。</p>
+</li>
+</ol>
+<p>​      </p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/03/29/lucene-search-phrase/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/03/29/lucene-search-collector1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -724,7 +1065,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/03/29/lucene-search-phrase/">
+    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/02/07/lucene-dv-SortedDocValues/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar2.png">
@@ -738,7 +1079,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/29/lucene-search-phrase/" class="post-title-link" itemprop="url">【Lucene】-【Search】一文读懂Lucene PhraseQuery</a>
+            <a href="/2020/02/07/lucene-dv-SortedDocValues/" class="post-title-link" itemprop="url">【DocValues】一、SortedDocValues</a>
         </h2>
 
         <div class="post-meta">
@@ -748,14 +1089,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-03-29 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-29T00:00:00+08:00">2020-03-29</time>
+              <time title="创建时间：2020-02-07 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-07T00:00:00+08:00">2020-02-07</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-05-09 00:02:05" itemprop="dateModified" datetime="2020-05-09T00:02:05+08:00">2020-05-09</time>
+                <time title="修改时间：2020-03-21 20:06:02" itemprop="dateModified" datetime="2020-03-21T20:06:02+08:00">2020-03-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -768,7 +1109,7 @@
             </span>
 
           
-            <span id="/2020/03/29/lucene-search-phrase/" class="post-meta-item leancloud_visitors" data-flag-title="【Lucene】-【Search】一文读懂Lucene PhraseQuery" title="阅读次数">
+            <span id="/2020/02/07/lucene-dv-SortedDocValues/" class="post-meta-item leancloud_visitors" data-flag-title="【DocValues】一、SortedDocValues" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -783,8 +1124,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2020/03/29/lucene-search-phrase/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/29/lucene-search-phrase/" itemprop="commentCount"></span>
+    <a title="valine" href="/2020/02/07/lucene-dv-SortedDocValues/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/02/07/lucene-dv-SortedDocValues/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -794,14 +1135,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>16k</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>15 分钟</span>
+              <span>1 分钟</span>
             </span>
 
         </div>
@@ -813,62 +1154,28 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>本文介绍PhraseQuery的基本用法，为简单起见，只介绍slop=0的场景下的源码，主要是我了说明Luene的优化点和词频统计的算法。slop等于非0部分的算法后续再补充。也因为这是【search系列】的第一篇介绍query的文章，因此本文会把查询的流程和各个类初始化的过程也写了下来，方便其他query总结时参照。</p>
-<h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><p>直接给出笔者调试源码的demo：</p>
-<pre><code class="java">  private void doDemo() {
-    PhraseQuery.Builder builder = new PhraseQuery.Builder();
-    builder.add(new Term(&quot;content&quot;, &quot;quick&quot;), 1);
-    builder.add(new Term(&quot;content&quot;, &quot;fox&quot;), 2);
-    builder.add(new Term(&quot;content&quot;, &quot;dog&quot;), 3);
+          <h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
+<ul>
+<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
+<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
+</ul>
+<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
+<blockquote>
+<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
+<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
+<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
+</blockquote>
+<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
+<li>NumericDocValues</li>
+<li>SortedNumericDocValues</li>
+<li>SortedDocValues</li>
+<li>SortedSetDocValues</li>
+<li>BinaryDocValues</li>
+</ul>
 
-
-    //builder.add(new Term(&quot;content&quot;, &quot;dog&quot;), 9);
-    //builder.setSlop(1);
-    //builder.add(new Term(&quot;content&quot;,&quot;a quick black fox&quot;));
-    Query query = builder.build();
-    // 返回Top5的结果
-    int resultTopN = 5;
-
-    ScoreDoc[] scoreDocs = new ScoreDoc[0];
-    try {
-      scoreDocs = searcher.search(query, resultTopN).scoreDocs;
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    System.out.println(&quot;Total Result Number: &quot;+scoreDocs.length+&quot;&quot;);
-    for (int i = 0; i &lt; scoreDocs.length; i++) {
-      ScoreDoc scoreDoc = scoreDocs[i];
-      // 输出满足查询条件的 文档号
-      System.out.println(&quot;result&quot;+i+&quot;: 文档&quot;+scoreDoc.doc+&quot;&quot;);
-    }
-  }</code></pre>
-<h1 id="代码流程"><a href="#代码流程" class="headerlink" title="代码流程"></a>代码流程</h1><p>给出从输入到文档收集的总体流程，如果图片太小，请打开查看清晰大图。</p>
-<p><img data-src="/img/in-post/image-20200325224838395.png" alt="image-20200325224838395"></p>
-<p>总体流程：</p>
-<ol>
-<li><p>如果使用Solr的REST API请求，根据输入String解析由Solr的Parser类解析并构建出PhraseQuery。如果直接调用Lucene API，就直接构造PhraseQuery并初始化，其中输入position如果position[0]不等于0，就统一把position[]处理为以postion[0]=0为起始的poistion[]数组。</p>
-</li>
-<li><p>初始化PhraseWeight，目的主要是要初始化好BM25Similarity（当然也可以是其他Similarity）相关类为后续打分类做准备，以及在PhraseWeight内部构建好输入Phrase对应的每个Term对象对应的TermContext。</p>
-</li>
-<li><p>初始化PhraseScorer，目的主要有3个：</p>
-<ol>
-<li><p>构建出打分相关的对象。</p>
-</li>
-<li><p>以及打分中会用到的PhraseMatcher对象，PhraseMatcher对象用于在打分之前计算Phrase的词频。</p>
-</li>
-<li><p>对每个Term对应倒排表文档进行合并处理生成ConjuntionDISI对象（同时这也是一个DocIdIterator迭代器，保存了满足所有Term出现在当前字段的文档列表）并封装到TwoPhraseIterator中，这样在后续收集文档时就会在这个文档里面中迭代TwoPhraseIterator中的文档号。</p>
-</li>
-</ol>
-</li>
-<li><p>在步骤3中生成文档列表TwoPhraseIterator进行迭代文档号，通过PhraseMatcher子类，判断当前文档对应的字段对应的一批Term是否满足PhraseQuery中的Position要求，如果满足要求就统计词频。</p>
-<p>统计词频后，使用步骤3中的PhraseScorer进行打分，并使用LeafCollector封装的文档队列进行TOP排序或者其他类似collector类型的收集处理，收集好文档返回。</p>
-</li>
-</ol>
-<p>​      </p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/03/29/lucene-search-phrase/#more" rel="contents">
+              <a class="btn" href="/2020/02/07/lucene-dv-SortedDocValues/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1054,140 +1361,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2020/02/07/tools-idea-simple/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/02/07/lucene-dv-SortedDocValues/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/02/07/lucene-dv-SortedDocValues/" class="post-title-link" itemprop="url">【DocValues】一、SortedDocValues</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-02-07 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-07T00:00:00+08:00">2020-02-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-21 20:06:02" itemprop="dateModified" datetime="2020-03-21T20:06:02+08:00">2020-03-21</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2020/02/07/lucene-dv-SortedDocValues/" class="post-meta-item leancloud_visitors" data-flag-title="【DocValues】一、SortedDocValues" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2020/02/07/lucene-dv-SortedDocValues/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/02/07/lucene-dv-SortedDocValues/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="DocValues前言"><a href="#DocValues前言" class="headerlink" title="DocValues前言"></a>DocValues前言</h1><p>在搜索引擎中一般会构建两种索引：</p>
-<ul>
-<li>倒排索引（inverted index）：简单来说实现域值（field value）到文档的映射。</li>
-<li>正排索引：主要实现文档到域值的映射，<strong>DocValues</strong>就是这种正排索引。</li>
-</ul>
-<p>引用lucene-solr的文档中对于<a href="https://lucene.apache.org/solr/guide/7_7/docvalues.html" target="_blank" rel="noopener">为什么需要DocValue相关的介绍</a>：</p>
-<blockquote>
-<h2 id="Why-DocValues"><a href="#Why-DocValues" class="headerlink" title="Why DocValues?"></a>Why DocValues?</h2><p>The standard way that Solr builds the index is with an <em>inverted index</em>. This style builds a list of terms found in all the documents in the index and next to each term is a list of documents that the term appears in (as well as how many times the term appears in that document). This makes search very fast - since users search by terms, having a ready list of term-to-document values makes the query process faster.</p>
-<p>For other features that we now commonly associate with search, such as sorting, faceting, and highlighting, this approach is not very efficient. The faceting engine, for example, must look up each term that appears in each document that will make up the result set and pull the document IDs in order to build the facet list. In Solr, this is maintained in memory, and can be slow to load (depending on the number of documents, terms, etc.).</p>
-<p>In Lucene 4.0, a new approach was introduced. DocValue fields are now column-oriented fields with a document-to-value mapping built at index time. This approach promises to relieve some of the memory requirements of the fieldCache and make lookups for faceting, sorting, and grouping much faster.</p>
-</blockquote>
-<h2 id="DocValues的类型主要有5种类型"><a href="#DocValues的类型主要有5种类型" class="headerlink" title="DocValues的类型主要有5种类型"></a>DocValues的类型主要有5种类型</h2><ul>
-<li>NumericDocValues</li>
-<li>SortedNumericDocValues</li>
-<li>SortedDocValues</li>
-<li>SortedSetDocValues</li>
-<li>BinaryDocValues</li>
-</ul>
-
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/02/07/lucene-dv-SortedDocValues/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1484,140 +1657,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="2tongtong.cn/2020/02/01/lucene-indexfile-tim-tip/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar2.png">
-      <meta itemprop="name" content="Zhou Lei">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Z.L's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/02/01/lucene-indexfile-tim-tip/" class="post-title-link" itemprop="url">【索引文件】.tim、.tip文件</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-02-01 00:00:00" itemprop="dateCreated datePublished" datetime="2020-02-01T00:00:00+08:00">2020-02-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-03-21 20:35:41" itemprop="dateModified" datetime="2020-03-21T20:35:41+08:00">2020-03-21</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Lucene/" itemprop="url" rel="index"><span itemprop="name">Lucene</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2020/02/01/lucene-indexfile-tim-tip/" class="post-meta-item leancloud_visitors" data-flag-title="【索引文件】.tim、.tip文件" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2020/02/01/lucene-indexfile-tim-tip/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/02/01/lucene-indexfile-tim-tip/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>这篇文章总结Lucene各个索引文件的作用和数据结构，为后续索引生成过程和存储分析打下基础。</p>
-<h1 id="tim、tip文件"><a href="#tim、tip文件" class="headerlink" title="tim、tip文件"></a>tim、tip文件</h1><h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p> <strong>.tim(Term Dicitionary)</strong>文件</p>
-<ul>
-<li><p>存放每个term的<strong>TermStats</strong>，TermStats记录了<strong>包含该term的文档数量，term在这些文档中的词频总和</strong>；</p>
-</li>
-<li><p>另外还存放了term的<strong>TermMetadata</strong>，TermMetadata记录了该term在.doc .pos .pay文件中的起始位置信息，即保存了指向这些文档的索引；</p>
-</li>
-<li><p>还<strong>存放了term的Suffix</strong>，对于有部分相同前缀值的term，只需存放这些term不相同的后缀值，即Suffix。</p>
-</li>
-<li><p>另外还存放term所在域的信息等其他信息。</p>
-</li>
-</ul>
-<p><strong>.tip（Term index）文件</strong></p>
-<ul>
-<li>存放了指向tim文件的索引来实现随机访问tim文件中的信息。</li>
-<li>并且.tip文件还能用来快速判断某个term是否存在。</li>
-</ul>
-<p>参考类：<strong>BlockTreeTermsWriter</strong></p>
-<h2 id="tim文件的数据结构"><a href="#tim文件的数据结构" class="headerlink" title="tim文件的数据结构"></a>tim文件的数据结构</h2><p>图1</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/02/01/lucene-indexfile-tim-tip/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1690,7 +1729,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-count">66</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1703,7 +1742,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1765,13 +1804,13 @@
       <i class="fa fa-area-chart"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">295k</span>
+    <span title="站点总字数">304k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">4:28</span>
+    <span title="站点阅读时长">4:37</span>
 </div>
 
         
